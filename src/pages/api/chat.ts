@@ -53,11 +53,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         content: `Here is the context with the relevant information:\n${context}`,
       },
     ];
+
     const chatResponse = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: messages,
     });
-
     console.log('chatResponse: ', chatResponse.choices[0].message);
 
     return res.status(200).json({ message: chatResponse.choices[0].message.content });
