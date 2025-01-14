@@ -6,11 +6,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'POST') {
     const prompt = req.body.prompt;
     const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: process.env.OPENAI_API_KEY as string,
     });
 
     const pc = new Pinecone({
-      apiKey: process.env.PINECONE_API_KEY,
+      apiKey: process.env.PINECONE_API_KEY as string,
       maxRetries: 5,
     });
 
