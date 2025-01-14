@@ -2,7 +2,7 @@
 import React from 'react';
 import { Space_Grotesk } from 'next/font/google';
 // import type { Metadata } from 'next';
-import '@/styles/globals.css';
+// import '@/styles/globals.css';
 import Header from '@/components/layout/header';
 
 // export const metadata: Metadata = {
