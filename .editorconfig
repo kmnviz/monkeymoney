@@ -1,0 +1,30 @@
+# Root EditorConfig file
+root = true
+
+# General settings for all files
+[*]
+charset = utf-8             # Use UTF-8 character encoding
+indent_style = space        # Use spaces for indentation
+indent_size = 2             # Indent size set to 2 spaces
+end_of_line = lf            # Use Unix-style line endings (LF)
+insert_final_newline = true # Ensure files end with a newline
+trim_trailing_whitespace = true # Remove trailing whitespace on save
+
+# Specific rules for JavaScript and TypeScript files
+[*.{js,jsx,ts,tsx}]
+max_line_length = 80        # Set max line length for readability
+quote_type = single         # Prefer single quotes for strings
+
+# JSON files
+[*.json]
+indent_style = space        # Use spaces for JSON
+indent_size = 2             # Indent size set to 2 spaces
+
+# Markdown files
+[*.md]
+trim_trailing_whitespace = false # Allow trailing whitespace for Markdown
+
+# YAML files
+[*.{yml, yaml}]
+indent_style = space        # Use spaces for YAML
+indent_size = 2             # Indent size set to 2 spaces
