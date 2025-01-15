@@ -17,7 +17,7 @@ export default function ChatInitializer({ onStart }: { onStart: (message: string
     <div
       className="chat-initializer-wrapper flex flex-col items-center justify-center h-full p-4 relative"
     >
-      <h1 className="chat-initializer-title mb-8">What do you want to know?</h1>
+      <h1 className="chat-initializer-title mb-8">Find your next winning bet</h1>
       <Textarea
         type="text"
         placeholder="Ask me something..."
