@@ -1,10 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import Header from '@/components/chat/Header';
 import ChatInitializer from '@/components/chat/ChatInitializer';
 import ChatDialog from '@/components/chat/ChatDialog';
+import { Space_Grotesk } from 'next/font/google';
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-space-grotesk',
+});
+
 
 export default function ChatApp() {
   const [chatStarted, setChatStarted] = useState(false)
@@ -21,20 +29,28 @@ export default function ChatApp() {
 
   const sendMessage = async (message) => {
     addMessage('User', message)
-    const response = await axios.post('/api/chat', { prompt: message});
+    const response = await axios.post('/api/chat', { prompt: message });
     addMessage('AI', response.data.message);
   }
 
   return (
-    <div className="flex flex-col h-screen">
-      <Header title="AI Chat Assistant" />
-      <main className="flex-grow overflow-hidden">
+    <div
+      className={`chat-wrapper flex flex-col h-full ${spaceGrotesk.variable}`}
+    >
+      <div className="chat-dialog-background-wrapper">
+        <div className="circle-container">
+          <div className="circle" id="circle1"></div>
+          <div className="circle" id="circle2"></div>
+          <div className="circle" id="circle3"></div>
+        </div>
+      </div>
+      <main className="chat-main flex-grow overflow-hidden">
         {!chatStarted ? (
-          <ChatInitializer onStart={startChat} />
+          <ChatInitializer onStart={startChat}/>
         ) : (
           <ChatDialog messages={messages} onSendMessage={(message) => {
             sendMessage(message)
-          }} />
+          }}/>
         )}
       </main>
     </div>

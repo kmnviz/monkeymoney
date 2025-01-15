@@ -18,7 +18,7 @@ export default function MessageInput({ onSendMessage }: MessageInputProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="message-input-wrapper p-4 bg-gray-100">
+    <form onSubmit={handleSubmit} className="message-input-wrapper p-4">
       <div className="flex">
         <Input
           type="text"

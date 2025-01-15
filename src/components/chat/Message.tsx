@@ -29,8 +29,8 @@ const TypewriterText = ({ text }) => {
 
 export default function Message({ user, timestamp, content }: MessageProps) {
   return (
-    <div className={`mb-4 text-left max-w-96`}>
-      <div className={`inline-block max-w-3/4 p-3 rounded-lg ${user === 'User' ? 'bg-blue-100' : 'bg-gray-100'}`}>
+    <div className={`message-wrapper mb-4 text-left max-w-96`}>
+      <div className={`inline-block max-w-3/4 p-3 rounded-sm message-content ${user === 'User' ? 'message-content-user' : 'message-content-ai'}`}>
         <p className="font-bold">{user}</p>
         <p className="text-sm text-gray-500">{moment(timestamp).format('MMM D, YYYY, h:mm:ss')}</p>
         {

@@ -219,3 +219,94 @@ h1 {
   font-size: calc(max(5vmin, 16pt));
   font-weight: 200;
 }
+
+.chat-wrapper {
+  font-family: var(--font-space-grotesk), sans-serif;
+  background-color: oklch(14.56% 0.0148 228.18);
+
+  .chat-main {
+    z-index: 10;
+  }
+
+  .chat-button {
+    border-width: 0.5px;
+    text-align: left;
+    font-size: 14px;
+  }
+
+  .chat-button-primary {
+    background-color: oklch(14.56% 0.0148 228.18);
+    border-color: oklch(84.56% 0.3355 144.53);
+    color: oklch(84.56% 0.3355 144.53);
+  }
+
+  .chat-button-secondary {
+    background-color: oklch(14.56% 0.0148 228.18);
+    border-color: oklch(73.68% 0.0099 228.18);
+    color: oklch(73.68% 0.0099 228.18);
+  }
+
+  .chat-button:hover {
+    background-color: oklch(19.56% 0.0099 228.18);
+    cursor: pointer;
+  }
+
+  .chat-button-primary:hover {
+    background-color: oklch(14.56% 0.0148 228.18);
+    border-color: oklch(85.44% 0.2195 144.53);
+    color: oklch(85.44% 0.2195 144.53);
+  }
+}
+
+.chat-dialog-header-wrapper {
+  h1 {
+    font-family: var(--font-space-grotesk), sans-serif;
+  }
+}
+
+.chat-initializer-wrapper, .chat-dialog-wrapper {
+  input, button, textarea {
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+    font-family: var(--font-space-grotesk), sans-serif;
+  }
+
+  input, textarea {
+    background-color: oklch(19.56% 0.0099 228.18);
+    border-color: oklch(35.44% 0.0049 228.18);
+    color: #fff;
+  }
+
+  input:focus, textarea:focus {
+    border-color: oklch(73.68% 0.0099 228.18);
+  }
+}
+
+.chat-initializer-wrapper {
+  margin-top: 256px;
+
+  .chat-initializer-title {
+    color: #fff;
+  }
+
+  .chat-initializer-start-button {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+  }
+}
+
+.message-wrapper {
+  .message-content-user {
+    background-color: oklch(14.56% 0.0148 228.18 / 55.95%);
+    border-color: oklch(73.68% 0.0099 228.18);
+    color: #fff;
+    border-width: 0.5px;
+  }
+
+  .message-content-ai {
+    background-color: oklch(14.56% 0.0148 228.18 / 55.95%);
+    border-color: oklch(84.56% 0.3355 144.53);
+    color: #fff;
+    border-width: 0.5px;
+  }
+}
