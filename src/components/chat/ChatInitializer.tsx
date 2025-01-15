@@ -19,7 +19,6 @@ export default function ChatInitializer({ onStart }: { onStart: (message: string
     >
       <h1 className="chat-initializer-title mb-8">Find your next winning bet</h1>
       <Textarea
-        type="text"
         placeholder="Ask me something..."
         value={input}
         onChange={(e) => setInput(e.target.value)}
