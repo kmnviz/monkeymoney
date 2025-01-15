@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const queryResponse = await index.query({
       vector: queryEmbedding,
-      topK: 3,
+      topK: 10,
       includeMetadata: true,
     });
     const matches = queryResponse.matches;
