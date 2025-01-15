@@ -6,7 +6,7 @@ const openai = new OpenAI({
 });
 
 const pc = new Pinecone({
-    apiKey: 'pcsk_7PwKVR_CZCDgtMCc1oLNQNV87V7oVNhCEWf4Eonpt4FBkY6dEFTANfa4hXnsvXfZs33njU',
+    apiKey: '',
     maxRetries: 5,
 });
 
