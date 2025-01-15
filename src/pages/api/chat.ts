@@ -39,6 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const match = matches[0];
     const context = `Match details:\n- Teams: ${match?.metadata?.teams}\n- League: ${match?.metadata?.league}\n- Date: ${match?.metadata?.match_date}\n- Market: ${match?.metadata?.betting_market}\n- Prediction: ${match?.metadata?.prediction}\n- Odds: ${match?.metadata?.odds}\n- Probability: ${match?.metadata?.probability}\n`
+    console.log('context: ', context);
 
     const messages = [
       {

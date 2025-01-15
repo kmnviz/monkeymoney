@@ -1,0 +1,23 @@
+{
+  "sports": [
+    {
+      "Football": {
+        "id": 1
+      }
+    }
+  ],
+  "leagues": [
+    {
+      "Premiership": {
+        "id": 501
+      }
+    }
+  ],
+  "markets": [
+    {
+      "Fulltime Result": {
+        "id": 1
+      }
+    }
+  ]
+}
