@@ -14,7 +14,7 @@ const TypewriterText = ({ text }) => {
     let i = 0;
     const typingInterval = setInterval(() => {
       if (i < text.length) {
-        setDisplayedText((prev) => prev + text.charAt(i));
+        setDisplayedText(text.slice(0, i + 1));
         i++;
       } else {
         clearInterval(typingInterval);
