@@ -1,5 +1,7 @@
 /node_modules
 /.next
+/openai/node_modules
+/openai/.env
 .DS_Store
 .env
 .temp
