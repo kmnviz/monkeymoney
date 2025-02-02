@@ -1,0 +1,57 @@
+{
+  "generated_at": "2025-01-29T20:36:44+00:00",
+  "sport_event": {
+    "id": "sr:sport_event:50850443",
+    "start_time": "2025-02-01T12:30:00+00:00",
+    "start_time_confirmed": true,
+    "status": "not_started",
+    "competitors": [
+      {
+        "id": "sr:competitor:14",
+        "name": "Nottingham Forest",
+        "country": "England",
+        "country_code": "ENG",
+        "abbreviation": "NFO",
+        "qualifier": "home"
+      },
+      {
+        "id": "sr:competitor:30",
+        "name": "Brighton & Hove Albion",
+        "country": "England",
+        "country_code": "ENG",
+        "abbreviation": "BRI",
+        "qualifier": "away"
+      }
+    ]
+  },
+  "markets": [
+    {
+      "id": "sr:market:1",
+      "name": "1x2",
+      "is_live": false,
+      "books": [
+        {
+          "id": "sr:book:17324",
+          "name": "MGM",
+          "removed": false,
+          "external_sport_event_id": "2:7534610",
+          "external_market_id": "174359241",
+          "outcomes": [
+            {
+              "id": "sr:outcome:1",
+              "type": "home",
+              "odds_decimal": "2.450",
+              "odds_american": "+145",
+              "odds_fraction": "29/20",
+              "open_odds_decimal": "2.350",
+              "open_odds_american": "+135",
+              "open_odds_fraction": "27/20",
+              "external_outcome_id": "603938428",
+              "removed": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
