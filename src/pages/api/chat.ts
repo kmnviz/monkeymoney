@@ -17,13 +17,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'POST') {
     const sportradarApiClient = new SportradarApiClient();
     const dailySchedules: TDailySchedule[] = await sportradarApiClient
-      .dailySchedules('2025-02-02');
+      .dailySchedules('2025-02-03');
     const filteredDailySchedules = filterDailySchedules(dailySchedules);
     console.log(`Starting with ${filteredDailySchedules.length} filtered daily schedules`);
 
     const eventsWithMarkets = [];
     for (let i = 0; i < filteredDailySchedules.length; i++) {
-      if (i !== 28) {
+      if (i !== 4) {
         continue;
       }
 

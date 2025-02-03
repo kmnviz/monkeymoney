@@ -1,0 +1,20 @@
+export type Competitor = {
+  "ball_possession": number, // 28,
+  "cards_given": number, // 0,
+  "corner_kicks": number, // 1,
+  "fouls": number, // 10,
+  "free_kicks": number, // 10,
+  "goal_kicks": number, // 11,
+  "injuries": number, // 3,
+  "offsides": number, // 1,
+  "red_cards": number, // 0,
+  "shots_blocked": number, // 0,
+  "shots_off_target": number, // 2,
+  "shots_on_target": number, // 5,
+  "shots_saved": number, // 6,
+  "shots_total": number, // 7,
+  "substitutions": number, // 5,
+  "throw_ins": number, // 10,
+  "yellow_cards": number, // 0,
+  "yellow_red_cards": number, // 0
+}
