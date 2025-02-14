@@ -1,6 +1,11 @@
-import TDailySchedule from '../types/DailySchedule';
-import TSportEventMarket from '../types/SportEventMarket';
-import TCompetitorSummary from '../types/CompetitorSummary';
+import Decimal from 'decimal.js';
+import { TDailySchedule } from '../types/sportradar/DailySchedule';
+import { TSportEventMarket } from '../types/sportradar/SportEventMarket';
+import { TCompetitorSummary } from '../types/sportradar/CompetitorSummary';
+import { TTeam } from '../types/sportmonks/Team';
+import { TOdd } from '../types/sportmonks/Odd';
+import sportmonksTypes from '../database/sportmonks/types.json';
+
 
 export const filterDailySchedules = (dailySchedules: TDailySchedule[]) => {
   const countries = [
@@ -105,5 +110,63 @@ export const filterCompetitorSummaries = (competitorSummaries: TCompetitorSummar
           };
         }),
       };
+    });
+}
+
+// --- SportMonks filter --- //
+
+export const filterTeams = (teams: TTeam[]) => {
+  return teams.map((team) => {
+    return {
+      id: team.id,
+      name: team.name,
+      type: team.type,
+      last_played_at: team.last_played_at,
+      meta: {
+        location: team.meta.location,
+        position: team.meta.position,
+      },
+    };
+  });
+}
+
+export const filterOdds = (odds: TOdd[], probability = '0') => {
+  return odds.map((odd) => {
+    const newOdd = {
+      label: odd.label,
+      value: odd.value,
+      market_description: odd.market_description,
+      probability: odd.probability,
+      dp3: odd.dp3,
+    };
+
+    if (odd.handicap) newOdd['handicap'] = odd.handicap;
+
+    return newOdd;
+  }).filter((odd) => {
+    const prob = odd.probability
+      .replace('%', '');
+
+    return Decimal(prob).gt(probability);
+  });
+}
+
+export const filterStatistics = (statistics: any[], seasonId: number) => {
+  const types = sportmonksTypes;
+
+  return statistics
+    .filter((stat) => stat.has_values && stat.season_id === seasonId)
+    .map((stat) => {
+      return {
+        season_id: stat.season_id,
+        details: stat.details.map((detail) => {
+          const type = types.find((t) => t.id === detail.type_id);
+
+          return {
+            type: type ? type.name : null,
+            value: detail.value,
+          }
+        }),
+      }
     });
 }
