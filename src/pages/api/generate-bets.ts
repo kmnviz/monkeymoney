@@ -111,7 +111,6 @@ const createBetSuggestionCompletion = async (content: object, probabilityFrom: s
 
         **Output Format (Strictly Follow This JSON Structure):**
         {
-          "prediction": "<Selected Bet Market>",
           "probability": "<Calculated Probability (%)>",
           "odd": "<Selected Odd>",
           "market_description": "<Brief Explanation of the Market>",
