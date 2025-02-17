@@ -214,7 +214,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             filterStatistics(fixtures[i].participants[1]['statistics'], fixtures[i].season_id);
 
           console.log(`fetched fixture ${i} participants statistics...`);
-          await pause(1500);
+          // await pause(1500);
 
           fixtures[i]['odds'] = await sportmonksApiClient.getOddsByFixtureIdAndBookmakerId(fixtures[i].id, req.body.bookmakerId);
           fixtures[i]['odds'] = filterOdds(fixtures[i]['odds'], req.body.probabilityFrom);
@@ -224,7 +224,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           fixtures[i]['completion'] = await createBetSuggestionCompletion(fixtures[i], req.body.probabilityFrom, req.body.oddFrom, temperature);
           console.log(`finished bet suggestion completion.`);
 
-          await pause(1500);
+          // await pause(1500);
         }
       }
       console.log(`enrich fixtures finished.`);

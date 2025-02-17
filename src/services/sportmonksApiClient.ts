@@ -50,7 +50,7 @@ class SportmonksApiClient {
         hasMore = response.data.pagination;
         currentPage += 1;
 
-        await pause(1500);
+        // await pause(1500);
       }
 
       return fixtures.flat();
