@@ -85,7 +85,7 @@ const createSelectFixturesCompletion = async (count: number, fixtures: any[]): P
   return (JSON.parse(completion.choices[0].message.content as string))?.selected_fixtures ?? [];
 }
 
-const createBetSuggestionCompletion = async (content: object, probabilityFrom: string = '0%', oddFrom: string = '0.00') => {
+const createBetSuggestionCompletion = async (content: object, probabilityFrom: string = '0%', oddFrom: string = '0.00', temperature: number = 0) => {
   const messages = [
     {
       role: 'system',
@@ -146,7 +146,7 @@ const createBetSuggestionCompletion = async (content: object, probabilityFrom: s
     model: 'gpt-4o',
     messages: messages,
     response_format: { type: 'json_object' },
-    temperature: 0,
+    temperature: temperature,
   } as any);
 
   return JSON.parse(completion.choices[0].message.content as string);
@@ -196,6 +196,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
       console.log(`filtered ${fixtures.length} fixtures.`);
 
+      const temperature: number = Number.isFinite(+req.body?.temperature)
+        ? +req.body.temperature
+        : 0;
       for (let i = 0; i < fixtures.length; i++) {
         if (fixtures[i].participants.length === 2) {
           fixtures[i].participants = filterTeams(fixtures[i].participants);
@@ -218,7 +221,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           console.log(`fetched fixture ${i} odds...`);
 
           console.log(`starting bet suggestion completion...`);
-          fixtures[i]['completion'] = await createBetSuggestionCompletion(fixtures[i], req.body.probabilityFrom, req.body.oddFrom);
+          fixtures[i]['completion'] = await createBetSuggestionCompletion(fixtures[i], req.body.probabilityFrom, req.body.oddFrom, temperature);
           console.log(`finished bet suggestion completion.`);
 
           await pause(1500);
