@@ -4,6 +4,10 @@ import { TSportEventMarket } from '../types/sportradar/SportEventMarket';
 
 class SportradarApiClient {
 
+  apiUrl: string;
+  apiKey: string;
+  headers: object;
+
   constructor() {
     this.apiUrl = process.env.SPORTRADAR_API_URL as string;
     this.apiKey = process.env.SPORTRADAR_API_KEY as string;

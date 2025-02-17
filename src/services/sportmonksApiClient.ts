@@ -9,6 +9,10 @@ import { pause, writeIntoFile } from '../utils';
 
 class SportmonksApiClient {
 
+  apiUrl: string;
+  apiKey: string;
+  headers: object;
+
   constructor() {
     this.apiUrl = process.env.SPORTMONKS_API_URL as string;
     this.apiKey = process.env.SPORTMONKS_API_KEY as string;
