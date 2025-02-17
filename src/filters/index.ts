@@ -130,7 +130,7 @@ export const filterTeams = (teams: TTeam[]) => {
   });
 }
 
-export const filterOdds = (odds: TOdd[], probability = '0') => {
+export const filterOdds = (odds: TOdd[], probability = '0%') => {
   return odds.map((odd) => {
     const newOdd = {
       label: odd.label,
@@ -147,7 +147,7 @@ export const filterOdds = (odds: TOdd[], probability = '0') => {
     const prob = odd.probability
       .replace('%', '');
 
-    return Decimal(prob).gt(probability);
+    return Decimal(prob).gt(probability.replace('%', ''));
   });
 }
 

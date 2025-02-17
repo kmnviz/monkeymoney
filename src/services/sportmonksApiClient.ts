@@ -41,7 +41,7 @@ class SportmonksApiClient {
             currentPage,
           );
 
-        fixtures.push(response.data.data);
+        if (response.data.data) fixtures.push(response.data.data);
         hasMore = response.data.pagination;
         currentPage += 1;
 
@@ -96,7 +96,7 @@ class SportmonksApiClient {
             currentPage,
           );
 
-        bookmakers.push(response.data.data);
+        if (response.data.data) bookmakers.push(response.data.data);
         hasMore = response.data.pagination;
         currentPage += 1;
 
@@ -124,7 +124,7 @@ class SportmonksApiClient {
             currentPage,
           );
 
-        types.push(response.data.data);
+        if (response.data.data) types.push(response.data.data);
         hasMore = response.data.pagination;
         currentPage += 1;
 
