@@ -27,6 +27,7 @@ class SportmonksApiClient {
       return response.data?.data;
     } catch (error) {
       console.log('error: ', error);
+      throw error;
     }
   }
 
@@ -55,6 +56,7 @@ class SportmonksApiClient {
       return fixtures.flat();
     } catch (error) {
       console.log('error: ', error);
+      throw error;
     }
   }
 
@@ -64,6 +66,7 @@ class SportmonksApiClient {
       return response.data?.data;
     } catch (error) {
       console.log('error: ', error);
+      throw error;
     }
   }
 
@@ -73,6 +76,7 @@ class SportmonksApiClient {
       return response.data?.data;
     } catch (error) {
       console.log('error: ', error);
+      throw error;
     }
   }
 
@@ -82,6 +86,7 @@ class SportmonksApiClient {
       return response.data?.data;
     } catch (error) {
       console.log('error: ', error);
+      throw error;
     }
   }
 
@@ -110,6 +115,7 @@ class SportmonksApiClient {
       return bookmakers.flat();
     } catch (error) {
       console.log('error: ', error);
+      throw error;
     }
   }
 
@@ -141,6 +147,7 @@ class SportmonksApiClient {
       return types.flat();
     } catch (error) {
       console.log('error: ', error);
+      throw error;
     }
   }
 
