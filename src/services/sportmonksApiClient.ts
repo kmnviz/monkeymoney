@@ -33,7 +33,7 @@ class SportmonksApiClient {
 
   async getFixturesByDate(dateYYYYMMDD: string): Promise<TFixture[]> {
     try {
-      const fixtures = [];
+      const fixtures: any[] | never = [];
 
       let hasMore = true;
       let currentPage = 1;
@@ -92,7 +92,7 @@ class SportmonksApiClient {
 
   async getAllBookmakers(): Promise<TBookmaker[]> {
     try {
-      const bookmakers = [];
+      const bookmakers: any[] | never = [];
 
       let hasMore = true;
       let currentPage = 1;
@@ -121,7 +121,7 @@ class SportmonksApiClient {
 
   async getAllTypes(): Promise<TType[]> {
     try {
-      const types = [];
+      const types: any[] | never = [];
 
       let hasMore = true;
       let currentPage = 1;
