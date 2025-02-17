@@ -1,4 +1,4 @@
-export type Competitor = {
+export type TStatisticsCompetitor = {
   "ball_possession": number, // 28,
   "cards_given": number, // 0,
   "corner_kicks": number, // 1,

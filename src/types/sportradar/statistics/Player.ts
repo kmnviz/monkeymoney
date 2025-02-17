@@ -1,4 +1,4 @@
-export type Player = {
+export type TStatisticsPlayer = {
   "assists": number, // 0,
   "corner_kicks": number, // 4,
   "goals_scored": number, // 0,
