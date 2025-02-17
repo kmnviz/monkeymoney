@@ -22,6 +22,7 @@ class SportradarApiClient {
       return response.data?.schedules;
     } catch (error) {
       console.log('error: ', error);
+      throw error;
     }
   }
 
@@ -32,6 +33,7 @@ class SportradarApiClient {
       return response.data?.markets;
     } catch (error) {
       console.log('error: ', error);
+      throw error;
     }
   }
 
@@ -42,6 +44,7 @@ class SportradarApiClient {
       return response.data?.summaries;
     } catch (error) {
       console.log('error: ', error);
+      throw error;
     }
   }
 
@@ -53,6 +56,7 @@ class SportradarApiClient {
       return response.data?.last_meetings;
     } catch (error) {
       console.log('error: ', error);
+      throw error;
     }
   }
 
