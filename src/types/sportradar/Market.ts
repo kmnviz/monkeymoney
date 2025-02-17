@@ -1,4 +1,4 @@
-import TBook from './Book';
+import { TBook } from './Book';
 
 export type Market = {
   "id": "sr:market:1",

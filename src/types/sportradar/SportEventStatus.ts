@@ -1,6 +1,6 @@
-import TPeriodScore from './PeriodScore';
-import TBallLocation from './BallLocation';
-import TMatchSituation from './MatchSituation';
+import { TPeriodScore } from './PeriodScore';
+import { TBallLocation } from './BallLocation';
+import { TMatchSituation } from './MatchSituation';
 
 export type SportEventStatus = {
   "status": string, // "closed",

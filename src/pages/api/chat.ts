@@ -10,9 +10,9 @@ import {
   filterCompetitorSummaries,
 } from '../../filters';
 import { pause } from '../../utils';
-import TDailySchedule from '../../types/sportradar/DailySchedule';
-import TSportEventMarket from '../../types/sportradar/SportEventMarket';
-import TCompetitorSummary from '../../types/sportradar/CompetitorSummary';
+import { TDailySchedule } from '../../types/sportradar/DailySchedule';
+import { TSportEventMarket } from '../../types/sportradar/SportEventMarket';
+import { TCompetitorSummary } from '../../types/sportradar/CompetitorSummary';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {

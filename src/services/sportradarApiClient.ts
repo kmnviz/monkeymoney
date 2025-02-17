@@ -1,6 +1,6 @@
 import axios from 'axios';
-import TDailySchedule from '../types/sportradar/DailySchedule';
-import TSportEventMarket from '../types/sportradar/SportEventMarket';
+import { TDailySchedule } from '../types/sportradar/DailySchedule';
+import { TSportEventMarket } from '../types/sportradar/SportEventMarket';
 
 class SportradarApiClient {
 

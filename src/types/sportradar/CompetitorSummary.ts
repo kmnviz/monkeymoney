@@ -1,4 +1,4 @@
-export type CompetitorSummary = {
+export type TCompetitorSummary = {
   "sport_event": {
     "id": string, // "sr:sport_event:53152529",
     "start_time": string, // "2025-01-29T20:00:00+00:00",

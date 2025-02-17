@@ -1,4 +1,4 @@
-export type Stage = {
+export type TStage = {
   "order": number, // 1,
   "type": string, // "league",
   "phase": string, // "regular season",

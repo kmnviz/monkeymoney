@@ -1,4 +1,4 @@
-export type Venue = {
+export type TVenue = {
   "id": string, // "sr:venue:981",
   "name": string, // "Estadio Ciudad de Lanus",
   "capacity": number, // 47027,

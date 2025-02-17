@@ -1,3 +1,3 @@
-export type Round = {
+export type TRound = {
   "number": number, // 3
 };

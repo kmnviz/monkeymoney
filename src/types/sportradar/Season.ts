@@ -1,4 +1,4 @@
-export type Season = {
+export type TSeason = {
   "id": string, // "sr:season:127421",
   "name": string, // "Liga Profesional 2025",
   "start_date": string, // "2025-01-23",

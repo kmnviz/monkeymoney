@@ -1,4 +1,4 @@
-import TStatisticsPlayer from './statistics/Player';
+import { TStatisticsPlayer } from './statistics/Player';
 
 export type Player = {
   "id": string, // "sr:player:17759",

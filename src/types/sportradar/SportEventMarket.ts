@@ -1,4 +1,4 @@
-export type SportEventMarket = {
+export type TSportEventMarket = {
   "id": string, // "sr:market:1",
   "name": string, // "1x2",
   "is_live": boolean, // false,

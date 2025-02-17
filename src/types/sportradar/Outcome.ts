@@ -1,4 +1,4 @@
-export type Outcome = {
+export type TOutcome = {
   "id": string, // "sr:outcome:1",
   "type": string, // "home",
   "odds_decimal": string, // "2.400",

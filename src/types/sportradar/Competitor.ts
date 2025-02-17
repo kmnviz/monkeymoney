@@ -1,5 +1,5 @@
-import TStatisticsCompetitor from './statistics/Competitor';
-import TStatisticsPlayer from './statistics/Player';
+import { TStatisticsCompetitor } from './statistics/Competitor';
+import { TStatisticsPlayer } from './statistics/Player';
 
 export type Competitor = {
   "id": string, // "sr:competitor:3218",

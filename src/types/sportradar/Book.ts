@@ -1,6 +1,6 @@
 import TOutcome from './Outcome';
 
-export type Book = {
+export type TBook = {
   "id": string, // "sr:book:17324",
   "name": string, // "MGM",
   "removed": boolean, // false,

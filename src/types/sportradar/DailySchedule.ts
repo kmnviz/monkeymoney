@@ -1,4 +1,4 @@
-export type DailySchedule = {
+export type TDailySchedule = {
   sport_event: {
     "id": string, // "sr:sport_event:56380079",
     "start_time": string, // "2025-02-01T00:00:00+00:00",
