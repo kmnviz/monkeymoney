@@ -6,7 +6,6 @@ import { TTeam } from '../types/sportmonks/Team';
 import { TOdd } from '../types/sportmonks/Odd';
 import sportmonksTypes from '../database/sportmonks/types.json';
 
-
 export const filterDailySchedules = (dailySchedules: TDailySchedule[]) => {
   const countries = [
     'England',
@@ -138,6 +137,7 @@ export const filterOdds = (odds: TOdd[], probability = '0%') => {
       market_description: odd.market_description,
       probability: odd.probability,
       dp3: odd.dp3,
+      total: odd.total,
     };
 
     if (odd.handicap) newOdd['handicap'] = odd.handicap;

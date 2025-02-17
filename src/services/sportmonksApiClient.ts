@@ -4,6 +4,7 @@ import { TLeague } from '../types/sportmonks/League';
 import { TOdd } from '../types/sportmonks/Odd';
 import { TBookmaker } from '../types/sportmonks/Bookmaker';
 import { TType } from '../types/sportmonks/Type';
+import { TMarket } from '../types/sportmonks/Market';
 import { ParticipantEnum } from '../enums/sportmonks';
 import { pause, writeIntoFile } from '../utils';
 
@@ -145,6 +146,38 @@ class SportmonksApiClient {
       console.log(`stored sportmonks/types.json file.`);
 
       return types.flat();
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
+  async getAllMarkets(): Promise<TMarket[]> {
+    try {
+      const markets: any[] | never = [];
+
+      let hasMore = true;
+      let currentPage = 1;
+      while (hasMore) {
+        const response = await this
+          .get(
+            `/v3/odds/markets`,
+            '',
+            '50',
+            currentPage,
+          );
+
+        if (response.data.data) markets.push(response.data.data);
+        hasMore = response.data.pagination;
+        currentPage += 1;
+
+        await pause(1500);
+      }
+
+      await writeIntoFile(markets.flat(), '/sportmonks/markets.json');
+      console.log(`stored sportmonks/markets.json file.`);
+
+      return markets.flat();
     } catch (error) {
       console.log('error: ', error);
       throw error;
