@@ -1,4 +1,4 @@
-import TOutcome from './Outcome';
+import { TOutcome } from './Outcome';
 
 export type TBook = {
   "id": string, // "sr:book:17324",
