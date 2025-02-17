@@ -176,11 +176,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
       const sportmonksApiClient = new SportmonksApiClient();
-      let fixtures = await sportmonksApiClient.getFixturesByDate(req.body.date);
-      console.log(`fetched ${fixtures.length} fixtures.`);
+      const totalFixtures = await sportmonksApiClient.getFixturesByDate(req.body.date);
+      console.log(`fetched ${totalFixtures.length} fixtures.`);
 
       console.log('starting fixtures selection completion...');
-      const selectedFixtures = await createSelectFixturesCompletion(req.body.suggestionsCount, fixtures);
+      const selectedFixtures = await createSelectFixturesCompletion(req.body.suggestionsCount, totalFixtures);
       if (!selectedFixtures || !selectedFixtures.length) {
         return res.status(400).json({
           message: `There are no selected fixtures`,
@@ -191,7 +191,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       console.log('finished fixtures selection completion.');
 
-      fixtures = fixtures.filter((fixture: TFixture) => {
+      const fixtures = totalFixtures.filter((fixture: TFixture) => {
         return selectedFixtures.map((sf: TSelectedFixture) => sf.fixture_id).includes(fixture.id.toString());
       });
       console.log(`filtered ${fixtures.length} fixtures.`);
@@ -231,6 +231,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       return res.status(200).json({
         data: {
+          total_fixtures_count: totalFixtures.length,
+          fixtures_count: fixtures.length,
           fixtures: fixtures,
         },
       });

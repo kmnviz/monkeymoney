@@ -151,6 +151,35 @@ class SportmonksApiClient {
     }
   }
 
+  async getPostMatchNews(): Promise<TType[]> {
+    try {
+      const news: any[] | never = [];
+
+      let hasMore = true;
+      let currentPage = 1;
+      while (hasMore) {
+        const response = await this
+          .get(
+            `/v3/football/news/post-match`,
+            '',
+            '50',
+            currentPage,
+          );
+
+        if (response.data.data) news.push(response.data.data);
+        hasMore = response.data.pagination;
+        currentPage += 1;
+
+        await pause(1500);
+      }
+
+      return news.flat();
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
   private get(path, include = '', perPage = '', page = 0) {
     const incl = include ? `&include=${include}` : '';
     const perp = perPage ? `&per_page=${perPage}` : '';
