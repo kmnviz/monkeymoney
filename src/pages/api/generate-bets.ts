@@ -235,7 +235,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         data: {
           total_fixtures_count: totalFixtures.length,
           fixtures_count: fixtures.length,
-          fixtures: fixtures,
+          completions: fixtures.map((fixture) => {
+            return {
+              name: fixture.name,
+              completion: fixture['completion'],
+            };
+          }),
+          fixtures: fixtures.map(({ completion, ...rest }: Omit<TFixture, any>) => {
+            return rest;
+          }),
         },
       });
     } catch (error) {
