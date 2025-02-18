@@ -143,7 +143,7 @@ export const filterOdds = (odds: TOdd[], probability = '0%') => {
         market_description: odd.market_description,
         probability: odd.probability,
         dp3: odd.dp3,
-        total: odd.total,
+        // total: odd.total,
       };
 
       if (odd.handicap) newOdd['handicap'] = odd.handicap;
