@@ -5,6 +5,7 @@ import { TCompetitorSummary } from '../types/sportradar/CompetitorSummary';
 import { TTeam } from '../types/sportmonks/Team';
 import { TOdd } from '../types/sportmonks/Odd';
 import sportmonksTypes from '../database/sportmonks/types.json';
+import sportmonksMarkets from '../database/sportmonks/markets.json';
 
 export const filterDailySchedules = (dailySchedules: TDailySchedule[]) => {
   const countries = [
@@ -130,25 +131,31 @@ export const filterTeams = (teams: TTeam[]) => {
 }
 
 export const filterOdds = (odds: TOdd[], probability = '0%') => {
-  return odds.map((odd) => {
-    const newOdd = {
-      label: odd.label,
-      value: odd.value,
-      market_description: odd.market_description,
-      probability: odd.probability,
-      dp3: odd.dp3,
-      total: odd.total,
-    };
+  const markets = sportmonksMarkets;
+  const marketsIds = markets.map((m) => m.id);
 
-    if (odd.handicap) newOdd['handicap'] = odd.handicap;
+  return odds
+    .filter((odd) => marketsIds.includes(odd.market_id))
+    .map((odd) => {
+      const newOdd = {
+        label: odd.label,
+        value: odd.value,
+        market_description: odd.market_description,
+        probability: odd.probability,
+        dp3: odd.dp3,
+        total: odd.total,
+      };
 
-    return newOdd;
-  }).filter((odd) => {
-    const prob = odd.probability
-      .replace('%', '');
+      if (odd.handicap) newOdd['handicap'] = odd.handicap;
 
-    return Decimal(prob).gt(probability.replace('%', ''));
-  });
+      return newOdd;
+    })
+    .filter((odd) => {
+      const prob = odd.probability
+        .replace('%', '');
+
+      return Decimal(prob).gt(probability.replace('%', ''));
+    });
 }
 
 export const filterStatistics = (statistics: any[], seasonId: number) => {

@@ -77,13 +77,6 @@
     "has_winning_calculations": false
   },
   {
-    "id": 12,
-    "legacy_id": 28085,
-    "name": "Goals Odd/Even",
-    "developer_name": "GOALS_ODD_EVEN",
-    "has_winning_calculations": false
-  },
-  {
     "id": 13,
     "legacy_id": 976316,
     "name": "Result / Both Teams To Score",
@@ -273,13 +266,6 @@
     "has_winning_calculations": true
   },
   {
-    "id": 40,
-    "legacy_id": 976193,
-    "name": "To Win Both Halves",
-    "developer_name": "TO_WIN_BOTH_HALVES",
-    "has_winning_calculations": false
-  },
-  {
     "id": 41,
     "legacy_id": 14234147,
     "name": "Home Team Win Both Halves",
@@ -287,60 +273,11 @@
     "has_winning_calculations": true
   },
   {
-    "id": 42,
-    "legacy_id": 136706055,
-    "name": "Home Odd/Even",
-    "developer_name": "HOME_ODD_EVEN",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 43,
-    "legacy_id": 136706056,
-    "name": "Away Odd/Even",
-    "developer_name": "AWAY_ODD_EVEN",
-    "has_winning_calculations": false
-  },
-  {
     "id": 44,
     "legacy_id": 975930,
     "name": "Odd/Even",
     "developer_name": "ODD_EVEN",
     "has_winning_calculations": true
-  },
-  {
-    "id": 45,
-    "legacy_id": 975932,
-    "name": "Odd/Even 1st Half",
-    "developer_name": "ODD_EVEN_1ST_HALF",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 46,
-    "legacy_id": 976236,
-    "name": "Win To Nil",
-    "developer_name": "WIN_TO_NIL",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 47,
-    "legacy_id": 975926,
-    "name": "Double Chance - 1st Half",
-    "developer_name": "DOUBLE_CHANGE_1ST_HALF",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 48,
-    "legacy_id": 14234105,
-    "name": "Double Chance - 2nd Half",
-    "developer_name": "DOUBLE_CHANGE_2ND_HALF",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 49,
-    "legacy_id": 975905,
-    "name": "HT/FT Double",
-    "developer_name": "HT_FT_DOUBLE",
-    "has_winning_calculations": false
   },
   {
     "id": 50,
@@ -441,20 +378,6 @@
     "has_winning_calculations": false
   },
   {
-    "id": 64,
-    "legacy_id": 136706545,
-    "name": "Player to be booked",
-    "developer_name": "PLAYER_TO_BE_BOOKED",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 65,
-    "legacy_id": 1265635769,
-    "name": "1st Player Booked",
-    "developer_name": "1ST_PLAYER_BOOKED",
-    "has_winning_calculations": false
-  },
-  {
     "id": 66,
     "legacy_id": 136706546,
     "name": "Player to be Sent Off",
@@ -518,13 +441,6 @@
     "has_winning_calculations": false
   },
   {
-    "id": 75,
-    "legacy_id": 136703850,
-    "name": "Corners Race",
-    "developer_name": "CORNERS_RACE",
-    "has_winning_calculations": false
-  },
-  {
     "id": 76,
     "legacy_id": 1265634205,
     "name": "1st Match Corner",
@@ -539,24 +455,10 @@
     "has_winning_calculations": false
   },
   {
-    "id": 78,
-    "legacy_id": 1265634208,
-    "name": "Multicorners",
-    "developer_name": "MULTICORNERS",
-    "has_winning_calculations": false
-  },
-  {
     "id": 79,
     "legacy_id": 1256989871,
     "name": "First 10 Minutes Corners",
     "developer_name": "FIRST_10_MINUTES_CORNERS",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 80,
-    "legacy_id": 12,
-    "name": "Goals Over/Under",
-    "developer_name": "GOALS_OVER_UNDER",
     "has_winning_calculations": false
   },
   {
@@ -616,13 +518,6 @@
     "has_winning_calculations": false
   },
   {
-    "id": 89,
-    "legacy_id": null,
-    "name": "Full Time Result – Enhanced Prices",
-    "developer_name": "FULL_TIME_RESULT_ENHANCHED_PRICES",
-    "has_winning_calculations": false
-  },
-  {
     "id": 90,
     "legacy_id": 1265634160,
     "name": "Goalscorers",
@@ -658,13 +553,6 @@
     "has_winning_calculations": false
   },
   {
-    "id": 95,
-    "legacy_id": null,
-    "name": "1st Half Goals Odd/Even",
-    "developer_name": "1ST_HALF_GOALS_ODD_EVEN",
-    "has_winning_calculations": false
-  },
-  {
     "id": 96,
     "legacy_id": 136830669,
     "name": "Alternative 1st Half Handicap Result",
@@ -683,20 +571,6 @@
     "legacy_id": 137918023,
     "name": "Teams to Score",
     "developer_name": "TEAMS_TO_SCORE",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 99,
-    "legacy_id": 137918029,
-    "name": "Time of 1st Team Goal",
-    "developer_name": "TIME_OF_1ST_TEAM_GOAL",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 100,
-    "legacy_id": 1265634161,
-    "name": "Multi Scorers",
-    "developer_name": "MULTI_SCORERS",
     "has_winning_calculations": false
   },
   {
@@ -791,20 +665,6 @@
     "has_winning_calculations": false
   },
   {
-    "id": 126,
-    "legacy_id": 136830688,
-    "name": "Winning Margin",
-    "developer_name": "WINNING_MARGIN",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 127,
-    "legacy_id": 1265635824,
-    "name": "Specials",
-    "developer_name": "SPECIALS",
-    "has_winning_calculations": false
-  },
-  {
     "id": 128,
     "legacy_id": 136830811,
     "name": "Own Goal",
@@ -826,20 +686,6 @@
     "has_winning_calculations": false
   },
   {
-    "id": 249,
-    "legacy_id": null,
-    "name": "Total Goals - 3 way",
-    "developer_name": "TOTAL_GOALS_3_WAY",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 250,
-    "legacy_id": 137918025,
-    "name": "First Goal Method",
-    "developer_name": "FIRST_GOAL_METHOD",
-    "has_winning_calculations": false
-  },
-  {
     "id": 251,
     "legacy_id": null,
     "name": "1st Goal Scorer",
@@ -858,13 +704,6 @@
     "legacy_id": null,
     "name": "To Score 3 or More Goals",
     "developer_name": "TO_SCORE_3_OR_MORE_GOALS",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 254,
-    "legacy_id": null,
-    "name": "3 Way Total Corners",
-    "developer_name": "THREE_WAY_TOTAL_CORNERS",
     "has_winning_calculations": false
   },
   {
@@ -952,38 +791,10 @@
     "has_winning_calculations": false
   },
   {
-    "id": 267,
-    "legacy_id": 136704525,
-    "name": "Player Shots On Target",
-    "developer_name": "PLAYER_TOTAL_SHOTS_ON_TARGET",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 268,
-    "legacy_id": 136704526,
-    "name": "Player Shots",
-    "developer_name": "PLAYER_TOTAL_SHOTS",
-    "has_winning_calculations": false
-  },
-  {
     "id": 269,
     "legacy_id": 977179,
     "name": "Corners 1X2",
     "developer_name": "CORNERS_1X2",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 270,
-    "legacy_id": 137918032,
-    "name": "To Score A Penalty",
-    "developer_name": "TO_SCORE_A_PENALTY",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 271,
-    "legacy_id": 137918038,
-    "name": "To Miss a Penalty",
-    "developer_name": "TO_MISS_A_PENALTY",
     "has_winning_calculations": false
   },
   {
@@ -1007,13 +818,7 @@
     "developer_name": "BOTH_TEAMS_TO_RECEIVE_A_CARD",
     "has_winning_calculations": false
   },
-  {
-    "id": 275,
-    "legacy_id": 1265634170,
-    "name": "Team Perfomances",
-    "developer_name": "TEAM_PERFORMANCES",
-    "has_winning_calculations": false
-  },
+
   {
     "id": 276,
     "legacy_id": 1265635821,
@@ -1092,27 +897,6 @@
     "has_winning_calculations": false
   },
   {
-    "id": 287,
-    "legacy_id": 1265634212,
-    "name": "Player Tackles",
-    "developer_name": "PLAYER_TOTAL_TACKLES",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 288,
-    "legacy_id": 136704528,
-    "name": "Player Assists",
-    "developer_name": "PLAYER_TOTAL_ASSISTS",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 290,
-    "legacy_id": 1265635681,
-    "name": "Player Passes",
-    "developer_name": "PLAYER_TOTAL_PASSES",
-    "has_winning_calculations": false
-  },
-  {
     "id": 291,
     "legacy_id": 136704529,
     "name": "Match Shots on Target",
@@ -1169,38 +953,10 @@
     "has_winning_calculations": false
   },
   {
-    "id": 302,
-    "legacy_id": null,
-    "name": "Corners Over / Under",
-    "developer_name": "CORNERS_OVER_UNDER",
-    "has_winning_calculations": false
-  },
-  {
     "id": 303,
     "legacy_id": null,
     "name": "2nd Half Asian Handicap",
     "developer_name": "2ND_HALF_ASIAN_HANDICAP",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 304,
-    "legacy_id": null,
-    "name": "Odd/Even 2nd Half",
-    "developer_name": "ODD_EVEN_2ND_HALF",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 305,
-    "legacy_id": null,
-    "name": "Draw No Bet 1st Half",
-    "developer_name": "DRAW_NO_BET_1ST_HALF",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 306,
-    "legacy_id": null,
-    "name": "Draw No Bet 2nd Half",
-    "developer_name": "DRAW_NO_BET_2ND_HALF",
     "has_winning_calculations": false
   },
   {
@@ -1222,27 +978,6 @@
     "legacy_id": null,
     "name": "Will There Be Extra Time",
     "developer_name": "WILL_THERE_BE_EXTRA_TIME",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 320,
-    "legacy_id": null,
-    "name": "To Progress",
-    "developer_name": "TO_PROGRESS",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 322,
-    "legacy_id": null,
-    "name": "Odd/Even Corners",
-    "developer_name": "ODD_EVEN_CORNERS",
-    "has_winning_calculations": false
-  },
-  {
-    "id": 323,
-    "legacy_id": null,
-    "name": "Odd/Even Corners 1st Half",
-    "developer_name": "ODD_EVEN_CORNERS_1ST_HALF",
     "has_winning_calculations": false
   },
   {

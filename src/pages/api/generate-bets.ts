@@ -111,12 +111,11 @@ const createBetSuggestionCompletion = async (content: object, probabilityFrom: s
 
         **Output Format (Strictly Follow This JSON Structure):**
         {
-          "bet_type": "<Bet Selection Name>",
+          "bet": "<Bet Selection>",
           "probability": "<Calculated Probability (%)>",
           "odd": "<Selected Odd>",
           "market_description": "<Brief Explanation of the Market>",
-          "reasoning": "<Justification based on the provided statistics>",
-          "final": <Human Readable Bet (examples: Final result 2:1, Roma wins | Under 2.5 goals 2nd half, etc)
+          "reasoning": "<Justification based on the provided statistics>"
         }
 
         **⚠️ CRITICAL RULES for the Prediction:**
@@ -124,8 +123,7 @@ const createBetSuggestionCompletion = async (content: object, probabilityFrom: s
         - The **probability of success MUST be at least ${probabilityFrom}**.
         - The **probability MUST be calculated** based on the provided statistics, NOT assumed.
         - The prediction **MUST be based on available data**—DO NOT make assumptions.
-        - The bet_type **MUST be the Bet Selection of the bet**.
-        - The final **MUST be a human readable full bet information**.
+        - The bet **MUST be the Bet Selection of the bet**.
 
         **Validation Rules (Must Be Enforced Before Returning a Prediction):**
         - If no valid bet meets the criteria (**odd >= ${oddFrom} and probability >= ${probabilityFrom}**), return:
