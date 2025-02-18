@@ -7,6 +7,9 @@ import { TType } from '../types/sportmonks/Type';
 import { TMarket } from '../types/sportmonks/Market';
 import { ParticipantEnum } from '../enums/sportmonks';
 import { pause, writeIntoFile } from '../utils';
+import typesJson from '../database/sportmonks/types.json';
+import marketsJson from '../database/sportmonks/markets.json';
+import bookmakersJson from '../database/sportmonks/bookmakers.json';
 
 class SportmonksApiClient {
 
@@ -92,6 +95,10 @@ class SportmonksApiClient {
   }
 
   async getAllBookmakers(): Promise<TBookmaker[]> {
+    if (bookmakersJson.length > 0) {
+      return bookmakersJson;
+    }
+
     try {
       const bookmakers: any[] | never = [];
 
@@ -113,6 +120,9 @@ class SportmonksApiClient {
         await pause(1500);
       }
 
+      await writeIntoFile(bookmakers.flat(), '/sportmonks/bookmakers.json');
+      console.log(`stored sportmonks/bookmakers.json file.`);
+
       return bookmakers.flat();
     } catch (error) {
       console.log('error: ', error);
@@ -121,6 +131,10 @@ class SportmonksApiClient {
   }
 
   async getAllTypes(): Promise<TType[]> {
+    if (typesJson.length > 0) {
+      return typesJson;
+    }
+
     try {
       const types: any[] | never = [];
 
@@ -153,6 +167,10 @@ class SportmonksApiClient {
   }
 
   async getAllMarkets(): Promise<TMarket[]> {
+    if (marketsJson.length > 0) {
+      return marketsJson;
+    }
+
     try {
       const markets: any[] | never = [];
 
