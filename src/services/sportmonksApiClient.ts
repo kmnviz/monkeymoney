@@ -96,7 +96,7 @@ class SportmonksApiClient {
 
   async getAllBookmakers(): Promise<TBookmaker[]> {
     if (bookmakersJson.length > 0) {
-      return bookmakersJson;
+      return bookmakersJson as TBookmaker[];
     }
 
     try {
@@ -132,7 +132,7 @@ class SportmonksApiClient {
 
   async getAllTypes(): Promise<TType[]> {
     if (typesJson.length > 0) {
-      return typesJson;
+      return typesJson as TType[];
     }
 
     try {
@@ -168,7 +168,7 @@ class SportmonksApiClient {
 
   async getAllMarkets(): Promise<TMarket[]> {
     if (marketsJson.length > 0) {
-      return marketsJson;
+      return marketsJson as TMarket[];
     }
 
     try {
