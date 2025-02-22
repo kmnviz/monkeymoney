@@ -144,7 +144,7 @@ const createBetSuggestionCompletion = async (content: object, probabilityFrom: s
     },
     {
       role: "assistant",
-      content: JSON.stringify(content),
+      content: JSON.stringify(lContent),
     },
   ];
 
