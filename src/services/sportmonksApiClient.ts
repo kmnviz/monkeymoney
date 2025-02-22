@@ -5,6 +5,7 @@ import { TOdd } from '../types/sportmonks/Odd';
 import { TBookmaker } from '../types/sportmonks/Bookmaker';
 import { TType } from '../types/sportmonks/Type';
 import { TMarket } from '../types/sportmonks/Market';
+import { TSquad } from '../types/sportmonks/Squad';
 import { ParticipantEnum } from '../enums/sportmonks';
 import { pause, writeIntoFile } from '../utils';
 import typesJson from '../database/sportmonks/types.json';
@@ -64,9 +65,58 @@ class SportmonksApiClient {
     }
   }
 
+  async getFixturesByHeadToHead(teamAId: number, teamBId: number): Promise<TFixture[]> {
+    try {
+      const fixtures: any[] | never = [];
+
+      let hasMore = true;
+      let currentPage = 1;
+      while (hasMore) {
+        const response = await this
+          .get(
+            `/v3/football/fixtures/head-to-head/${teamAId}/${teamBId}`,
+            '',
+            '50',
+            currentPage,
+          );
+
+        if (response.data.data) fixtures.push(response.data.data);
+        hasMore = response.data.pagination;
+        currentPage += 1;
+
+        // await pause(1500);
+      }
+
+      return fixtures.flat();
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
   async getSeasonStatisticsByParticipant(participant: ParticipantEnum, id: number) {
     try {
       const response = await this.get(`/v3/football/statistics/seasons/${participant}/${id}`);
+      return response.data?.data;
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
+  async getTeamById(teamId: number) {
+    try {
+      const response = await this.get(`/v3/football/teams/${teamId}`);
+      return response.data?.data;
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
+  async getTeamSquadByTeamId(teamId: number): Promise<TSquad[]> {
+    try {
+      const response = await this.get(`/v3/football/squads/teams/${teamId}`, 'player');
       return response.data?.data;
     } catch (error) {
       console.log('error: ', error);

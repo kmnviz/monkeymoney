@@ -86,6 +86,10 @@ const createSelectFixturesCompletion = async (count: number, fixtures: any[]): P
 }
 
 const createBetSuggestionCompletion = async (content: object, probabilityFrom: string = '0%', oddFrom: string = '0.00', temperature: number = 0) => {
+  // Remove probabilities from the content to avoid bias
+  const lContent = { ...content };
+  lContent['odds'] = lContent['odds'].map(({ probability, ...rest }) => rest);
+
   const messages = [
     {
       role: 'system',
@@ -214,6 +218,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             filterStatistics(fixtures[i].participants[0]['statistics'], fixtures[i].season_id);
           fixtures[i].participants[1]['statistics'] =
             filterStatistics(fixtures[i].participants[1]['statistics'], fixtures[i].season_id);
+
+          fixtures[i]['head_to_head'] = await sportmonksApiClient
+            .getFixturesByHeadToHead(fixtures[i].participants[0].id, fixtures[i].participants[1].id);
 
           console.log(`fetched fixture ${i} participants statistics...`);
           // await pause(1500);

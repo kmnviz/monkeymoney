@@ -4,6 +4,7 @@ import { TSportEventMarket } from '../types/sportradar/SportEventMarket';
 import { TCompetitorSummary } from '../types/sportradar/CompetitorSummary';
 import { TTeam } from '../types/sportmonks/Team';
 import { TOdd } from '../types/sportmonks/Odd';
+import { TSquad } from '../types/sportmonks/Squad';
 import sportmonksTypes from '../database/sportmonks/types.json';
 import sportmonksMarkets from '../database/sportmonks/markets.json';
 
@@ -146,6 +147,7 @@ export const filterOdds = (odds: TOdd[], probability = '0%') => {
       };
 
       if (odd.handicap) newOdd['handicap'] = odd.handicap;
+      if (odd.total) newOdd['total'] = odd.total;
 
       return newOdd;
     })
@@ -174,5 +176,19 @@ export const filterStatistics = (statistics: any[], seasonId: number) => {
           }
         }),
       }
+    });
+}
+
+export const filterSquad = (squad: TSquad[]) => {
+  return squad
+    .map((sq: TSquad) => {
+      return {
+        squad_id: sq.id,
+        player_id: sq.player.id,
+        name: sq.player.name,
+        height: sq.player.height,
+        weight: sq.player.weight,
+        date_of_birth: sq.player.date_of_birth,
+      };
     });
 }

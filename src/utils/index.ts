@@ -1,4 +1,4 @@
-import { writeFileSync } from 'fs';
+import { writeFileSync, readFileSync } from 'fs';
 import path from 'path';
 
 export const pause = async (ms) => {
@@ -11,6 +11,15 @@ export const writeIntoFile = async (data: object, filepath: string) => {
     const filePath = path.resolve(process.cwd(), `src/database${filepath}`);
     writeFileSync(filePath, dataJson, 'utf-8');
     return true;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const readFromFile = async (filepath: string) => {
+  try {
+    const filePath = path.resolve(process.cwd(), `src/prompts${filepath}`);
+    return readFileSync(filePath, 'utf8');
   } catch (error) {
     throw error;
   }
