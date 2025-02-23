@@ -36,6 +36,16 @@ class SportmonksApiClient {
     }
   }
 
+  async getFixtureById(fixtureId: number) {
+    try {
+      const response = await this.get(`/v3/football/fixtures/${fixtureId}`, 'scores;participants');
+      return response.data?.data;
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
   async getFixturesByDate(dateYYYYMMDD: string): Promise<TFixture[]> {
     try {
       const fixtures: any[] | never = [];

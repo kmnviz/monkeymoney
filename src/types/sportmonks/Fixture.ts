@@ -1,3 +1,5 @@
+import {TScore} from "./Score";
+
 export type TFixture = {
   "id": number, // 19146700,
   "sport_id": number, // 1,
@@ -20,4 +22,5 @@ export type TFixture = {
   "has_premium_odds": boolean, // true,
   "starting_at_timestamp": number, // 1722780000
   "participants"?: any[],
+  "scores"?: TScore[]
 }
