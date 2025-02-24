@@ -36,7 +36,7 @@ class SportmonksApiClient {
     }
   }
 
-  async getFixtureById(fixtureId: number) {
+  async getFixtureById(fixtureId: number): Promise<TFixture> {
     try {
       const response = await this.get(`/v3/football/fixtures/${fixtureId}`, 'scores;participants');
       return response.data?.data;

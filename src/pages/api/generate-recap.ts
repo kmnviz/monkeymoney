@@ -38,33 +38,50 @@ const generateMatchRecap = async (fixtureData: any) => {
 
 const state_finished = 5;
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST' || !req.body.fixtureId) {
-    return res.status(400).json({ message: 'Invalid request. Provide a fixtureId.' });
-  }
-
-  try {
-    const sportmonksApiClient = new SportmonksApiClient();
-      const fixture: TFixture = await sportmonksApiClient.getFixtureById(req.body.fixtureId);
-
-    if (!fixture || fixture.state_id !== state_finished) {
-      return res.status(404).json({ message: 'Fixture not found or not completed yet.' });
+  if (req.method === 'POST') {
+    if (
+      !req.body
+      || !('fixtureId' in req.body)
+    ) {
+      return res.status(422).json({
+        message: 'There are required fields',
+        fields: {
+          fixtureId: 'X',
+        },
+      });
     }
 
-    const matchDetails = {
-      home_team: fixture.participants[0],
-      away_team: fixture.participants[1],
-      scores: fixture.scores,
-      summary: fixture.result_info || 'No detailed match summary available.',
-    };
+    try {
+      const sportmonksApiClient = new SportmonksApiClient();
+      const fixture: TFixture = await sportmonksApiClient.getFixtureById(req.body.fixtureId);
 
-    // const recap = await generateMatchRecap(matchDetails);
+      if (!fixture || fixture.state_id !== state_finished) {
+        return res.status(404).json({ message: 'Fixture not found or not completed yet.' });
+      }
 
-    return res.status(200).json({
-      fixture_id: fixture.id,
-      // recap,
-    });
-  } catch (error) {
-    console.error('Error:', error);
-    return res.status(500).json({ message: 'Internal Server Error', error: error.message });
+      const matchDetails = {
+        home_team: fixture.participants[0],
+        away_team: fixture.participants[1],
+        scores: fixture.scores,
+        summary: fixture.result_info || 'No detailed match summary available.',
+      };
+
+      const recap = await generateMatchRecap(matchDetails);
+
+      return res.status(200).json({
+        data: {
+          fixture_id: fixture.id,
+          recap: recap,
+        }
+      });
+    } catch (error) {
+      console.log('error: ', error);
+      return res.status(500).json({
+        message: error.message,
+      });
+    }
+  } else {
+    return res.status(405).json({ message: 'Method Not Allowed' });
   }
+
 }
