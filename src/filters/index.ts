@@ -208,22 +208,22 @@ export const filterStatistics = (statistics: any[], seasonId: number) => {
     .flat();
 }
 
-export const filterSquad = (squad: TSquad[]) => {
-  const types = sportmonksTypes;
-
-  return squad
-    .map((sq: TSquad) => {
-      return {
-        squad_id: sq.id,
-        player_id: sq.player.id,
-        name: sq.player.name,
-        height: sq.player.height,
-        weight: sq.player.weight,
-        date_of_birth: sq.player.date_of_birth,
-        position: types.find((type) => type.id === sq.position_id).name,
-      };
-    });
-}
+// export const filterSquad = (squad: TSquad[]) => {
+//   const types = sportmonksTypes;
+//
+//   return squad
+//     .map((sq: TSquad) => {
+//       return {
+//         squad_id: sq.id,
+//         player_id: sq.player.id,
+//         name: sq.player.name,
+//         height: sq.player.height,
+//         weight: sq.player.weight,
+//         date_of_birth: sq.player.date_of_birth,
+//         position: types.find((type) => type.id === sq.position_id).name,
+//       };
+//     });
+// }
 
 export const filterPlayerStatistics = (statistics: any[], seasonId: number) => {
   const types = sportmonksTypes;
