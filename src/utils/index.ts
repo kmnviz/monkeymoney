@@ -1,5 +1,10 @@
 import { writeFileSync, readFileSync } from 'fs';
 import path from 'path';
+import sportmonksTypes from '../database/sportmonks/types.json';
+import sportmonksMarkets from '../database/sportmonks/markets.json';
+import sportmonksBookmakers from '../database/sportmonks/bookmakers.json';
+import sportmonksLeagues from '../database/sportmonks/leagues.json';
+import sportmonksSeasons from '../database/sportmonks/seasons.json';
 
 export const pause = async (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -23,4 +28,19 @@ export const readFromFile = async (filepath: string) => {
   } catch (error) {
     throw error;
   }
+}
+
+export const leagueNameById = (leagueId: number): string => {
+  const league = sportmonksLeagues.find((lg) => lg.id === leagueId);
+  return league ? league.name : '';
+}
+
+export const seasonNameById = (seasonId: number): string => {
+  const season = sportmonksLeagues.find((ss) => ss.id === seasonId);
+  return season ? season.name : '';
+}
+
+export const positionNameById = (positionId: number): string => {
+  const position = sportmonksTypes.find((tp) => tp.id === positionId);
+  return position ? position.name : '';
 }

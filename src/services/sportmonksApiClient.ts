@@ -1,16 +1,22 @@
 import axios from 'axios';
-import { TFixture } from '../types/sportmonks/Fixture';
-import { TLeague } from '../types/sportmonks/League';
-import { TOdd } from '../types/sportmonks/Odd';
-import { TBookmaker } from '../types/sportmonks/Bookmaker';
-import { TType } from '../types/sportmonks/Type';
-import { TMarket } from '../types/sportmonks/Market';
-import { TSquad } from '../types/sportmonks/Squad';
-import { ParticipantEnum } from '../enums/sportmonks';
-import { pause, writeIntoFile } from '../utils';
+import {TFixture} from '../types/sportmonks/Fixture';
+import {TLeague} from '../types/sportmonks/League';
+import {TOdd} from '../types/sportmonks/Odd';
+import {TBookmaker} from '../types/sportmonks/Bookmaker';
+import {TType} from '../types/sportmonks/Type';
+import {TMarket} from '../types/sportmonks/Market';
+import {TSquad} from '../types/sportmonks/Squad';
+import {TSeason} from '../types/sportmonks/Seaason';
+import {TSchedule} from '../types/sportmonks/Schedule';
+import {TStanding} from '../types/sportmonks/Standing';
+import {TRound} from '../types/sportmonks/Round';
+import {ParticipantEnum} from '../enums/sportmonks';
+import {pause, writeIntoFile} from '../utils';
 import typesJson from '../database/sportmonks/types.json';
 import marketsJson from '../database/sportmonks/markets.json';
 import bookmakersJson from '../database/sportmonks/bookmakers.json';
+import leaguesJson from '../database/sportmonks/leagues.json';
+import seasonsJson from '../database/sportmonks/seasons.json';
 
 class SportmonksApiClient {
 
@@ -27,9 +33,107 @@ class SportmonksApiClient {
   }
 
   async getAllLeagues(): Promise<TLeague[]> {
+    if (leaguesJson.length > 0) {
+      return leaguesJson as TLeague[];
+    }
+
     try {
-      const response = await this.get(`/v3/football/leagues`);
-      return response.data?.data;
+      const leagues: any[] | never = [];
+
+      let hasMore = true;
+      let currentPage = 1;
+      while (hasMore) {
+        const response = await this
+          .get(
+            `/v3/football/leagues`,
+            '',
+            '50',
+            currentPage,
+          );
+
+        if (response.data.data) leagues.push(response.data.data);
+        hasMore = response.data.pagination;
+        currentPage += 1;
+
+        // await pause(1500);
+      }
+
+      await writeIntoFile(leagues.flat(), '/sportmonks/leagues.json');
+      console.log(`stored sportmonks/leagues.json file.`);
+
+      return leagues.flat();
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
+  async getAllSeasons(): Promise<TSeason[]> {
+    if (seasonsJson.length > 0) {
+      return seasonsJson as TSeason[];
+    }
+
+    try {
+      const seasons: any[] | never = [];
+
+      let hasMore = true;
+      let currentPage = 1;
+      while (hasMore) {
+        const response = await this
+          .get(
+            `/v3/football/seasons`,
+            '',
+            '50',
+            currentPage,
+          );
+
+        if (response.data.data) seasons.push(response.data.data);
+        hasMore = response.data.pagination;
+        currentPage += 1;
+
+        await pause(1500);
+      }
+
+      await writeIntoFile(seasons.flat(), '/sportmonks/seasons.json');
+      console.log(`stored sportmonks/seasons.json file.`);
+
+      return seasons.flat();
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
+  async getAllRounds(): Promise<TRound[]> {
+    // if (seasonsJson.length > 0) {
+    //   return seasonsJson as TSeason[];
+    // }
+
+    try {
+      const rounds: any[] | never = [];
+
+      let hasMore = true;
+      let currentPage = 1;
+      while (hasMore) {
+        const response = await this
+          .get(
+            `/v3/football/rounds`,
+            '',
+            '50',
+            currentPage,
+          );
+
+        if (response.data.data) rounds.push(response.data.data);
+        hasMore = response.data.pagination;
+        currentPage += 1;
+
+        await pause(1500);
+      }
+
+      await writeIntoFile(rounds.flat(), '/sportmonks/rounds.json');
+      console.log(`stored sportmonks/rounds.json file.`);
+
+      return rounds.flat();
     } catch (error) {
       console.log('error: ', error);
       throw error;
@@ -104,6 +208,26 @@ class SportmonksApiClient {
     }
   }
 
+  async getSchedulesByTeamId(teamId: number): Promise<TSchedule[]> {
+    try {
+      const response = await this.get(`/v3/football/schedules/teams/${teamId}`);
+      return response.data?.data;
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
+  async getSchedulesBySeasonIdAndTeamId(seasonId: number, teamId: number): Promise<TSchedule[]> {
+    try {
+      const response = await this.get(`/v3/football/schedules/seasons/${seasonId}/teams/${teamId}`);
+      return response.data?.data;
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
   async getSeasonStatisticsByParticipant(participant: ParticipantEnum, id: number) {
     try {
       const response = await this.get(`/v3/football/statistics/seasons/${participant}/${id}`);
@@ -116,7 +240,27 @@ class SportmonksApiClient {
 
   async getTeamById(teamId: number) {
     try {
-      const response = await this.get(`/v3/football/teams/${teamId}`);
+      const response = await this.get(`/v3/football/teams/${teamId}`, 'activeSeasons;players;coaches');
+      return response.data?.data;
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
+  async getPlayerById(playerId: number) {
+    try {
+      const response = await this.get(`/v3/football/players/${playerId}`, '');
+      return response.data?.data;
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
+  async getCoachById(coachId: number) {
+    try {
+      const response = await this.get(`/v3/football/coaches/${coachId}`, '');
       return response.data?.data;
     } catch (error) {
       console.log('error: ', error);
@@ -137,6 +281,16 @@ class SportmonksApiClient {
   async getOddsByFixtureId(fixtureId: number): Promise<TOdd[]> {
     try {
       const response = await this.get(`/v3/football/odds/pre-match/fixtures/${fixtureId}`);
+      return response.data?.data;
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
+  async getStandingsBySeasonId(seasonId: number): Promise<TStanding[]> {
+    try {
+      const response = await this.get(`/v3/football/standings/seasons/${seasonId}`);
       return response.data?.data;
     } catch (error) {
       console.log('error: ', error);

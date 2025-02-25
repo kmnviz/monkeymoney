@@ -160,10 +160,33 @@ export const filterOdds = (odds: TOdd[], probability = '0%') => {
 }
 
 export const filterStatistics = (statistics: any[], seasonId: number) => {
+  // const types = sportmonksTypes;
+  //
+  // return statistics
+  //   .filter((stat) => stat.has_values && stat.season_id === seasonId)
+  //   .map((stat) => {
+  //     return {
+  //       season_id: stat.season_id,
+  //       details: stat.details.map((detail) => {
+  //         const type = types.find((t) => t.id === detail.type_id);
+  //
+  //         return {
+  //           type: type ? type.name : null,
+  //           value: detail.value,
+  //         };
+  //       }),
+  //     }
+  //   });
+
   const types = sportmonksTypes;
 
   return statistics
-    .filter((stat) => stat.has_values && stat.season_id === seasonId)
+    .filter((stat) =>
+      stat.has_values
+      && stat.hasOwnProperty('details')
+      && stat.details.length > 0
+      && stat.season_id === seasonId
+    )
     .map((stat) => {
       return {
         season_id: stat.season_id,
@@ -176,10 +199,18 @@ export const filterStatistics = (statistics: any[], seasonId: number) => {
           }
         }),
       }
-    });
+    })
+    .map((stat) => {
+      return stat.details.map((detail) => {
+        return {[detail.type]: detail.value};
+      })
+    })
+    .flat();
 }
 
 export const filterSquad = (squad: TSquad[]) => {
+  const types = sportmonksTypes;
+
   return squad
     .map((sq: TSquad) => {
       return {
@@ -189,6 +220,42 @@ export const filterSquad = (squad: TSquad[]) => {
         height: sq.player.height,
         weight: sq.player.weight,
         date_of_birth: sq.player.date_of_birth,
+        position: types.find((type) => type.id === sq.position_id).name,
       };
     });
+}
+
+export const filterPlayerStatistics = (statistics: any[], seasonId: number) => {
+  const types = sportmonksTypes;
+
+  return statistics
+    .filter((stat) =>
+      stat.has_values
+      && stat.hasOwnProperty('details')
+      && stat.details.length > 0
+      && stat.season_id === seasonId
+    )
+    .map((stat) => {
+      return {
+        season_id: stat.season_id,
+        details: stat.details.map((detail) => {
+          const type = types.find((t) => t.id === detail.type_id);
+
+          return {
+            type: type ? type.name : null,
+            value: detail.value,
+          }
+        }),
+      }
+    })
+    .map((stat) => {
+      return stat.details.map((detail) => {
+        return {[detail.type]: detail.value};
+      })
+    })
+    .flat();
+}
+
+export const filterSchedules = () => {
+
 }
