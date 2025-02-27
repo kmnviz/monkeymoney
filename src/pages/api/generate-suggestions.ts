@@ -525,9 +525,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             odds: odds,
           },
         });
-
-        console.log(`pauses for 30sec before next fixture...`);
-        await pause(30 * 1000);
       }
 
       console.log(`finished to loop selected fixtures.`);
