@@ -1,4 +1,5 @@
-import {TScore} from "./Score";
+import {TScore} from './Score';
+import {TTeam} from './Team';
 
 export type TFixture = {
   "id": number, // 19146700,
@@ -21,6 +22,6 @@ export type TFixture = {
   "has_odds": boolean, // true,
   "has_premium_odds": boolean, // true,
   "starting_at_timestamp": number, // 1722780000
-  "participants"?: any[] | undefined | null,
+  "participants": TTeam[],
   "scores"?: TScore[]
 }

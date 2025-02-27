@@ -30,6 +30,18 @@ export const readFromFile = async (filepath: string) => {
   }
 }
 
+export const formatJsonStringToJson = (jsonString: string | null) => {
+  try {
+    return jsonString ? JSON.parse(
+      jsonString
+      .replace('```json', '')
+      .replace('```', '')
+    ) : {};
+  } catch (error) {
+    throw error;
+  }
+}
+
 export const leagueNameById = (leagueId: number): string => {
   const league = sportmonksLeagues.find((lg) => lg.id === leagueId);
   return league ? league.name : '';

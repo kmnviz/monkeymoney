@@ -3,88 +3,22 @@ import type {NextApiRequest, NextApiResponse} from 'next';
 import OpenAI from 'openai';
 import SportmonksApiClient from '../../services/sportmonksApiClient';
 import {ParticipantEnum} from '../../enums/sportmonks';
-import {leagueNameById, positionNameById} from '../../utils';
+import {leagueNameById, positionNameById, formatJsonStringToJson, pause} from '../../utils';
 import sportmonksTypes from '../../database/sportmonks/types.json';
 import {TOdd} from '../../types/sportmonks/Odd';
 import sportmonksMarkets from '../../database/sportmonks/markets.json';
 import Decimal from 'decimal.js';
+import {TFixture} from "../../types/sportmonks/Fixture";
 
 const sportmonksApiClient = new SportmonksApiClient();
 const openai = new OpenAI({
   baseURL:'https://api.deepseek.com/beta',
-  // baseURL: process.env.DEEPSEEK_API_URL,
-  // apiKey: process.env.OPENAI_API_KEY as string,
   apiKey: process.env.DEEPSEEK_API_KEY as string,
 });
 
-const createTeamFormAnalysis = async (content) => {
+const createBetSuggestionCompletion = async (content) => {
   const lContent = { ...content };
   lContent['odds'] = lContent['odds'].map(({ probability, ...rest }) => rest);
-
-  // const messages = [
-  //   {
-  //     role: 'system',
-  //     content: `You are a world-class football data analyst. Your task is to analyze the form of a football teams based on the provided JSON data. This analysis will later be compared with another team to determine which team has a higher probability of winning, making corners, or other key performance metrics.`,
-  //   },
-  //   {
-  //     role: 'user',
-  //     content:
-  //     `
-  //     You are a world-class professional football analyst with deep expertise in tactics, betting markets, and psychological dynamics.
-  //     Your task is to conduct an elite-level analysis of both teams’ current form, strategies, and all external factors influencing the upcoming match.
-  //     Your goal is to find the most probable and most profitable betting opportunity in terms of risk/reward ratio.
-  //
-  //     Step 1: Comprehensive Team & Player Analysis
-  //     Perform an in-depth breakdown of both teams' current form, momentum, and season trends.
-  //     Identify key players' statistics, strengths, weaknesses, injuries, and suspensions.
-  //     Assess the psychological state of teams and players, including fatigue, confidence, and pressure levels.
-  //
-  //     Step 2: Tactical & Strategic Insights
-  //     Analyze each team’s tactical approach, including formations, pressing intensity, and set-piece effectiveness.
-  //     Assess the coaches' impact, their adaptability, and historical head-to-head performances.
-  //     Dig deep into venue influence: home vs. away performance, weather conditions, and pitch type impact.
-  //
-  //     Step 3: Contextual & Motivational Factors
-  //     Evaluate the motivation levels of both teams in each competition they participate in.
-  //     Consider the importance of the match in the context of the league standings or knockout stages.
-  //     Analyze previous and upcoming matches to gauge potential squad rotations or fatigue risks.
-  //
-  //     Step 4: Betting & Probability Optimization
-  //     Identify the most probable match outcome using a logical, data-driven approach.
-  //     Find the most valuable betting market by balancing probability and odds efficiency.
-  //     Think critically and identify a high-value bet that may not be obvious but offers superior returns.
-  //     Ensure the final recommendation is based on probability models, betting market inefficiencies, and tactical analysis.
-  //
-  //     **Output Format (Strictly Follow This JSON Structure):**
-  //     {
-  //       "bet": "<Bet Selection>",
-  //       "probability": "<Calculated Probability (%)>",
-  //       "odd": "<Selected Odd>",
-  //       "market_description": "<Brief Explanation of the Market>",
-  //       "reasoning": "<Justification based on the provided statistics>"
-  //     }
-  //
-  //     Final Instruction:
-  //     Think outside of the box and leverage your deepest football knowledge.
-  //     Do not provide generic answers—focus on unique insights, tactical angles, and betting inefficiencies that others might overlook.
-  //     Your goal is to find the smartest and most profitable bet, not just the most obvious one.
-  //     Try your best to find THE MOST UNOBVIOUS MARKET OVER 2.00 with the HIGHEST PROBABILITY OVER 75%
-  //     `
-  //     ,
-  //   },
-  //   {
-  //     role: 'assistant',
-  //     content: JSON.stringify(lContent),
-  //   },
-  //   {
-  //     role: 'user',
-  //     content: 'Analyze the data above and return a JSON response starting with: { "analysis": "',
-  //   },
-  //   {
-  //     role: 'assistant',
-  //     content: '{ "analysis": "',
-  //   },
-  // ];
 
   const messages = [
     {
@@ -135,13 +69,12 @@ const createTeamFormAnalysis = async (content) => {
         Your goal is to find the smartest and most profitable bet, not just the most obvious one.
         Try your best to find THE MOST UNOBVIOUS MARKET OVER 2.00 with the HIGHEST PROBABILITY OVER 75%
 
-        **Output Format (Strictly Follow This JSON Structure):**
+        **Output Format:**
         {
           "bet": "<Bet Selection>",
           "probability": "<Calculated Probability (%)>",
           "odd": "<Selected Odd>",
           "market_description": "<Brief Explanation of the Market>",
-          "reasoning": "<Justification based on the provided statistics>"
         }
       `,
     },
@@ -150,18 +83,83 @@ const createTeamFormAnalysis = async (content) => {
   const completion = await openai.chat.completions.create({
     model: 'deepseek-reasoner',
     messages: messages,
-    // response_format: { type: 'json_object' },
     temperature: 0,
-    // prefix_mode: true,
   } as any);
 
-  try {
-    console.log((JSON.parse(completion.choices[0].message.content as string)));
-  } catch (error) {
-    console.log('error: ', error);
-  }
+  console.log('completion: ', completion.choices[0].message);
 
-  return completion.choices[0].message;
+  return {
+    reasoning: completion.choices[0].message['reasoning_content'],
+    data: formatJsonStringToJson(completion.choices[0].message.content) ?? {},
+    // data: completion.choices[0].message.content,
+  };
+}
+
+const createSelectFixturesCompletion = async (count: number, fixtures: any[]) => {
+  const content = fixtures.map((fixture) => {
+    return {
+      fixture_id: fixture.id,
+      fixture: `${fixture.participants[0].name} vs ${fixture.participants[1].name}`,
+    };
+  });
+  const wrappingKey = 'selected_fixtures';
+
+  const messages = [
+    {
+      role: 'system',
+      content: `You are an expert football analyst and betting strategist. Your task is to analyze a given list of football fixtures and select the top ${count} fixtures that have the highest potential for successful betting promotion. Use a data-driven approach based on value, team's popularity, historical number of viewer, overall fixture popularity.`,
+    },
+    {
+      role: 'user',
+      content: `
+      ### Task:
+      Analyze the following list of football fixtures and select the best ${count} fixtures for betting promotion. Rank them based on their betting potential and provide reasoning for each selection.
+
+      ### Selection Criteria:
+      - **Market Popularity**: Choose fixtures trending in betting discussions and social media.
+      - **League/Competition Importance**: Focus on top leagues and competitions.
+
+      ### Input Fixtures:
+      [{\\"fixture_id\\": \\"X\\", \\"fixture\\": \\"Team A vs Team B\\"}, {\\"fixture_id\\": \\"Y\\", \\"fixture\\": \\"Team C vs Team D\\"}]
+
+      ### Expected Output Format:
+      A structured JSON response containing the top X selected fixtures **with wrapping key "${wrappingKey}"**:
+      [
+        {
+          \\"fixture_id\\": \\"X\\",
+          \\"fixture\\": \\"Team A vs Team B\\",
+          \\"score\\": 92,
+          \\"reason\\": \\"Fixture between Team A and Team B has high popularity, rich history of head to head matches, historically millions of viewers.\\"
+        },
+        {
+          \\"fixture_id\\": \\"Y\\",
+          \\"fixture\\": \\"Team C vs Team D\\",
+          \\"score\\": 88,
+          \\"reason\\": \\"Fixture between Team A and Team B has high popularity, rich history of head to head matches, historically millions of viewers.\\"
+        }
+      ]
+      `,
+    },
+    {
+      role: 'assistant',
+      content: JSON.stringify(content),
+    },
+    {
+      role: 'user',
+      content: `Select and rank the best ${count} fixtures based on the criteria.`,
+    }
+  ];
+
+  const completion = await openai.chat.completions.create({
+    model: 'deepseek-reasoner',
+    messages: messages,
+    temperature: 0,
+  } as any);
+
+  return {
+    reasoning: completion.choices[0].message['reasoning_content'],
+    data: formatJsonStringToJson(completion.choices[0].message.content)?.selected_fixtures ?? [],
+  };
 }
 
 export const modifyTeam = (team) => {
@@ -439,84 +437,104 @@ const appendSeasonsSchedules = async (team) => {
   return team;
 }
 
+const collectTeamData = async (teamId) => {
+  let team = modifyTeam(await sportmonksApiClient.getTeamById(teamId));
+
+  team['activeseasons'] = modifyActiveSeasons(team['activeseasons']);
+  team['players'] = modifyPlayers(team['players']);
+  team['coaches'] = await modifyCoaches(team['coaches']);
+  team = await appendSeasonsStatistics(team);
+  team = await appendPlayersStatistics(team);
+  team = await appendPlayersData(team);
+  team = await appendSeasonsStandings(team);
+  team = await appendSeasonsSchedules(team);
+
+  return team;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     if (
       !req.body
-      || !('teamId' in req.body)
+      || !('date' in req.body)
+      || !('bookmakerId' in req.body)
+      || !('suggestionsCount' in req.body)
     ) {
       return res.status(422).json({
         message: 'There are required fields',
         fields: {
-          teamId: 'X',
-          seasonId: 'X',
+          date: 'YYYY-MM-DD',
+          bookmakerId: 'X',
+          suggestionsCount: 'X',
         },
       });
     }
 
+    const date = req.body.date;
+    const bookmakerId = +req.body.bookmakerId;
+    const suggestionsCount = +req.body.suggestionsCount;
+
     try {
-      // const teamId = +req.body.teamId;
-      // let team = modifyTeam (await sportmonksApiClient.getTeamById(teamId));
-      // team['activeseasons'] = modifyActiveSeasons(team['activeseasons']);
-      // team['players'] = modifyPlayers(team['players']);
-      // team['coaches'] = await modifyCoaches(team['coaches']);
-      // team = await appendSeasonsStatistics(team);
-      // team = await appendPlayersStatistics(team);
-      // team = await appendPlayersData(team);
-      // team = await appendSeasonsStandings(team);
-      // team = await appendSeasonsSchedules(team);
-      //
-      // const completion = await createTeamFormAnalysis(team);
+      const totalFixtures = await sportmonksApiClient.getFixturesByDate(req.body.date);
+      console.log(`fetched total ${totalFixtures.length} fixtures for ${date}.`);
 
-      const teamAId = +req.body.teamAId;
-      const teamBId = +req.body.teamBId;
-      const fixtureId = +req.body.fixtureId;
+      console.log('starting fixtures selection completion...');
+      const selectedFixtures = await createSelectFixturesCompletion(suggestionsCount, totalFixtures);
+      console.log('finished fixtures selection completion.');
 
-      let teamA = modifyTeam (await sportmonksApiClient.getTeamById(teamAId));
-      teamA['activeseasons'] = modifyActiveSeasons(teamA['activeseasons']);
-      teamA['players'] = modifyPlayers(teamA['players']);
-      teamA['coaches'] = await modifyCoaches(teamA['coaches']);
-      teamA = await appendSeasonsStatistics(teamA);
-      teamA = await appendPlayersStatistics(teamA);
-      teamA = await appendPlayersData(teamA);
-      teamA = await appendSeasonsStandings(teamA);
-      teamA = await appendSeasonsSchedules(teamA);
+      const suggestions = [];
+      console.log(`starting to loop selected fixtures...`);
+      for (let i = 0; i < selectedFixtures.data.length; i++) {
+        const fixture = totalFixtures
+          .find((fx) => fx.id === +selectedFixtures.data[i].fixture_id) as TFixture;
+        console.log(`fixture ${i}:${fixture.name} found.`);
 
-      let teamB = modifyTeam (await sportmonksApiClient.getTeamById(teamBId));
-      teamB['activeseasons'] = modifyActiveSeasons(teamB['activeseasons']);
-      teamB['players'] = modifyPlayers(teamB['players']);
-      teamB['coaches'] = await modifyCoaches(teamB['coaches']);
-      teamB = await appendSeasonsStatistics(teamB);
-      teamB = await appendPlayersStatistics(teamB);
-      teamB = await appendPlayersData(teamB);
-      teamB = await appendSeasonsStandings(teamB);
-      teamB = await appendSeasonsSchedules(teamB);
+        const teamAId = fixture['participants'][0]['id'];
+        const teamBId = fixture['participants'][1]['id'];
+        const fixtureId = fixture['id'];
 
-      const fixture = await sportmonksApiClient
-        .getFixtureById(fixtureId);
-      const h2h = await sportmonksApiClient
-        .getFixturesByHeadToHead(teamAId, teamBId);
-      const odds = modifyOdds(await sportmonksApiClient
-        .getOddsByFixtureIdAndBookmakerId(fixtureId, 2));
+        const teamA = await collectTeamData(teamAId);
+        console.log(`teamA data collected.`);
+        const teamB = await collectTeamData(teamBId);
+        console.log(`teamB data collected.`);
 
-      const content = {
-        fixture: fixture,
-        teamA: teamA,
-        teamB: teamB,
-        h2h: h2h,
-        odds: odds,
-      };
+        const h2h = await sportmonksApiClient
+          .getFixturesByHeadToHead(teamAId, teamBId);
+        console.log(`head to head data fetched.`);
+        const odds = modifyOdds(await sportmonksApiClient
+          .getOddsByFixtureIdAndBookmakerId(fixtureId, bookmakerId));
+        console.log(`fixture odds data fetched.`);
 
-      const completion = await createTeamFormAnalysis(content);
-
-      return res.status(200).json({
-        data: {
-          completion: completion,
+        console.log(`starting fixture bet suggestion completion...`);
+        const completion = await createBetSuggestionCompletion({
           fixture: fixture,
           teamA: teamA,
           teamB: teamB,
           h2h: h2h,
           odds: odds,
+        });
+        console.log(`finished fixture bet suggestion completion.`);
+
+        suggestions.push({
+          fixture: fixture.name,
+          completion: completion,
+          data: {
+            teamA: teamA,
+            teamB: teamB,
+            h2h: h2h,
+            odds: odds,
+          },
+        });
+
+        console.log(`pauses for 30sec before next fixture...`);
+        await pause(30 * 1000);
+      }
+
+      console.log(`finished to loop selected fixtures.`);
+
+      return res.status(200).json({
+        data: {
+          suggestions: suggestions,
         },
       });
     } catch (error) {
