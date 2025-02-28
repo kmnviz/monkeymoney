@@ -77,6 +77,13 @@
     "has_winning_calculations": false
   },
   {
+    "id": 66,
+    "legacy_id": 136706546,
+    "name": "Player to be Sent Off",
+    "developer_name": "PLAYER_TO_BE_SENT_OFF",
+    "has_winning_calculations": false
+  },
+  {
     "id": 75,
     "legacy_id": 136703850,
     "name": "Corners Race",
@@ -105,6 +112,20 @@
     "has_winning_calculations": false
   },
   {
+    "id": 90,
+    "legacy_id": 1265634160,
+    "name": "Goalscorers",
+    "developer_name": "GOALSCORERS",
+    "has_winning_calculations": false
+  },
+  {
+    "id": 92,
+    "legacy_id": 1265634162,
+    "name": "Team Goalscorer",
+    "developer_name": "TEAM_GOALSCORER",
+    "has_winning_calculations": false
+  },
+  {
     "id": 95,
     "legacy_id": null,
     "name": "1st Half Goals Odd/Even",
@@ -123,6 +144,13 @@
     "legacy_id": 1265634161,
     "name": "Multi Scorers",
     "developer_name": "MULTI_SCORERS",
+    "has_winning_calculations": false
+  },
+  {
+    "id": 106,
+    "legacy_id": 1256989865,
+    "name": "Alternative 1st Half Asian Handicap",
+    "developer_name": "ALTERNATIVE_1ST_HALF_ASIAN_HANDICAP",
     "has_winning_calculations": false
   },
   {
@@ -161,6 +189,13 @@
     "has_winning_calculations": false
   },
   {
+    "id": 255,
+    "legacy_id": 136704329,
+    "name": "Number of Cards",
+    "developer_name": "NUMBER_OF_CARDS",
+    "has_winning_calculations": false
+  },
+  {
     "id": 267,
     "legacy_id": 136704525,
     "name": "Player Shots On Target",
@@ -189,10 +224,52 @@
     "has_winning_calculations": false
   },
   {
+    "id": 272,
+    "legacy_id": 30,
+    "name": "Asian Total Cards",
+    "developer_name": "ASIAN_TOTAL_CARDS",
+    "has_winning_calculations": false
+  },
+  {
+    "id": 273,
+    "legacy_id": 29,
+    "name": "Asian Handicap Cards",
+    "developer_name": "ASIAN_HANDICAP_CARDS",
+    "has_winning_calculations": false
+  },
+  {
     "id": 275,
     "legacy_id": 1265634170,
     "name": "Team Perfomances",
     "developer_name": "TEAM_PERFORMANCES",
+    "has_winning_calculations": false
+  },
+  {
+    "id": 276,
+    "legacy_id": 1265635821,
+    "name": "Both Teams to Receive More Than 2 Cards",
+    "developer_name": "BOTH_TEAMS_TO_RECEIVE_MORE_THAN_TWO_CARDS",
+    "has_winning_calculations": false
+  },
+  {
+    "id": 277,
+    "legacy_id": 1265634166,
+    "name": "Handicap Cards",
+    "developer_name": "HANDICAP_CARDS",
+    "has_winning_calculations": false
+  },
+  {
+    "id": 278,
+    "legacy_id": 1265634167,
+    "name": "Alternative Handicap Cards",
+    "developer_name": "ALTERNATIVE_HANDICAP_CARDS",
+    "has_winning_calculations": false
+  },
+  {
+    "id": 281,
+    "legacy_id": 33,
+    "name": "Team Cards",
+    "developer_name": "TEAM_CARDS",
     "has_winning_calculations": false
   },
   {
