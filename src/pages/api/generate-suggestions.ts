@@ -135,12 +135,17 @@ const createBetSuggestionCompletion = async (content) => {
         - probability: "<Calculated Probability (%)>",
         - odd: "<Selected Odd>",
         - market_description: "<Brief Explanation of the Market>",
+        - comprehensive_detailed_reason: "<Comprehensive Detailed Reason>", 
 
         Final Instruction:
         Think outside of the box and leverage your deepest football knowledge.
-        Do not provide generic answers—focus on unique insights, tactical angles, and betting inefficiencies that others might overlook.
+        Do not provide generic answers.
+        Focus on unique insights, tactical angles, and betting inefficiencies that others might overlook.
+        Every prediction must be backed by data, tactical logic, or psychological insight.
+        Consider multiple angles before settling on the best bet.
         Your goal is to find the smartest and most profitable bet, not just the most obvious one.
-        Try your best to find THE MOST UNOBVIOUS MARKET OVER 2.00 with the HIGHEST PROBABILITY OVER 75%
+        Make multiple iterations to find the best odd.
+        Do your best to find THE MOST UNOBVIOUS MARKET OVER 1.75 with the HIGHEST PROBABILITY OVER 75%
       `,
     },
     {
