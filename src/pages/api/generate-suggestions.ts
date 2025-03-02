@@ -814,6 +814,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           fixture: fixture.name,
           completion: completion,
           data: {
+            fixture: fixture,
             teamA: teamA,
             teamB: teamB,
             h2h: h2h,
