@@ -1,5 +1,6 @@
 /node_modules
 /.next
+/src/database/suggestions
 /openai/node_modules
 /openai/.env
 .DS_Store
