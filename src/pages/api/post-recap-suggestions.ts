@@ -5,7 +5,6 @@ import type {NextApiRequest, NextApiResponse} from 'next';
 import OpenAI from 'openai';
 import {TwitterApi} from 'twitter-api-v2';
 
-// const twitterClient = new TwitterApi(process.env.TWITTER_API_KEY);
 const twitterClient = new TwitterApi({
   appKey: process.env.TWITTER_API_KEY,
   appSecret: process.env.TWITTER_API_SECRET,
@@ -79,7 +78,7 @@ const createRecapSuggestionPostCompletion = async (content, date) => {
           👉 X (Twitter): https://x.com/betbro_ai
 
           Add Following hashtags:
-          #BettingTips #SportsBetting #DailyPicks #Football #Soccer #EuropeanFootball #SportsPicks #BettingExperts #BetSmart
+          #DailyPicks #Football #Soccer #EuropeanFootball #SportsPicks
           Additionally add a hashtag for each team that is mentioned in the provided context.
         `,
     }
@@ -126,20 +125,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const fileContent = fs.readFileSync(filePath, 'utf-8');
       const suggestionsRecap = JSON.parse(fileContent);
 
-      const suggestionRecapTexts = [];
-      // for (let i = 0; i < suggestionsRecap.guessed.length; i++) {
-      // for (let i = 0; i < 1; i++) {
-      //   const suggestionRecap = await createRecapSuggestionPostCompletion(suggestionsRecap.guessed[i]);
-        const suggestionRecap = await createRecapSuggestionPostCompletion(suggestionsRecap.guessed, date);
-        console.log('suggestionRecap: ', suggestionRecap);
-        await twitterClient.v2.tweet((suggestionRecap as object).data);
-        // suggestionRecapTexts.push(suggestionRecap);
-      // }
+      const suggestionRecap = await createRecapSuggestionPostCompletion(suggestionsRecap.guessed, date);
+      console.log('suggestionRecap: ', suggestionRecap);
+      await twitterClient.v2.tweet((suggestionRecap as object).data);
 
       return res.status(200).json({
         data: {
-          // suggestionRecapText: suggestionRecapTexts,
-          suggestionRecapText: suggestionRecap,
+          suggestionRecap: suggestionRecap,
         },
       });
     } catch (error) {
