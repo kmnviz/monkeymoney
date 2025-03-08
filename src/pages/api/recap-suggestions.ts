@@ -3,12 +3,10 @@ import fs from 'fs';
 import path from 'path';
 import type {NextApiRequest, NextApiResponse} from 'next';
 import OpenAI from 'openai';
-import {TwitterApi} from 'twitter-api-v2';
 import SportmonksApiClient from '../../services/sportmonksApiClient';
-import {formatJsonStringToJson} from "../../utils";
+import {writeIntoFile} from "../../utils";
 
 const sportmonksApiClient = new SportmonksApiClient();
-const twitterClient = new TwitterApi(process.env.TWITTER_API_KEY);
 const deepSeek = new OpenAI({
   baseURL: process.env.DEEPSEEK_API_URL,
   apiKey: process.env.DEEPSEEK_API_KEY as string,
@@ -54,8 +52,8 @@ const createSuggestionCheckCompletion = async (content) => {
     temperature: 0,
   } as any);
 
-  console.log('createBetSuggestionCompletion completion: ', completion.usage);
-  console.log('createBetSuggestionCompletion completion: ', completion.choices[0].message);
+  console.log('createBetSuggestionCompletion usage: ', completion.usage);
+  console.log('createBetSuggestionCompletion message: ', completion.choices[0].message);
 
   return {
     model: models.deepSeekChat,
@@ -77,8 +75,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const filePath = path.join(process.cwd(), `src/database/suggestions/${req.body.date}.json`);
-    console.log('filePath: ', filePath);
+    const date = req.body.date;
+    const filePath = path.join(process.cwd(), `src/database/suggestions/${date}.json`);
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({
         message: 'File not found.',
@@ -86,33 +84,59 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      const fileContent = fs.readFileSync(filePath, "utf-8");
+      const fileContent = fs.readFileSync(filePath, 'utf-8');
       const suggestions = JSON.parse(fileContent);
 
       const outcomes = [];
-      // for (let i = 0; i < suggestions.length; i++) {
-      for (let i = 0; i < 1; i++) {
+      for (let i = 0; i < suggestions.length; i++) {
         const suggestion = suggestions[i].completion.data;
-        const outcome = await sportmonksApiClient
+        const fixtureOutcome = await sportmonksApiClient
           .getFixtureById(suggestions[i].data.fixture.id);
-        outcomes.push(outcome);
 
         const suggestionCheck = await createSuggestionCheckCompletion({
           suggestion: suggestion,
-          outcome: outcome,
+          outcome: fixtureOutcome,
         });
 
-        const outcomeResult = suggestionCheck['data'];
+        const scores = (fixtureOutcome.scores as any[]).map((score) => {
+          return {
+            score: score.score,
+            description: score.description,
+          };
+        });
 
-        console.log('fixture: ', suggestions[i].fixture);
-        console.log('outcomeResult: ', outcomeResult);
+        outcomes.push({
+          fixture: suggestions[i].fixture,
+          suggestion: {
+            bet: suggestions[i].completion.data.bet,
+            odd: suggestions[i].completion.data.odd,
+            probability: suggestions[i].completion.data.probability,
+            market_description: suggestions[i].completion.data.market_description,
+          },
+          result: {
+            scores: scores,
+            is_guessed: suggestionCheck['data'],
+          },
+        });
       }
 
-      return res.status(200).json({
-        data: {
-          suggestions: suggestions,
-          outcomes: outcomes,
+      const guessed = outcomes.filter((o) => o.answer === 'YES');
+      const missed = outcomes.filter((o) => o.answer === 'NO');
+
+      const data = {
+        total: {
+          count: outcomes.length,
+          guessed: guessed.length,
+          missed: missed.length,
         },
+        guessed: guessed,
+        missed: missed,
+      };
+
+      await writeIntoFile(data, `/suggestions/${date}_recap.json`);
+
+      return res.status(200).json({
+        data: data,
       });
     } catch (error) {
       console.log('error: ', error);
