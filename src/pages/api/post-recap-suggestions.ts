@@ -36,7 +36,7 @@ const createRecapSuggestionPostCompletion = async (content, date) => {
       You receive an object that contains a football matches suggestions with related
       bet, odd and the final result with scores.
 
-      Create a Twitter post that tells about the each suggestion and their results one by with.
+      Create a Twitter post that tells about the each suggestion and their results one by one.
       `,
     },
     {
@@ -64,8 +64,6 @@ const createRecapSuggestionPostCompletion = async (content, date) => {
           In the beginning of the text add:
           🎯 DAILY RESULTS RECAP
           📅 [${date}]
-
-          ---
 
           In the end of the text add following:
           💡 Thank you for following our tips! Stay tuned for tomorrow's predictions.
@@ -125,18 +123,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const fileContent = fs.readFileSync(filePath, 'utf-8');
       const suggestionsRecap = JSON.parse(fileContent);
 
-      const suggestionRecap = await createRecapSuggestionPostCompletion(suggestionsRecap.guessed, date);
-      console.log('suggestionRecap: ', suggestionRecap);
-      await twitterClient.v2.tweet((suggestionRecap as object).data);
+      const completion = await createRecapSuggestionPostCompletion(suggestionsRecap.guessed, date);
+      console.log('completion: ', completion);
+      await twitterClient.v2.tweet((completion as object).data);
 
       return res.status(200).json({
         data: {
-          suggestionRecap: suggestionRecap,
+          completion: completion,
+          suggestionsRecap: suggestionsRecap,
         },
       });
     } catch (error) {
       console.log('error: ', error);
-      console.log('error: ', error.data);
       return res.status(500).json({
         message: error.message,
       });

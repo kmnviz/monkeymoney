@@ -4,7 +4,7 @@ import path from 'path';
 import type {NextApiRequest, NextApiResponse} from 'next';
 import OpenAI from 'openai';
 import SportmonksApiClient from '../../services/sportmonksApiClient';
-import {writeIntoFile} from "../../utils";
+import {writeIntoFile} from '../../utils';
 
 const sportmonksApiClient = new SportmonksApiClient();
 const deepSeek = new OpenAI({
@@ -120,8 +120,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       }
 
-      const guessed = outcomes.filter((o) => o.answer === 'YES');
-      const missed = outcomes.filter((o) => o.answer === 'NO');
+      const guessed = outcomes.filter((o) => o.result.is_guessed === 'YES');
+      const missed = outcomes.filter((o) => o.result.is_guessed === 'NO');
 
       const data = {
         total: {

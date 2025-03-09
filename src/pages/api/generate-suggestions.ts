@@ -13,8 +13,8 @@ import {
   formatJsonStringToJson
 } from '../../utils';
 import sportmonksTypes from '../../database/sportmonks/types.json';
-import {TOdd} from '../../types/sportmonks/Odd';
 import sportmonksMarkets from '../../database/sportmonks/markets.json';
+import {TOdd} from '../../types/sportmonks/Odd';
 import {TFixture} from "../../types/sportmonks/Fixture";
 
 const sportmonksApiClient = new SportmonksApiClient();
@@ -88,7 +88,8 @@ const createSelectFixturesCompletion = async (count: number, fixtures: any[]) =>
 const createBetSuggestionCompletion = async (content) => {
   const lContent = {...content};
   lContent['odds'] = lContent['odds'].map(({prob, ...rest}) => rest);
-  const probInstruction = `**PROBABILITY MUST BE MORE THAN 80% AND THE ODD MUST BE MORE THAN 1.80**`;
+  // const probInstruction = `**PROBABILITY MUST BE MORE THAN 80% AND THE ODD MUST BE MORE THAN 1.80**`;
+  const probInstruction = `Think strategically and prioritize bets where **real probability > 80% and odds > 1.80.**`;
 
   const messages = [
     {
@@ -98,51 +99,93 @@ const createBetSuggestionCompletion = async (content) => {
     {
       role: 'user',
       content:
+      //   `
+      //     🔹 Step 1: Deep Team & Player Analysis
+      //     Perform a precise breakdown of both teams’ current form, momentum shifts, and season-long trends.
+      //     Analyze each key player’s performance metrics (goals, assists, defensive actions, xG, xGA, etc.).
+      //     Evaluate injuries, suspensions, and player fatigue—determine their true impact on the match.
+      //     Assess psychological factors:
+      //     Team confidence level (winning streak, losing streak)
+      //     Pressure due to league standing
+      //     Motivation in different competitions
+      //
+      //     🔹 Step 2: Advanced Tactical & Strategic Insights
+      //     Formations & Tactical Setup:
+      //     Expected line-ups and formation matchups (e.g., 4-3-3 vs 3-5-2).
+      //     Strengths/weaknesses of each approach.
+      //     Pressing Intensity & Defensive Stability:
+      //     High-press vs. Low-block teams: how does this affect match dynamics?
+      //     Set-piece Efficiency:
+      //     Which team is stronger in corners, free kicks, or penalties?
+      //     Head-to-Head Managerial Battle:
+      //     How well do the coaches adapt to different situations?
+      //     Historical results when they have faced off.
+      //
+      //     🔹 Step 3: Contextual & Motivational Analysis
+      //     Match Importance:
+      //     Is this a must-win game for either team?
+      //     Are they prioritizing another competition (e.g., Champions League vs domestic league)?
+      //     Fixture Congestion:
+      //     How many games have each team played recently?
+      //     How will fatigue & squad rotation affect performance?
+      //     Home/Away Impact & External Factors:
+      //     Does the venue provide an advantage? (e.g., altitude, crowd effect)
+      //     Weather conditions that may impact playing style (e.g., rain, snow, heat).
+      //
+      //     🔹 Step 4: Data-Driven Probability & Betting Optimization
+      //     Use logical, data-backed reasoning to determine the most probable outcome.
+      //     Identify the best-value betting market by comparing odds to real probabilities.
+      //     If the most obvious bet has low profitability, search for market inefficiencies.
+      //     Ensure the final bet selection has an implied probability much higher than bookmaker odds suggest.
+      //
+      //     🔹 Step 5: Final instruction
+      //     Think outside of the box and leverage your deepest football knowledge.
+      //     Do not provide generic answers—focus on unique insights, tactical angles, and betting inefficiencies that others might overlook.
+      //     Your goal is to find the smartest and most profitable bet, not just the most obvious one.
+      //     **Take the statistics data and the odds data from the provided context ONLY**.
+      //     ${probInstruction}
+      //
+      //     🔹 Step 6: **Output Format (Strictly Follow This JSON Structure):**
+      //     {
+      //       "bet": "<Team A vs Team B>",
+      //       "bet": "<Detailed Bet Selection>",
+      //       "probability": "<Calculated Probability (%)>",
+      //       "odd": "<Selected Odd>",
+      //       "market_description": "<Brief Explanation of the Market>",
+      //       "comprehensive_detailed_reason": "<Comprehensive Detailed Reason>"
+      //     }
+      //
+      //     🔹 Additional Instructions for GPT:
+      //     Do not provide generic responses.
+      //     Every prediction must be backed by data, tactical logic, or psychological insight.
+      //     Consider multiple angles before settling on the best bet.
+      //     Always compare real probability vs. bookmaker odds for expected value.
+      // `,
         `
           🔹 Step 1: Deep Team & Player Analysis
-          Perform a precise breakdown of both teams’ current form, momentum shifts, and season-long trends.
-          Analyze each key player’s performance metrics (goals, assists, defensive actions, xG, xGA, etc.).
-          Evaluate injuries, suspensions, and player fatigue—determine their true impact on the match.
-          Assess psychological factors:
-          Team confidence level (winning streak, losing streak)
-          Pressure due to league standing
-          Motivation in different competitions
+            - Prioritize recent form (last 5 games) over full-season trends.
+            - Weigh xG, xGA, key passes, and shots on target.
+            - Factor in injuries, suspensions, fatigue, and tactical changes.
 
-          🔹 Step 2: Advanced Tactical & Strategic Insights
-          Formations & Tactical Setup:
-          Expected line-ups and formation matchups (e.g., 4-3-3 vs 3-5-2).
-          Strengths/weaknesses of each approach.
-          Pressing Intensity & Defensive Stability:
-          High-press vs. Low-block teams: how does this affect match dynamics?
-          Set-piece Efficiency:
-          Which team is stronger in corners, free kicks, or penalties?
-          Head-to-Head Managerial Battle:
-          How well do the coaches adapt to different situations?
-          Historical results when they have faced off.
+          🔹 Step 2: Tactical & Strategic Breakdown
+            - Compare expected formations & playing styles.
+            - If one team presses high and the other defends deep, analyze tactical impact.
+            - Consider set-piece efficiency and defensive weaknesses.
 
-          🔹 Step 3: Contextual & Motivational Analysis
-          Match Importance:
-          Is this a must-win game for either team?
-          Are they prioritizing another competition (e.g., Champions League vs domestic league)?
-          Fixture Congestion:
-          How many games have each team played recently?
-          How will fatigue & squad rotation affect performance?
-          Home/Away Impact & External Factors:
-          Does the venue provide an advantage? (e.g., altitude, crowd effect)
-          Weather conditions that may impact playing style (e.g., rain, snow, heat).
+          🔹 Step 3: Contextual Factors
+            - Assess motivation (must-win game, relegation fight, Champions League rotation).
+            - If a team has changed coaches in the last 5 games, **prioritize their recent tactics** over historical trends.
+            - Home/Away impact, crowd effect, and external conditions (weather, travel fatigue).
 
-          🔹 Step 4: Data-Driven Probability & Betting Optimization
-          Use logical, data-backed reasoning to determine the most probable outcome.
-          Identify the best-value betting market by comparing odds to real probabilities.
-          If the most obvious bet has low profitability, search for market inefficiencies.
-          Ensure the final bet selection has an implied probability much higher than bookmaker odds suggest.
+          🔹 Step 4: Betting Value & Fair Odds Calculation
+            - Convert bookmaker odds into **implied probability** and compare with real data.
+            - If **bookmaker odds suggest a 60% probability but real data shows 75%**, it’s a **value bet**.
+            - Filter out **low-value bets**, even if they seem obvious.
 
-          🔹 Step 5: Final instruction
-          Think outside of the box and leverage your deepest football knowledge.
-          Do not provide generic answers—focus on unique insights, tactical angles, and betting inefficiencies that others might overlook.
-          Your goal is to find the smartest and most profitable bet, not just the most obvious one.
-          **Take the statistics data and the odds data from the provided context ONLY**.
-          ${probInstruction}
+          🔹 Step 5: **Final Instruction**
+            - ${probInstruction}
+            - If the selected bet does not meet these criteria, **recalculate** the selection.
+            - ** IN ANY CASE THERE SHOULD BE A RECOMMENDED BET **
 
           🔹 Step 6: **Output Format (Strictly Follow This JSON Structure):**
           {
@@ -153,13 +196,7 @@ const createBetSuggestionCompletion = async (content) => {
             "market_description": "<Brief Explanation of the Market>",
             "comprehensive_detailed_reason": "<Comprehensive Detailed Reason>"
           }
-
-          🔹 Additional Instructions for GPT:
-          Do not provide generic responses.
-          Every prediction must be backed by data, tactical logic, or psychological insight.
-          Consider multiple angles before settling on the best bet.
-          Always compare real probability vs. bookmaker odds for expected value.
-      `,
+      `
     },
     {
       role: 'assistant',
@@ -167,17 +204,36 @@ const createBetSuggestionCompletion = async (content) => {
     },
   ];
 
+  let model;
   try {
+    // model = models.deepSeekReasoner;
+    model = models.deepSeekChat;
     const lMessages = messages;
     lMessages[3] = {
       role: 'user',
       content:
-        `
-        Final Instruction:
-        Think outside of the box and leverage your deepest football knowledge.
-        Do not provide generic answers—focus on unique insights, tactical angles, and betting inefficiencies that others might overlook.
-        Your goal is to find the smartest and most profitable bet, not just the most obvious one.
-        ${probInstruction}
+      //   `
+      //   Final Instruction:
+      //   Think outside of the box and leverage your deepest football knowledge.
+      //   Do not provide generic answers—focus on unique insights, tactical angles, and betting inefficiencies that others might overlook.
+      //   Your goal is to find the smartest and most profitable bet, not just the most obvious one.
+      //   ${probInstruction}
+      //
+      //   **Output Format (Strictly Follow This JSON Structure):**
+      //     {
+      //       "bet": "<Team A vs Team B>",
+      //       "bet": "<Detailed Bet Selection>",
+      //       "probability": "<Calculated Probability (%)>",
+      //       "odd": "<Selected Odd>",
+      //       "market_description": "<Brief Explanation of the Market>",
+      //       "comprehensive_detailed_reason": "<Comprehensive Detailed Reason>"
+      //     }
+      // `,
+      `
+        **Final Instruction**
+          - ${probInstruction}
+          - If the selected bet does not meet these criteria, **recalculate** the selection.
+          - ** IN ANY CASE THERE SHOULD BE A RECOMMENDED BET **
 
         **Output Format (Strictly Follow This JSON Structure):**
           {
@@ -188,11 +244,11 @@ const createBetSuggestionCompletion = async (content) => {
             "market_description": "<Brief Explanation of the Market>",
             "comprehensive_detailed_reason": "<Comprehensive Detailed Reason>"
           }
-      `,
+      `
     };
 
     const completion = await deepSeek.chat.completions.create({
-      model: models.deepSeekReasoner,
+      model: model,
       messages: lMessages,
       temperature: 0,
     } as any);
@@ -201,14 +257,15 @@ const createBetSuggestionCompletion = async (content) => {
     console.log('createBetSuggestionCompletion completion: ', completion.choices[0].message);
 
     return {
-      model: models.deepSeekReasoner,
+      model: model,
       data: formatJsonStringToJson(completion.choices[0].message.content),
       reasoning: completion.choices[0].message['reasoning_content'],
     };
   } catch (error) {
     try {
+      model = models.gpt4Turbo;
       const completion = await openai.chat.completions.create({
-        model: models.gpt4Turbo,
+        model: model,
         messages: messages,
         temperature: 0,
       } as any);
@@ -217,7 +274,7 @@ const createBetSuggestionCompletion = async (content) => {
       console.log('createBetSuggestionCompletion completion: ', completion.choices[0].message);
 
       return {
-        model: models.gpt4Turbo,
+        model: model,
         data: JSON.parse(completion.choices[0].message.content as string),
       };
     } catch (err) {
@@ -838,10 +895,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const totalFixtures = await sportmonksApiClient.getFixturesByDate(req.body.date);
       console.log(`fetched total ${totalFixtures.length} fixtures for ${date}.`);
 
-      console.log('starting fixtures selection completion...');
-      const selectedFixturesCompletion = await createSelectFixturesCompletion(suggestionsCount, totalFixtures);
-      const selectedFixturesIds = (selectedFixturesCompletion.data as string)
-        .split(',').map((id) => parseInt(id, 10));
+      let selectedFixturesIds = totalFixtures.map((tf: TFixture) => tf.id);
+      if (totalFixtures.length > suggestionsCount) {
+        console.log('starting fixtures selection completion...');
+        const selectedFixturesCompletion = await createSelectFixturesCompletion(suggestionsCount, totalFixtures);
+        selectedFixturesIds = (selectedFixturesCompletion.data as string)
+          .split(',').map((id) => parseInt(id, 10));
+      }
+
       const selectedFixtures = totalFixtures
         .filter((fx) => selectedFixturesIds.includes(fx.id));
       console.log(`finished ${selectedFixtures.length} fixtures selection completion.`);
