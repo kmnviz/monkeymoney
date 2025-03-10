@@ -5,6 +5,7 @@ import type {NextApiRequest, NextApiResponse} from 'next';
 import OpenAI from 'openai';
 import SportmonksApiClient from '../../services/sportmonksApiClient';
 import {writeIntoFile} from '../../utils';
+import sportmonksTypes from '../../database/sportmonks/types.json';
 
 const sportmonksApiClient = new SportmonksApiClient();
 const deepSeek = new OpenAI({
@@ -29,8 +30,8 @@ const createSuggestionCheckCompletion = async (content) => {
       role: 'user',
       content: `
       ### Task:
-      You receive a football match suggestion and it's outcome in two JSON objects.
-      Analyze the suggestion and return an answer if the suggestion was correct
+      You receive a football match bet suggestion and it's outcome in two JSON objects.
+      Analyze the suggestion and return an answer if the suggestion was correct.
       `,
     },
     {
@@ -60,6 +61,37 @@ const createSuggestionCheckCompletion = async (content) => {
     data: completion.choices[0].message.content,
   };
 };
+
+const modifyStatistics = (statistics) => {
+  const types = sportmonksTypes;
+
+  const stats = statistics
+    .map((stat) => {
+      const type = types.find((t) => t.id === stat.type_id)
+
+      return {
+        type: type.name,
+        data: stat.data,
+        location: stat.location,
+      };
+    })
+    .flat();
+
+  const optimized = {};
+
+  stats.forEach(({ type, data, location }) => {
+    const key = type.toLowerCase().replace(/[^a-z0-9]/gi, '_'); // Normalize key names
+
+    if (!optimized[key]) {
+      optimized[key] = { total: 0, home: 0, away: 0 };
+    }
+
+    optimized[key][location] = data.value;
+    optimized[key].total += data.value;
+  });
+
+  return optimized;
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
@@ -92,6 +124,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const suggestion = suggestions[i].completion.data;
         const fixtureOutcome = await sportmonksApiClient
           .getFixtureById(suggestions[i].data.fixture.id);
+
+        fixtureOutcome['statistics'] = modifyStatistics(fixtureOutcome['statistics']);
 
         const suggestionCheck = await createSuggestionCheckCompletion({
           suggestion: suggestion,

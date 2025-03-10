@@ -961,7 +961,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       console.log(`finished to loop selected fixtures.`);
 
-      await writeIntoFile(suggestions, `/suggestions/${date}.json`);
+      await writeIntoFile(suggestions, `/suggestions/${date}_ds-chat.json`);
       console.log(`finished write into file ${date}.json.`);
 
       return res.status(200).json({

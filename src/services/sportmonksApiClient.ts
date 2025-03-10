@@ -142,7 +142,7 @@ class SportmonksApiClient {
 
   async getFixtureById(fixtureId: number): Promise<TFixture> {
     try {
-      const response = await this.get(`/v3/football/fixtures/${fixtureId}`, 'scores;participants');
+      const response = await this.get(`/v3/football/fixtures/${fixtureId}`, 'scores;participants;statistics');
       return response.data?.data;
     } catch (error) {
       console.log('error: ', error);
@@ -160,7 +160,7 @@ class SportmonksApiClient {
         const response = await this
           .get(
             `/v3/football/fixtures/date/${dateYYYYMMDD}`,
-            'participants',
+            'participants;lineups',
             '50',
             currentPage,
           );
