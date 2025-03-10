@@ -15,9 +15,13 @@ import {
 import sportmonksTypes from '../../database/sportmonks/types.json';
 import sportmonksMarkets from '../../database/sportmonks/markets.json';
 import {TOdd} from '../../types/sportmonks/Odd';
-import {TFixture} from "../../types/sportmonks/Fixture";
+import {TFixture} from '../../types/sportmonks/Fixture';
+import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
+import path from 'path';
+import fs from 'fs';
 
 const sportmonksApiClient = new SportmonksApiClient();
+const googleCloudStorageClient = new GoogleCloudStorageClient();
 const TPM_LIMIT = 30000;
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY as string,
@@ -206,8 +210,8 @@ const createBetSuggestionCompletion = async (content) => {
 
   let model;
   try {
-    // model = models.deepSeekReasoner;
-    model = models.deepSeekChat;
+    model = models.deepSeekReasoner;
+    // model = models.deepSeekChat;
     const lMessages = messages;
     lMessages[3] = {
       role: 'user',
@@ -384,7 +388,7 @@ const removeEmptyArrays = (obj) => {
     }
   }
   return obj;
-};
+}
 
 const removeNullValues = (obj) => {
   if (Array.isArray(obj)) {
@@ -402,7 +406,7 @@ const removeNullValues = (obj) => {
     }
   }
   return obj;
-};
+}
 
 const removeZeroValues = (obj) => {
   // Check if the input is an object or an array
@@ -433,7 +437,7 @@ const removeZeroValues = (obj) => {
 
   // If it's not an object or array, return the value itself (base case)
   return obj;
-};
+}
 
 const removeEmptyObjects = (obj) => {
   if (typeof obj !== "object" || obj === null) return obj; // Return non-objects as is
@@ -449,7 +453,7 @@ const removeEmptyObjects = (obj) => {
   });
 
   return obj;
-};
+}
 
 const modifyTeam = (team) => {
   return {
@@ -528,7 +532,7 @@ const modifyPlayerStatistics = (data) => {
   });
 
   return optimized;
-};
+}
 
 const modifyPlayers = (players) => {
   return players.map((pl) => {
@@ -631,7 +635,7 @@ const modifyScores = (obj) => {
   }
 
   return obj;
-};
+}
 
 const modifySchedules = (schedules) => {
   let result = schedules.map((sc) => {
@@ -782,6 +786,45 @@ const modifyH2h = (h2h) => {
   });
 }
 
+const modifyLineups = (fixture) => {
+  if (!fixture.lineups.length) {
+    delete fixture.lineups;
+    return fixture;
+  }
+
+  fixture.participants[0]['lineup'] = [];
+  fixture.participants[1]['lineup'] = [];
+
+  fixture.lineups.forEach((player) => {
+    if (fixture.participants[0].id === player.team_id)
+      fixture.participants[0]['lineup'].push(player);
+    if (fixture.participants[1].id === player.team_id)
+      fixture.participants[1]['lineup'].push(player);
+  });
+
+  fixture.participants[0]['lineup'] = fixture.participants[0]['lineup']
+    .map((player) => {
+      return {
+        formation_field: player.formation_field,
+        player_name: player.player_name,
+        position: positionNameById(player.position_id),
+      };
+    });
+
+  fixture.participants[1]['lineup'] = fixture.participants[1]['lineup']
+    .map((player) => {
+      return {
+        formation_field: player.formation_field,
+        player_name: player.player_name,
+        position: positionNameById(player.position_id),
+      };
+    });
+
+  delete fixture.lineups;
+
+  return fixture;
+}
+
 const appendSeasonsStatistics = async (team) => {
   const statistics = modifyStatistics(await sportmonksApiClient
     .getSeasonStatisticsByParticipant(ParticipantEnum.Teams, team.id));
@@ -910,8 +953,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const suggestions = [];
       console.log(`starting to loop selected fixtures...`);
       for (let i = 0; i < selectedFixtures.length; i++) {
-        const fixture = totalFixtures
+        let fixture = totalFixtures
           .find((fx) => fx.id === +selectedFixtures[i].id) as TFixture;
+        fixture = modifyLineups(fixture);
         console.log(`fixture ${i}:${fixture.name} found.`);
 
         const teamAId = fixture['participants'][0]['id'];
@@ -961,7 +1005,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       console.log(`finished to loop selected fixtures.`);
 
-      await writeIntoFile(suggestions, `/suggestions/${date}_ds-chat.json`);
+      await writeIntoFile(suggestions, `/suggestions/${date}.json`);
       console.log(`finished write into file ${date}.json.`);
 
       return res.status(200).json({
