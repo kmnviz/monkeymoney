@@ -4,9 +4,10 @@ import path from 'path';
 import type {NextApiRequest, NextApiResponse} from 'next';
 import OpenAI from 'openai';
 import SportmonksApiClient from '../../services/sportmonksApiClient';
-import {writeIntoFile} from '../../utils';
 import sportmonksTypes from '../../database/sportmonks/types.json';
+import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
 
+const googleCloudStorageClient = new GoogleCloudStorageClient();
 const sportmonksApiClient = new SportmonksApiClient();
 const deepSeek = new OpenAI({
   baseURL: process.env.DEEPSEEK_API_URL,
@@ -142,7 +143,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         outcomes.push({
           fixture: suggestions[i].fixture,
           suggestion: {
-            bet: suggestions[i].completion.data.bet,
+            bet: 'bet_selection' in suggestions[i].completion.data
+              ? suggestions[i].completion.data.bet_selection
+              : suggestions[i].completion.data.bet,
             odd: suggestions[i].completion.data.odd,
             probability: suggestions[i].completion.data.probability,
             market_description: suggestions[i].completion.data.market_description,
@@ -167,7 +170,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         missed: missed,
       };
 
-      await writeIntoFile(data, `/suggestions/${date}_recap.json`);
+      await googleCloudStorageClient.uploadJsonFile(data, `recaps/${date}.json`);
 
       return res.status(200).json({
         data: data,

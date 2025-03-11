@@ -17,8 +17,6 @@ import sportmonksMarkets from '../../database/sportmonks/markets.json';
 import {TOdd} from '../../types/sportmonks/Odd';
 import {TFixture} from '../../types/sportmonks/Fixture';
 import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
-import path from 'path';
-import fs from 'fs';
 
 const sportmonksApiClient = new SportmonksApiClient();
 const googleCloudStorageClient = new GoogleCloudStorageClient();
@@ -193,7 +191,7 @@ const createBetSuggestionCompletion = async (content) => {
 
           🔹 Step 6: **Output Format (Strictly Follow This JSON Structure):**
           {
-            "bet": "<Team A vs Team B>",
+            "fixture": "<Team A vs Team B>",
             "bet": "<Detailed Bet Selection>",
             "probability": "<Calculated Probability (%)>",
             "odd": "<Selected Odd>",
@@ -241,7 +239,7 @@ const createBetSuggestionCompletion = async (content) => {
 
         **Output Format (Strictly Follow This JSON Structure):**
           {
-            "bet": "<Team A vs Team B>",
+            "fixture": "<Team A vs Team B>",
             "bet": "<Detailed Bet Selection>",
             "probability": "<Calculated Probability (%)>",
             "odd": "<Selected Odd>",

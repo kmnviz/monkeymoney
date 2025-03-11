@@ -4,7 +4,9 @@ import path from 'path';
 import type {NextApiRequest, NextApiResponse} from 'next';
 import OpenAI from 'openai';
 import {TwitterApi} from 'twitter-api-v2';
+import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
 
+const googleCloudStorageClient = new GoogleCloudStorageClient();
 const twitterClient = new TwitterApi({
   appKey: process.env.TWITTER_API_KEY,
   appSecret: process.env.TWITTER_API_SECRET,
@@ -111,19 +113,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const date = req.body.date;
-    const filePath = path.join(process.cwd(), `src/database/suggestions/${date}_recap.json`);
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({
-        message: 'File not found.',
-      });
-    }
-
     try {
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      const suggestionsRecap = JSON.parse(fileContent);
+      const date = req.body.date;
+      const suggestionsRecap = await googleCloudStorageClient.readJsonFile(`recaps/${date}.json`);
+      if (!suggestionsRecap) {
+        return res.status(404).json({
+          message: 'File not found.',
+        });
+      }
 
-      const completion = await createRecapSuggestionPostCompletion(suggestionsRecap.guessed, date);
+      const completion = await createRecapSuggestionPostCompletion((suggestionsRecap as object)['guessed'], date);
       console.log('completion: ', completion);
       await twitterClient.v2.tweet((completion as object).data);
 
