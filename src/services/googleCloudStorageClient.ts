@@ -8,9 +8,9 @@ class GoogleCloudStorageClient {
 
   constructor() {
     this.storage = new Storage({
-      keyFilename: path.resolve(process.cwd(), process.env.GCS_FILE_NAME),
+      keyFilename: path.resolve(process.cwd(), process.env.GCS_FILE_NAME as string),
     });
-    this.bucket = this.storage.bucket(process.env.GCS_BUCKET_NAME);
+    this.bucket = this.storage.bucket(process.env.GCS_BUCKET_NAME as string);
   }
 
   async uploadJsonFile(data: object, fileName: string): Promise<void> {

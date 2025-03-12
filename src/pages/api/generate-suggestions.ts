@@ -8,7 +8,6 @@ import {ParticipantEnum} from '../../enums/sportmonks';
 import {
   leagueNameById,
   positionNameById,
-  writeIntoFile,
   pause,
   formatJsonStringToJson
 } from '../../utils';
