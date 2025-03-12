@@ -1,12 +1,12 @@
 // @ts-nocheck
-import fs from 'fs';
-import path from 'path';
 import type {NextApiRequest, NextApiResponse} from 'next';
 import OpenAI from 'openai';
 import {TwitterApi} from 'twitter-api-v2';
 import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
+import TelegramBotClient from '../../services/telegramBotClient';
 
 const googleCloudStorageClient = new GoogleCloudStorageClient();
+const telegramBotClient = new TelegramBotClient();
 const twitterClient = new TwitterApi({
   appKey: process.env.TWITTER_API_KEY,
   appSecret: process.env.TWITTER_API_SECRET,
@@ -123,8 +123,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       const completion = await createRecapSuggestionPostCompletion((suggestionsRecap as object)['guessed'], date);
-      console.log('completion: ', completion);
-      await twitterClient.v2.tweet((completion as object).data);
+      const message = (completion as object).data;
+      await twitterClient.v2.tweet(message);
+      await telegramBotClient.sendMessage(message);
 
       return res.status(200).json({
         data: {

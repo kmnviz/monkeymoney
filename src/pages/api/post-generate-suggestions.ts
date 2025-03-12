@@ -1,12 +1,14 @@
 // @ts-nocheck
-import fs from 'fs';
-import path from 'path';
 import type {NextApiRequest, NextApiResponse} from 'next';
 import OpenAI from 'openai';
 import {TwitterApi} from 'twitter-api-v2';
 import Decimal from 'decimal.js';
 import {pause} from '../../utils';
+import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
+import TelegramBotClient from '../../services/telegramBotClient';
 
+const googleCloudStorageClient = new GoogleCloudStorageClient();
+const telegramBotClient = new TelegramBotClient();
 const twitterClient = new TwitterApi({
   appKey: process.env.TWITTER_API_KEY,
   appSecret: process.env.TWITTER_API_SECRET,
@@ -173,18 +175,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const date = req.body.date;
-    const filePath = path.join(process.cwd(), `src/database/suggestions/${date}.json`);
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({
-        message: 'File not found.',
-      });
-    }
-
     try {
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      const dailySuggestions = JSON.parse(fileContent);
-      const fDailySuggestions = dailySuggestions.map((suggestion) => {
+      const date = req.body.date;
+      const suggestions = await googleCloudStorageClient.readJsonFile(`suggestions/${date}.json`);
+      if (!suggestions) {
+        return res.status(404).json({
+          message: 'File not found.',
+        });
+      }
+
+      const fDailySuggestions = (suggestions as object[]).map((suggestion) => {
         return {
           fixture: suggestion.fixture,
           data: suggestion.completion.data,
@@ -200,6 +200,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const bundleCompletion = await createSuggestionsPostCompletion(fDailySuggestions, date, totalOdds.toFixed(2));
       const bundle = bundleCompletion.data as string;
       await twitterClient.v2.tweet(bundle);
+      await telegramBotClient.sendMessage(bundle);
 
       // Post each suggestion one by one
       const singlesCompletions = await createSingleSuggestionsPostCompletion(fDailySuggestions);
@@ -209,8 +210,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .filter((s) => s);
 
       for (let i = 0; i < singles.length; i++) {
-        await pause(15 * 1000);
+        await pause(60 * 1000);
         await twitterClient.v2.tweet(singles[i]);
+        await telegramBotClient.sendMessage(singles[i]);
       }
 
       return res.status(200).json({

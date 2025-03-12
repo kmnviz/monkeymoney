@@ -18,8 +18,8 @@ import {TOdd} from '../../types/sportmonks/Odd';
 import {TFixture} from '../../types/sportmonks/Fixture';
 import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
 
-const sportmonksApiClient = new SportmonksApiClient();
 const googleCloudStorageClient = new GoogleCloudStorageClient();
+const sportmonksApiClient = new SportmonksApiClient();
 const TPM_LIMIT = 30000;
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY as string,
@@ -1003,8 +1003,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       console.log(`finished to loop selected fixtures.`);
 
-      await writeIntoFile(suggestions, `/suggestions/${date}.json`);
-      console.log(`finished write into file ${date}.json.`);
+      await googleCloudStorageClient.uploadJsonFile(suggestions, `suggestions/${date}.json`);
 
       return res.status(200).json({
         data: {
