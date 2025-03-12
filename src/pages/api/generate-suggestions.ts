@@ -72,8 +72,8 @@ const createSelectFixturesCompletion = async (count: number, fixtures: any[]) =>
     },
   ];
 
-  const completion = await openai.chat.completions.create({
-    model: models.gpt4Turbo,
+  const completion = await deepSeek.chat.completions.create({
+    model: models.deepSeekChat,
     messages: messages,
     temperature: 0,
   } as any);
@@ -86,7 +86,7 @@ const createSelectFixturesCompletion = async (count: number, fixtures: any[]) =>
   };
 }
 
-const createBetSuggestionCompletion = async (content) => {
+const createBetSuggestionCompletion = async (content, mainModel = null) => {
   const lContent = {...content};
   lContent['odds'] = lContent['odds'].map(({prob, ...rest}) => rest);
   // const probInstruction = `**PROBABILITY MUST BE MORE THAN 80% AND THE ODD MUST BE MORE THAN 1.80**`;
@@ -206,6 +206,44 @@ const createBetSuggestionCompletion = async (content) => {
   ];
 
   let model;
+  if (mainModel) {
+    model = mainModel;
+    try {
+      const completion = await openai.chat.completions.create({
+        model: model,
+        messages: messages,
+        temperature: 0,
+      } as any);
+
+      console.log('createBetSuggestionCompletion completion: ', completion.usage);
+      console.log('createBetSuggestionCompletion completion: ', completion.choices[0].message);
+
+      return {
+        model: model,
+        data: JSON.parse(completion.choices[0].message.content as string),
+      };
+    } catch (error) {
+      console.log('error: ', error);
+      const tokensCount = countTokens(messages, models.gpt4Turbo);
+      console.log('tokenCounts: ', tokensCount);
+
+      if (tokensCount >= TPM_LIMIT) {
+        return {
+          data:
+            `
+              fixture ${lContent.fixture.name} has context with ${tokensCount} tokens,
+              which is higher than the limit of ${TPM_LIMIT}. the error is probably
+              due to rate limit hit.
+            `
+        };
+      }
+
+      return {
+        data: `fixture ${lContent.fixture.name} failed with ${error.message}`,
+      };
+    }
+  }
+
   try {
     model = models.deepSeekReasoner;
     // model = models.deepSeekChat;
@@ -233,6 +271,7 @@ const createBetSuggestionCompletion = async (content) => {
       `
         **Final Instruction**
           - ${probInstruction}
+          - ** Think outside the box and leverage your deepest football knowledge. **
           - If the selected bet does not meet these criteria, **recalculate** the selection.
           - ** IN ANY CASE THERE SHOULD BE A RECOMMENDED BET **
 
@@ -826,8 +865,10 @@ const appendSeasonsStatistics = async (team) => {
   const statistics = modifyStatistics(await sportmonksApiClient
     .getSeasonStatisticsByParticipant(ParticipantEnum.Teams, team.id));
   team['activeseasons'].forEach((as) => {
-    as['statistics'] = statistics
-      .filter((stat) => stat.season_id === as.id)[0].details;
+    const stats = statistics
+      .filter((stat) => stat.season_id === as.id);
+
+    as['statistics'] = (stats && stats.length) ? stats[0].details : [];
   });
 
   return team;
@@ -923,13 +964,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           bookmakerId: 'X',
           suggestionsCount: 'X',
         },
+        optional: {
+          mainModel: 'gpt-4-turbo',
+        },
       });
     }
 
     const date = req.body.date;
     const bookmakerId = +req.body.bookmakerId;
     const suggestionsCount = +req.body.suggestionsCount;
+    const mainModel = req.body.mainModel ?? null;
     const timeBetweenCompletions = 2 * 60 * 1000;
+
+    if (mainModel && !Object.values(models).includes(mainModel)) {
+      return res.status(422).json({
+        availableModels: Object.values(models),
+      });
+    }
 
     try {
       const totalFixtures = await sportmonksApiClient.getFixturesByDate(req.body.date);
@@ -983,7 +1034,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           teamB: teamB,
           h2h: h2h,
           odds: odds,
-        });
+        }, mainModel);
         console.log(`finished fixture bet suggestion completion.`);
         if (i < selectedFixtures.length - 1) await pause(timeBetweenCompletions);
 
