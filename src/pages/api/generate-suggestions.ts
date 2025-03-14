@@ -78,7 +78,7 @@ const createSelectFixturesCompletion = async (count: number, fixtures: any[]) =>
     temperature: 0,
   } as any);
 
-  console.log('createSelectFixturesCompletion completion: ', completion.usage);
+  console.log('createSelectFixturesCompletion completion: ', completion.usage?.total_tokens);
   console.log('createSelectFixturesCompletion completion: ', completion.choices[0].message);
 
   return {
@@ -268,7 +268,7 @@ const createBetSuggestionCompletion = async (content, mainModel = null) => {
       //       "comprehensive_detailed_reason": "<Comprehensive Detailed Reason>"
       //     }
       // `,
-      `
+        `
         **Final Instruction**
           - ${probInstruction}
           - ** Think outside the box and leverage your deepest football knowledge. **
@@ -822,6 +822,11 @@ const modifyH2h = (h2h) => {
   });
 }
 
+const modifyLeague = (fixture) => {
+  fixture['league'] = leagueNameById(fixture.league_id);
+  return fixture;
+}
+
 const modifyLineups = (fixture) => {
   if (!fixture.lineups.length) {
     delete fixture.lineups;
@@ -966,6 +971,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
         optional: {
           mainModel: 'gpt-4-turbo',
+          allFixtures: false,
         },
       });
     }
@@ -974,6 +980,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const bookmakerId = +req.body.bookmakerId;
     const suggestionsCount = +req.body.suggestionsCount;
     const mainModel = req.body.mainModel ?? null;
+    const allFixtures = req.body.allFixtures ?? false;
     const timeBetweenCompletions = 2 * 60 * 1000;
 
     if (mainModel && !Object.values(models).includes(mainModel)) {
@@ -983,20 +990,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
+      let selectedFixtures;
       const totalFixtures = await sportmonksApiClient.getFixturesByDate(req.body.date);
       console.log(`fetched total ${totalFixtures.length} fixtures for ${date}.`);
 
-      let selectedFixturesIds = totalFixtures.map((tf: TFixture) => tf.id);
-      if (totalFixtures.length > suggestionsCount) {
-        console.log('starting fixtures selection completion...');
-        const selectedFixturesCompletion = await createSelectFixturesCompletion(suggestionsCount, totalFixtures);
-        selectedFixturesIds = (selectedFixturesCompletion.data as string)
-          .split(',').map((id) => parseInt(id, 10));
-      }
+      if (allFixtures) {
+        selectedFixtures = totalFixtures;
+        console.log(`starting all ${totalFixtures.length} fixtures...`);
+      } else {
+        let selectedFixturesIds = totalFixtures.map((tf: TFixture) => tf.id);
+        if (totalFixtures.length > suggestionsCount) {
+          console.log('starting fixtures selection completion...');
+          const selectedFixturesCompletion = await createSelectFixturesCompletion(suggestionsCount, totalFixtures);
+          selectedFixturesIds = (selectedFixturesCompletion.data as string)
+            .split(',').map((id) => parseInt(id, 10));
+        }
 
-      const selectedFixtures = totalFixtures
-        .filter((fx) => selectedFixturesIds.includes(fx.id));
-      console.log(`finished ${selectedFixtures.length} fixtures selection completion.`);
+        selectedFixtures = totalFixtures
+          .filter((fx) => selectedFixturesIds.includes(fx.id));
+        console.log(`finished ${selectedFixtures.length} fixtures selection completion.`);
+      }
 
       const suggestions = [];
       console.log(`starting to loop selected fixtures...`);
@@ -1004,6 +1017,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         let fixture = totalFixtures
           .find((fx) => fx.id === +selectedFixtures[i].id) as TFixture;
         fixture = modifyLineups(fixture);
+        fixture = modifyLeague(fixture);
         console.log(`fixture ${i}:${fixture.name} found.`);
 
         const teamAId = fixture['participants'][0]['id'];

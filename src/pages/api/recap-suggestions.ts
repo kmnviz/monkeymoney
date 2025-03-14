@@ -33,6 +33,8 @@ const createSuggestionCheckCompletion = async (content) => {
       ### Task:
       You receive a football match bet suggestion and it's outcome in two JSON objects.
       Analyze the suggestion and return an answer if the suggestion was correct.
+
+      You answer must be just YES or NO
       `,
     },
     {
@@ -94,6 +96,36 @@ const modifyStatistics = (statistics) => {
   return optimized;
 }
 
+const modifyScores = (scores) => {
+  let result = {
+    total: { home: 0, away: 0 },
+    first_half: { home: 0, away: 0 },
+    second_half: { home: 0, away: 0 },
+    extra_time: { home: 0, away: 0 },
+    penalties: { home: 0, away: 0 }
+  };
+
+  scores.forEach(({ score, description }) => {
+    if (description === "CURRENT") {
+      result.total[score.participant] = score.goals;
+    } else if (description === "1ST_HALF") {
+      result.first_half[score.participant] = score.goals;
+    } else if (description === "2ND_HALF" || description === "2ND_HALF_ONLY") {
+      result.second_half[score.participant] = score.goals;
+    } else if (
+      description === "ET" ||
+      description === "ET_1ST_HALF" ||
+      description === "ET_2ND_HALF"
+    ) {
+      result.extra_time[score.participant] += score.goals;
+    } else if (description === "PENALTY_SHOOTOUT") {
+      result.penalties[score.participant] = score.goals;
+    }
+  });
+
+  return result;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     if (
@@ -108,20 +140,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const date = req.body.date;
-    const filePath = path.join(process.cwd(), `src/database/suggestions/${date}.json`);
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({
-        message: 'File not found.',
-      });
-    }
-
     try {
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      const suggestions = JSON.parse(fileContent);
+      const date = req.body.date;
+      const suggestions = await googleCloudStorageClient.readJsonFile(`suggestions/${date}.json`);
+      if (!suggestions) {
+        return res.status(404).json({
+          message: 'File not found.',
+        });
+      }
 
       const outcomes = [];
-      for (let i = 0; i < suggestions.length; i++) {
+      for (let i = 0; i < (suggestions as object[]).length; i++) {
         const suggestion = suggestions[i].completion.data;
         const fixtureOutcome = await sportmonksApiClient
           .getFixtureById(suggestions[i].data.fixture.id);
@@ -133,12 +162,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           outcome: fixtureOutcome,
         });
 
-        const scores = (fixtureOutcome.scores as any[]).map((score) => {
-          return {
-            score: score.score,
-            description: score.description,
-          };
-        });
+        const scores = modifyScores(fixtureOutcome['scores']);
 
         outcomes.push({
           fixture: suggestions[i].fixture,
