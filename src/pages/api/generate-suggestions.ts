@@ -193,6 +193,7 @@ const createBetSuggestionCompletion = async (content, mainModel = null) => {
             "fixture": "<Team A vs Team B>",
             "bet": "<Detailed Bet Selection>",
             "probability": "<Calculated Probability (%)>",
+            "odd_id": "<Selected Odd ID>",
             "odd": "<Selected Odd>",
             "market_description": "<Brief Explanation of the Market>",
             "comprehensive_detailed_reason": "<Comprehensive Detailed Reason>"
@@ -280,6 +281,7 @@ const createBetSuggestionCompletion = async (content, mainModel = null) => {
             "fixture": "<Team A vs Team B>",
             "bet": "<Detailed Bet Selection>",
             "probability": "<Calculated Probability (%)>",
+            "odd_id": "<Selected Odd ID>",
             "odd": "<Selected Odd>",
             "market_description": "<Brief Explanation of the Market>",
             "comprehensive_detailed_reason": "<Comprehensive Detailed Reason>"
@@ -783,6 +785,7 @@ const modifyOdds = (odds: TOdd[], minProbability = '0%', maxProbability = '100%'
     .filter((odd) => marketsIds.includes(odd.market_id))
     .map((odd) => {
       const newOdd = {
+        id: odd.id,
         label: odd.label,
         // value: odd.value,
         market: odd.market_description,
