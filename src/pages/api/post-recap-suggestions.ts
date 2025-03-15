@@ -4,7 +4,9 @@ import OpenAI from 'openai';
 import {TwitterApi} from 'twitter-api-v2';
 import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
 import TelegramBotClient from '../../services/telegramBotClient';
+import ZohoMailerClient from '../../services/zohoMailerClient';
 
+const zohoMailerClient = new ZohoMailerClient();
 const googleCloudStorageClient = new GoogleCloudStorageClient();
 const telegramBotClient = new TelegramBotClient();
 const twitterClient = new TwitterApi({
@@ -126,6 +128,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const message = (completion as object).data;
       await twitterClient.v2.tweet(message);
       await telegramBotClient.sendMessage(message);
+      const emailAddresses = ['kamenovivanzdravkov@gmail.com', 'omaretz@gmail.com', 'iambozhidar@gmail.com'];
+      await zohoMailerClient.sendEmail(emailAddresses, `Daily recap ${date}`, message);
 
       return res.status(200).json({
         data: {

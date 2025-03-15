@@ -215,7 +215,7 @@ const createBetSuggestionCompletion = async (content, mainModel = null) => {
         temperature: 0,
       } as any);
 
-      console.log('createBetSuggestionCompletion completion: ', completion.usage);
+      console.log('createBetSuggestionCompletion completion: ', completion.usage?.total_tokens);
       console.log('createBetSuggestionCompletion completion: ', completion.choices[0].message);
 
       return {
@@ -979,7 +979,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const date = req.body.date;
     const bookmakerId = +req.body.bookmakerId;
     const suggestionsCount = +req.body.suggestionsCount;
-    const mainModel = req.body.mainModel ?? null;
+    const mainModel = req.body.mainModel || null;
     const allFixtures = req.body.allFixtures ?? false;
     const timeBetweenCompletions = 2 * 60 * 1000;
 

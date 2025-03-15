@@ -6,7 +6,9 @@ import Decimal from 'decimal.js';
 import {pause} from '../../utils';
 import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
 import TelegramBotClient from '../../services/telegramBotClient';
+import ZohoMailerClient from '../../services/zohoMailerClient';
 
+const zohoMailerClient = new ZohoMailerClient();
 const googleCloudStorageClient = new GoogleCloudStorageClient();
 const telegramBotClient = new TelegramBotClient();
 const twitterClient = new TwitterApi({
@@ -26,6 +28,57 @@ const models = {
   deepSeekReasoner: 'deepseek-reasoner',
   deepSeekChat: 'deepseek-chat',
 };
+
+const createSelectFixturesCompletion = async (count: number, fixtures: any[]) => {
+  const content = fixtures.map((fixture) => {
+    return {
+      fixture_id: fixture.data.fixture.id,
+      fixture: fixture.fixture,
+    };
+  });
+
+  const messages = [
+    {
+      role: 'system',
+      content: `You are an expert football analyst and betting strategist. Your task is to analyze a given list of football fixtures and select the top ${count} fixtures that have the highest potential for successful betting promotion. Use a data-driven approach based on value, team's popularity, historical number of viewer, overall fixture popularity.`,
+    },
+    {
+      role: 'user',
+      content: `
+      ### Task:
+      Analyze the following list of football fixtures and select the best ${count} fixtures for betting promotion. Rank them based on their betting potential and provide reasoning for each selection.
+
+      ### Selection Criteria:
+      - **Market Popularity**: Choose fixtures trending in betting discussions and social media.
+      - **League/Competition Importance**: Focus on top leagues and competitions.
+
+      ### Input Fixtures:
+      [{\\"fixture_id\\": \\"X\\", \\"fixture\\": \\"Team A vs Team B\\"}, {\\"fixture_id\\": \\"Y\\", \\"fixture\\": \\"Team C vs Team D\\"}]
+
+      ### Expected Output Format:
+      Return ONLY a comma-separated list of ${count} fixture_ids like:
+      X,Y,Z
+      `,
+    },
+    {
+      role: 'assistant',
+      content: JSON.stringify(content),
+    },
+  ];
+
+  const completion = await deepSeek.chat.completions.create({
+    model: models.deepSeekChat,
+    messages: messages,
+    temperature: 0,
+  } as any);
+
+  console.log('createSelectFixturesCompletion completion: ', completion.usage?.total_tokens);
+  console.log('createSelectFixturesCompletion completion: ', completion.choices[0].message);
+
+  return {
+    data: completion.choices[0].message.content,
+  };
+}
 
 const createSuggestionsPostCompletion = async (content, date, totalOdds) => {
   const messages = [
@@ -172,16 +225,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         fields: {
           date: 'YYYY-MM-DD',
         },
+        optional: {
+          suggestionsCount: 0,
+        },
       });
     }
 
     try {
       const date = req.body.date;
-      const suggestions = await googleCloudStorageClient.readJsonFile(`suggestions/${date}.json`);
-      if (!suggestions) {
+      const suggestionsCount = +req.body.suggestionsCount || 0;
+
+      const allSuggestions: object[] = (await googleCloudStorageClient.readJsonFile(`suggestions/${date}.json`) as object[]);
+      if (!allSuggestions) {
         return res.status(404).json({
           message: 'File not found.',
         });
+      }
+
+      let suggestions = [];
+      if (suggestionsCount > 0) {
+        const selectedFixturesCompletion = await createSelectFixturesCompletion(suggestionsCount, allSuggestions);
+        const selectedFixturesIds = (selectedFixturesCompletion.data as string)
+          .split(',').map((id) => parseInt(id, 10));
+
+        suggestions = allSuggestions.filter((suggestion) => {
+          return selectedFixturesIds.includes(suggestion.data.fixture.id);
+        });
+      } else {
+        suggestions = allSuggestions as object[];
       }
 
       const fDailySuggestions = (suggestions as object[]).map((suggestion) => {
@@ -201,6 +272,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const bundle = bundleCompletion.data as string;
       await twitterClient.v2.tweet(bundle);
       await telegramBotClient.sendMessage(bundle);
+      const emailAddresses = ['kamenovivanzdravkov@gmail.com', 'omaretz@gmail.com', 'iambozhidar@gmail.com'];
+      await zohoMailerClient.sendEmail(emailAddresses, `Daily recap ${date}`, bundle);
 
       // Post each suggestion one by one
       const singlesCompletions = await createSingleSuggestionsPostCompletion(fDailySuggestions);
@@ -210,9 +283,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .filter((s) => s);
 
       for (let i = 0; i < singles.length; i++) {
-        await pause(60 * 1000);
+        await pause(2 * 60 * 1000);
         await twitterClient.v2.tweet(singles[i]);
-        await telegramBotClient.sendMessage(singles[i]);
       }
 
       return res.status(200).json({
@@ -221,6 +293,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             bundle: bundle,
             singles: singles,
           },
+          total: suggestions.length,
+          daily_total: fDailySuggestions.length,
           suggestions: fDailySuggestions,
         },
       });
