@@ -269,29 +269,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Post single daily post with all matches
       const bundleCompletion = await createSuggestionsPostCompletion(fDailySuggestions, date, totalOdds.toFixed(2));
-      const bundle = bundleCompletion.data as string;
-      await twitterClient.v2.tweet(bundle);
-      await telegramBotClient.sendMessage(bundle);
-      const emailAddresses = ['kamenovivanzdravkov@gmail.com', 'omaretz@gmail.com', 'iambozhidar@gmail.com'];
-      await zohoMailerClient.sendEmail(emailAddresses, `Daily recap ${date}`, bundle);
+      const bundleMessage = bundleCompletion.data as string;
+      await twitterClient.v2.tweet(bundleMessage);
+      await telegramBotClient.sendMessage(bundleMessage);
+      const emailAddresses = (await googleCloudStorageClient.readJsonFile(`emails.json`) as string[]);
+      if (!emailAddresses) {
+        return res.status(404).json({
+          message: 'Emails file not found.',
+        });
+      }
+      await zohoMailerClient.sendEmail(emailAddresses, `Daily recap ${date}`, bundleMessage);
 
       // Post each suggestion one by one
       const singlesCompletions = await createSingleSuggestionsPostCompletion(fDailySuggestions);
-      const singles = (singlesCompletions.data as string)
+      const singleMessages = (singlesCompletions.data as string)
         .split('!!! bet separator !!!')
         .map((s) => s.trim())
         .filter((s) => s);
 
-      for (let i = 0; i < singles.length; i++) {
+      for (let i = 0; i < singleMessages.length; i++) {
         await pause(2 * 60 * 1000);
-        await twitterClient.v2.tweet(singles[i]);
+        await twitterClient.v2.tweet(singleMessages[i]);
       }
 
       return res.status(200).json({
         data: {
           completions: {
-            bundle: bundle,
-            singles: singles,
+            bundle: bundleMessage,
+            singles: singleMessages,
           },
           total: suggestions.length,
           daily_total: fDailySuggestions.length,

@@ -931,7 +931,7 @@ const appendSeasonsSchedules = async (team) => {
     team['activeseasons'][i]['schedules'] = await sportmonksApiClient
       .getSchedulesBySeasonIdAndTeamId(team['activeseasons'][i]['id'], team.id);
 
-    team['activeseasons'][i]['schedules'] = modifySchedules(team['activeseasons'][i]['schedules'], team);
+    team['activeseasons'][i]['schedules'] = modifySchedules(team['activeseasons'][i]['schedules']);
   }
 
   return team;

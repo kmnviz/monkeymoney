@@ -120,7 +120,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const suggestionsRecap = await googleCloudStorageClient.readJsonFile(`recaps/${date}.json`);
       if (!suggestionsRecap) {
         return res.status(404).json({
-          message: 'File not found.',
+          message: 'Recap file not found.',
         });
       }
 
@@ -128,8 +128,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const message = (completion as object).data;
       await twitterClient.v2.tweet(message);
       await telegramBotClient.sendMessage(message);
-      const emailAddresses = ['kamenovivanzdravkov@gmail.com', 'omaretz@gmail.com', 'iambozhidar@gmail.com'];
-      await zohoMailerClient.sendEmail(emailAddresses, `Daily recap ${date}`, message);
+      const emailAddresses = (await googleCloudStorageClient.readJsonFile(`emails.json`) as string[]);
+      if (!emailAddresses) {
+        return res.status(404).json({
+          message: 'Emails file not found.',
+        });
+      }
+      await zohoMailerClient.sendEmail(emailAddresses, `Free daily tips ${date}`, message);
 
       return res.status(200).json({
         data: {
