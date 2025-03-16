@@ -89,8 +89,8 @@ const createSelectFixturesCompletion = async (count: number, fixtures: any[]) =>
 const createBetSuggestionCompletion = async (content, mainModel = null) => {
   const lContent = {...content};
   lContent['odds'] = lContent['odds'].map(({prob, ...rest}) => rest);
-  // const probInstruction = `**PROBABILITY MUST BE MORE THAN 80% AND THE ODD MUST BE MORE THAN 1.80**`;
-  const probInstruction = `Think strategically and prioritize bets where **real probability > 80% and odds > 1.80.**`;
+  // const probInstruction = `**PROBABILITY MUST BE MORE THAN 70% AND THE ODD MUST BE MORE THAN 1.70**`;
+  const probInstruction = `Think strategically and prioritize bets where **real probability > 70% and odds > 1.70.**`;
 
   const messages = [
     {

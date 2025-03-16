@@ -278,7 +278,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           message: 'Emails file not found.',
         });
       }
-      await zohoMailerClient.sendEmail(emailAddresses, `Daily recap ${date}`, bundleMessage);
+      await zohoMailerClient.sendEmails(emailAddresses, `Free daily tips ${date}`, bundleMessage);
 
       // Post each suggestion one by one
       const singlesCompletions = await createSingleSuggestionsPostCompletion(fDailySuggestions);

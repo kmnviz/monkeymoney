@@ -16,18 +16,31 @@ class ZohoMailerClient {
     });
   }
 
-  async sendEmail(to: string[], subject: string, message: string) {
-      try {
-        return await this.transporter.sendMail({
+  async sendEmails(recipients: string[], subject: string, message: string) {
+    const batchSize = 30;
+    const totalRecipients = recipients.length;
+
+    try {
+      const responses = [];
+      for (let i = 0; i < totalRecipients; i += batchSize) {
+        const batchRecipients = recipients.slice(i, i + batchSize);
+
+        const response = await this.transporter.sendMail({
           from: `BetBro AI ${process.env.ZOHO_EMAIL}`,
-          to: to,
+          to: '',
+          bcc: batchRecipients,
           subject: subject,
           text: message,
         });
-      } catch (error) {
-        console.log(`ZohoMailerClient.sendEmails.error: `, error);
-        throw error;
+
+        responses.push(response);
       }
+
+      return responses;
+    } catch (error) {
+      console.log(`ZohoMailerClient.sendEmails.error: `, error);
+      throw error;
+    }
   }
 }
 

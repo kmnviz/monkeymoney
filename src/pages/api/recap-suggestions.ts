@@ -165,6 +165,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const scores = modifyScores(fixtureOutcome['scores']);
 
         outcomes.push({
+          fixture_id: suggestions[i].data.fixture.id,
           fixture: suggestions[i].fixture,
           suggestion: {
             bet: 'bet_selection' in suggestions[i].completion.data
