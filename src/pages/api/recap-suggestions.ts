@@ -82,11 +82,11 @@ const modifyStatistics = (statistics) => {
 
   const optimized = {};
 
-  stats.forEach(({ type, data, location }) => {
+  stats.forEach(({type, data, location}) => {
     const key = type.toLowerCase().replace(/[^a-z0-9]/gi, '_'); // Normalize key names
 
     if (!optimized[key]) {
-      optimized[key] = { total: 0, home: 0, away: 0 };
+      optimized[key] = {total: 0, home: 0, away: 0};
     }
 
     optimized[key][location] = data.value;
@@ -98,14 +98,14 @@ const modifyStatistics = (statistics) => {
 
 const modifyScores = (scores) => {
   let result = {
-    total: { home: 0, away: 0 },
-    first_half: { home: 0, away: 0 },
-    second_half: { home: 0, away: 0 },
-    extra_time: { home: 0, away: 0 },
-    penalties: { home: 0, away: 0 }
+    total: {home: 0, away: 0},
+    first_half: {home: 0, away: 0},
+    second_half: {home: 0, away: 0},
+    extra_time: {home: 0, away: 0},
+    penalties: {home: 0, away: 0}
   };
 
-  scores.forEach(({ score, description }) => {
+  scores.forEach(({score, description}) => {
     if (description === "CURRENT") {
       result.total[score.participant] = score.goals;
     } else if (description === "1ST_HALF") {
@@ -164,7 +164,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const scores = modifyScores(fixtureOutcome['scores']);
 
-        outcomes.push({
+        const outcome = {
           fixture_id: suggestions[i].data.fixture.id,
           fixture: suggestions[i].fixture,
           suggestion: {
@@ -179,7 +179,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             scores: scores,
             is_guessed: suggestionCheck['data'],
           },
-        });
+        };
+        outcomes.push(outcome);
+
+        await googleCloudStorageClient.upsertJsonFile(outcome, `recaps/${date}.json`);
       }
 
       const guessed = outcomes.filter((o) => o.result.is_guessed === 'YES');
@@ -194,8 +197,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         guessed: guessed,
         missed: missed,
       };
-
-      await googleCloudStorageClient.uploadJsonFile(data, `recaps/${date}.json`);
 
       return res.status(200).json({
         data: data,

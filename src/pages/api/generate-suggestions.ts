@@ -195,6 +195,7 @@ const createBetSuggestionCompletion = async (content, mainModel = null) => {
             "probability": "<Calculated Probability (%)>",
             "odd_id": "<Selected Odd ID>",
             "odd": "<Selected Odd>",
+            "market_id": "<Selected Market ID>",
             "market_description": "<Brief Explanation of the Market>",
             "comprehensive_detailed_reason": "<Comprehensive Detailed Reason>"
           }
@@ -283,6 +284,7 @@ const createBetSuggestionCompletion = async (content, mainModel = null) => {
             "probability": "<Calculated Probability (%)>",
             "odd_id": "<Selected Odd ID>",
             "odd": "<Selected Odd>",
+            "market_id": "<Selected Market ID>",
             "market_description": "<Brief Explanation of the Market>",
             "comprehensive_detailed_reason": "<Comprehensive Detailed Reason>"
           }
@@ -791,7 +793,7 @@ const modifyOdds = (odds: TOdd[], minProbability = '0%', maxProbability = '100%'
         market: odd.market_description,
         prob: odd.probability,
         odd: odd.dp3,
-        // market_id: odd.market_id,
+        market_id: odd.market_id,
       };
 
       if (odd.handicap) newOdd['handicap'] = odd.handicap;
@@ -831,7 +833,7 @@ const modifyLeague = (fixture) => {
 }
 
 const modifyLineups = (fixture) => {
-  if (!fixture.lineups.length) {
+  if (!fixture.lineups || !fixture.lineups.length) {
     delete fixture.lineups;
     return fixture;
   }
@@ -1055,7 +1057,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log(`finished fixture bet suggestion completion.`);
         if (i < selectedFixtures.length - 1) await pause(timeBetweenCompletions);
 
-        suggestions.push({
+        const suggestion = {
           fixture: fixture.name,
           completion: completion,
           data: {
@@ -1065,12 +1067,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             h2h: h2h,
             odds: odds,
           },
-        });
+        };
+        suggestions.push(suggestion);
+
+        await googleCloudStorageClient.upsertJsonFile(suggestions, `suggestions/${date}.json`);
+        console.log(`finished upsert suggestion ${i}.`);
       }
 
       console.log(`finished to loop selected fixtures.`);
-
-      await googleCloudStorageClient.uploadJsonFile(suggestions, `suggestions/${date}.json`);
 
       return res.status(200).json({
         data: {
