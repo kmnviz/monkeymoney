@@ -1023,6 +1023,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           .find((fx) => fx.id === +selectedFixtures[i].id) as TFixture;
         fixture = modifyLineups(fixture);
         fixture = modifyLeague(fixture);
+        fixture['league'] = leagueNameById(fixture['league_id']);
         console.log(`fixture ${i}:${fixture.name} found.`);
 
         const teamAId = fixture['participants'][0]['id'];
