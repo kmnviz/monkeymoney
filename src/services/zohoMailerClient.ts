@@ -21,11 +21,11 @@ class ZohoMailerClient {
     const totalRecipients = recipients.length;
 
     try {
-      const responses = [];
+      const responses: any[] = [];
       for (let i = 0; i < totalRecipients; i += batchSize) {
         const batchRecipients = recipients.slice(i, i + batchSize);
 
-        const response = await this.transporter.sendMail({
+        const response: any = await this.transporter.sendMail({
           from: `BetBro AI ${process.env.ZOHO_EMAIL}`,
           to: '',
           bcc: batchRecipients,
