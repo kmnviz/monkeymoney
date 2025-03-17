@@ -30,6 +30,7 @@ const generateSuggestions = async () => {
 
     console.log(`generateSuggestionsJob on ${fullDate} successfully triggered. response: `, response.data);
   } catch (error) {
+    console.log('generateSuggestionsJob error: ', error);
     console.error(`generateSuggestionsJob on ${fullDate} failed`, error.message);
   }
 };
@@ -57,6 +58,7 @@ const recapSuggestions = async () => {
 
     console.log(`recapSuggestionsJobs on ${fullDate} successfully triggered. response: `, response.data);
   } catch (error) {
+    console.log('recapSuggestionsJobs error: ', error);
     console.error(`recapSuggestionsJobs on ${fullDate} failed`, error.message);
   }
 };
@@ -110,6 +112,7 @@ const postGenerateSuggestions = async () => {
 
     console.log(`postGenerateSuggestionsJobs on ${fullDate} successfully triggered. response: `, response.data);
   } catch (error) {
+    console.log(`postGenerateSuggestionsJobs.error: `, error);
     console.error(`postGenerateSuggestionsJobs on ${fullDate} failed`, error.message);
   }
 };

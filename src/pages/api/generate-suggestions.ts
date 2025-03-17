@@ -1076,7 +1076,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log(`finished upsert suggestion ${i}.`);
       }
 
-      console.log(`finished to loop selected fixtures.`);
+      console.log(`finished to loop selected fixtures for ${date}.`);
 
       return res.status(200).json({
         data: {
