@@ -7,12 +7,14 @@ const { DateTime } = require('luxon');
 
 const API_URL = `${process.env.API_URL}`;
 const generateSuggestions = async () => {
-  const fullDate = DateTime.utc().toFormat('yyyy-MM-dd HH:mm:ss');
-  console.log(`generateSuggestions job trigged on ${fullDate}`);
+  const nowDate = DateTime.utc()
+    .toFormat('yyyy-MM-dd HH:mm:ss');
+  const tomorrowDate = DateTime.utc()
+    .plus({ days: 1 }).toFormat('yyyy-MM-dd');
+  console.log(`generateSuggestions job trigged on ${nowDate} for ${tomorrowDate}`);
 
-  const date = DateTime.utc().toFormat('yyyy-MM-dd');
   const payload = {
-    date: date,
+    date: tomorrowDate,
     bookmakerId: '2',
     suggestionsCount: '30',
     mainModel: 'gpt-4-turbo',
@@ -28,22 +30,21 @@ const generateSuggestions = async () => {
     const executionTime = end.diff(start, 'milliseconds').toObject();
     console.log(`Request generate-suggestions execution time: ${executionTime.milliseconds} ms`);
 
-    console.log(`generateSuggestionsJob on ${fullDate} successfully triggered. response: `, response.data);
+    console.log(`generateSuggestionsJob on ${nowDate} for ${tomorrowDate} successfully triggered. response: `, response.data);
   } catch (error) {
     console.log('generateSuggestionsJob error: ', error);
-    console.error(`generateSuggestionsJob on ${fullDate} failed`, error.message);
+    console.error(`generateSuggestionsJob on ${nowDate} for ${tomorrowDate} failed`, error.message);
   }
 };
 
 const recapSuggestions = async () => {
-  const fullDate = DateTime.utc()
-    .minus({ days: 1 }).toFormat('yyyy-MM-dd HH:mm:ss');
-  console.log(`recapSuggestions job trigged on ${fullDate}`);
-
-  const date = DateTime.utc()
+  const nowDate = DateTime.utc().toFormat('yyyy-MM-dd HH:mm:ss');
+  const yesterdayDate = DateTime.utc()
     .minus({ days: 1 }).toFormat('yyyy-MM-dd');
+  console.log(`recapSuggestions job trigged on ${nowDate}`);
+
   const payload = {
-    date: date,
+    date: yesterdayDate,
   };
 
   try {
@@ -56,22 +57,21 @@ const recapSuggestions = async () => {
     const executionTime = end.diff(start, 'milliseconds').toObject();
     console.log(`Request recap-suggestions execution time: ${executionTime.milliseconds} ms`);
 
-    console.log(`recapSuggestionsJobs on ${fullDate} successfully triggered. response: `, response.data);
+    console.log(`recapSuggestionsJobs on ${nowDate} for ${yesterdayDate} successfully triggered. response: `, response.data);
   } catch (error) {
     console.log('recapSuggestionsJobs error: ', error);
-    console.error(`recapSuggestionsJobs on ${fullDate} failed`, error.message);
+    console.error(`recapSuggestionsJobs on ${nowDate} for ${yesterdayDate} failed`, error.message);
   }
 };
 
 const postRecapSuggestions = async () => {
-  const fullDate = DateTime.utc()
-    .minus({ days: 1 }).toFormat('yyyy-MM-dd HH:mm:ss');
-  console.log(`postRecapSuggestions job trigged on ${fullDate}`);
-
-  const date = DateTime.utc()
+  const nowDate = DateTime.utc().toFormat('yyyy-MM-dd HH:mm:ss');
+  const yesterdayDate = DateTime.utc()
     .minus({ days: 1 }).toFormat('yyyy-MM-dd');
+  console.log(`postRecapSuggestions job trigged on ${nowDate} for ${yesterdayDate}`);
+
   const payload = {
-    date: date,
+    date: yesterdayDate,
   };
 
   try {
@@ -84,20 +84,21 @@ const postRecapSuggestions = async () => {
     const executionTime = end.diff(start, 'milliseconds').toObject();
     console.log(`Request post-recap-suggestions execution time: ${executionTime.milliseconds} ms`);
 
-    console.log(`postRecapSuggestionsJobs on ${fullDate} successfully triggered. response: `, response.data);
+    console.log(`postRecapSuggestionsJobs on ${nowDate} for ${yesterdayDate} successfully triggered. response: `, response.data);
   } catch (error) {
     console.log(`postRecapSuggestionsJobs.error: `, error);
-    console.error(`postRecapSuggestionsJobs on ${fullDate} failed`, error.message);
+    console.error(`postRecapSuggestionsJobs on ${nowDate} for ${yesterdayDate} failed`, error.message);
   }
 };
 
 const postGenerateSuggestions = async () => {
-  const fullDate = DateTime.utc().toFormat('yyyy-MM-dd HH:mm:ss');
-  console.log(`fullDate job triggered on ${fullDate}`);
+  const nowDate = DateTime.utc().toFormat('yyyy-MM-dd HH:mm:ss');
+  const todayDate = DateTime.utc()
+    .plus({ days: 1 }).toFormat('yyyy-MM-dd');
+  console.log(`fullDate job triggered on ${nowDate} for ${todayDate}`);
 
-  const date = DateTime.utc().toFormat('yyyy-MM-dd');
   const payload = {
-    date: date,
+    date: todayDate,
   };
 
   try {
@@ -110,10 +111,10 @@ const postGenerateSuggestions = async () => {
     const executionTime = end.diff(start, 'milliseconds').toObject();
     console.log(`Request post-generate-suggestions execution time: ${executionTime.milliseconds} ms`);
 
-    console.log(`postGenerateSuggestionsJobs on ${fullDate} successfully triggered. response: `, response.data);
+    console.log(`postGenerateSuggestionsJobs on ${nowDate} for ${todayDate} successfully triggered. response: `, response.data);
   } catch (error) {
     console.log(`postGenerateSuggestionsJobs.error: `, error);
-    console.error(`postGenerateSuggestionsJobs on ${fullDate} failed`, error.message);
+    console.error(`postGenerateSuggestionsJobs on ${nowDate} for ${todayDate} failed`, error.message);
   }
 };
 
