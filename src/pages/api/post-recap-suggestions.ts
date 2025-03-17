@@ -124,7 +124,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       }
 
-      const completion = await createRecapSuggestionPostCompletion((suggestionsRecap as object)['guessed'], date);
+      const guessed = (suggestionsRecap as object[]).filter((suggestion) => suggestion.result.is_guessed === 'YES');
+      const completion = await createRecapSuggestionPostCompletion(guessed, date);
       const message = (completion as object).data;
       await twitterClient.v2.tweet(message);
       await telegramBotClient.sendMessage(message);
