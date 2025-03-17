@@ -986,7 +986,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const suggestionsCount = +req.body.suggestionsCount;
     const mainModel = req.body.mainModel || null;
     const allFixtures = req.body.allFixtures ?? false;
-    const timeBetweenCompletions = 2 * 60 * 1000;
+    // const timeBetweenCompletions = 2 * 60 * 1000;
+    const timeBetweenCompletions = 15 * 1000;
 
     if (mainModel && !Object.values(models).includes(mainModel)) {
       return res.status(422).json({
