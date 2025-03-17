@@ -124,7 +124,7 @@ const generateSuggestionsJobs = CronJob.from({
   start: true,
 });
 const recapSuggestionsJobs = CronJob.from({
-  cronTime: '0 15 5 * * *',
+  cronTime: '0 0 5 * * *',
   onTick: recapSuggestions,
   timeZone: 'UTC',
   start: true,
