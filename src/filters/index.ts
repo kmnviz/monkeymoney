@@ -1,137 +1,293 @@
-import Decimal from 'decimal.js';
-import { TDailySchedule } from '../types/sportradar/DailySchedule';
-import { TSportEventMarket } from '../types/sportradar/SportEventMarket';
-import { TCompetitorSummary } from '../types/sportradar/CompetitorSummary';
-import { TTeam } from '../types/sportmonks/Team';
-import { TOdd } from '../types/sportmonks/Odd';
-import { TSquad } from '../types/sportmonks/Squad';
+import {leagueNameById, positionNameById} from '../utils';
 import sportmonksTypes from '../database/sportmonks/types.json';
+import {TOdd} from '../types/sportmonks/Odd';
 import sportmonksMarkets from '../database/sportmonks/markets.json';
+import Decimal from 'decimal.js';
+import {removeEmptyArrays, removeNullValues} from '../helpers';
 
-export const filterDailySchedules = (dailySchedules: TDailySchedule[]) => {
-  const countries = [
-    'England',
-    'Spain',
-    'Italy',
-    'Germany',
-    'France',
-  ];
+export const modifyTeam = (team) => {
+  return {
+    id: team.id,
+    name: team.name,
+    last_played_at: team.last_played_at,
+    activeseasons: team.activeseasons,
+    players: team.players,
+    coaches: team.coaches,
+  }
+}
 
-  return dailySchedules.filter((ds: TDailySchedule) => {
-    return countries.includes(ds.sport_event.sport_event_context.category.name);
-  }).map((ds: TDailySchedule) => {
+export const modifyActiveSeasons = (activeSeasons) => {
+  return activeSeasons.map((as) => {
     return {
-      id: ds.sport_event.id,
-      start_time: ds.sport_event.start_time,
-      sport: {
-        id: ds.sport_event.sport_event_context.sport.id,
-        name: ds.sport_event.sport_event_context.sport.name,
-      },
-      country: {
-        id: ds.sport_event.sport_event_context.category.id,
-        name: ds.sport_event.sport_event_context.category.name,
-        country_code: ds.sport_event.sport_event_context.category.country_code,
-      },
-      competition: {
-        id: ds.sport_event.sport_event_context.competition.id,
-        name: ds.sport_event.sport_event_context.competition.name,
-        gender: ds.sport_event.sport_event_context.competition.gender,
-      },
-      competitors: [
-        {
-          id: ds.sport_event.competitors[0].id,
-          name: ds.sport_event.competitors[0].name,
-          abbr: ds.sport_event.competitors[0].abbreviation,
-          qualifier: ds.sport_event.competitors[0].qualifier,
-        },
-        {
-          id: ds.sport_event.competitors[1].id,
-          name: ds.sport_event.competitors[1].name,
-          abbr: ds.sport_event.competitors[1].abbreviation,
-          qualifier: ds.sport_event.competitors[1].qualifier,
-        },
-      ],
-      fixture: `${ds.sport_event.competitors[0].name} vs ${ds.sport_event.competitors[1].name}`,
+      id: as.id,
+      name: as.name,
+      league: leagueNameById(as.league_id),
     };
   });
 }
 
-export const filterSportEventMarkets = (sportEventMarkets: TSportEventMarket[]) => {
-  return sportEventMarkets.map((sev: TSportEventMarket) => {
+export const modifyPlayerStatistics = (data) => {
+  const optimized = {};
+
+  data.forEach(detail => {
+    const key = Object.keys(detail)[0]; // Get the stat key (e.g., "Goals", "Yellowcards", etc.)
+    const value = detail[key];
+
+    // Flatten the data based on keys
+    switch (key) {
+      case "Captain":
+        optimized["captain_total"] = value.total;
+        break;
+      case "Goals":
+        optimized["goals_total"] = value.total;
+        optimized["goals_goals"] = value.goals;
+        break;
+      case "Assists":
+        optimized["assists_total"] = value.total;
+        break;
+      case "Yellowcards":
+        optimized["yellowcards_total"] = value.total;
+        optimized["yellowcards_home"] = value.home;
+        optimized["yellowcards_away"] = value.away;
+        break;
+      case "Goals Conceded":
+        optimized["goals_conceded_total"] = value.total;
+        break;
+      case "Minutes Played":
+        optimized["minutes_played_total"] = value.total;
+        break;
+      case "Cleansheets":
+        optimized["cleansheets_total"] = value.total;
+        optimized["cleansheets_home"] = value.home;
+        optimized["cleansheets_away"] = value.away;
+        break;
+      case "Team Wins":
+        optimized["team_wins_total"] = value.total;
+        break;
+      case "Team Draws":
+        optimized["team_draws_total"] = value.total;
+        break;
+      case "Team Lost":
+        optimized["team_lost_total"] = value.total;
+        break;
+      case "Appearances":
+        optimized["appearances_total"] = value.total;
+        break;
+      case "Lineups":
+        optimized["lineups_total"] = value.total;
+        break;
+      default:
+        break;
+    }
+  });
+
+  return optimized;
+}
+
+export const modifyPlayers = (players) => {
+  return players.map((pl) => {
     return {
-      id: sev.id,
-      market: sev.name,
-      books: sev.books.map((b) => {
-        return {
-          id: b.id,
-          name: b.name,
-          outcomes: b.outcomes.map((o) => {
-            return {
-              id: o.id,
-              type: o.type,
-              odds_decimal: o.odds_decimal,
-            };
-          })
-        };
-      })
+      id: pl.id,
+      player_id: pl.player_id,
+      start: pl.start,
+      end: pl.end,
+      position: positionNameById(pl.position_id),
     };
   });
 }
 
-export const filterCompetitorSummaries = (competitorSummaries: TCompetitorSummary[]) => {
-  return competitorSummaries
-    .filter((cs) => {
-      return cs.sport_event_status?.match_status === 'ended' && cs.statistics;
-    })
-    .map((cs: TCompetitorSummary) => {
+export const modifyCoaches = async (coaches) => {
+  const result = [];
+  for (let i = 0; i < coaches.length; i++) {
+    if (coaches[i].data) {
+      result.push({
+        start: coaches[i]?.start,
+        end: coaches[i]?.end,
+        name: coaches[i].data?.name,
+        date_of_birth: coaches[i].data?.date_of_birth,
+        position: positionNameById(coaches[i]?.position_id),
+      });
+    }
+  }
+
+  return result;
+}
+
+export const modifyStatistics = (statistics) => {
+  const types = sportmonksTypes;
+
+  return statistics
+    .filter((stat) =>
+      stat.has_values
+      && stat.hasOwnProperty('details')
+      && stat.details.length > 0
+    )
+    .map((stat) => {
       return {
-        id: cs.sport_event.id,
-        start_time: cs.sport_event.start_time,
-        sport_event_status: {
-          home_score: cs.sport_event_status.home_score,
-          away_score: cs.sport_event_status.away_score,
-          period_scores: cs.sport_event_status.period_scores,
-          // qualifier: cs.sport_event_status?.match_situation?.qualifier,
-        },
-        statistics: cs.statistics.totals.competitors.map((c) => {
+        season_id: stat.season_id,
+        details: stat.details.map((detail) => {
+          const type = types.find((t) => t.id === detail.type_id);
+
           return {
-            name: c.name,
-            abbr: c.abbreviation,
-            qualifier: c?.qualifier,
-            statistics: c.statistics,
-            players: c.players.map((p) => {
-              return {
-                name: p.name,
-                starter: p.starter,
-                statistics: Object.fromEntries(
-                  Object.entries(p.statistics).filter(([_, value]) => value !== 0)
-                ),
-              };
-            }).filter((p) => Object.keys(p.statistics).length > 0)
+            [type.name]: detail.value,
+          };
+
+          return {
+            type: type ? type.name : null,
+            value: detail.value,
           };
         }),
-      };
-    });
+      }
+    })
+    .flat();
 }
 
-// --- SportMonks filter --- //
-
-export const filterTeams = (teams: TTeam[]) => {
-  return teams.map((team) => {
-    return {
-      id: team.id,
-      name: team.name,
-      type: team.type,
-      last_played_at: team.last_played_at,
-      meta: {
-        location: team.meta.location,
-        position: team.meta.position,
-      },
+export const modifyStandings = (standings, team) => {
+  return standings.map((st) => {
+    const result = {
+      participant_id: st.participant_id,
+      points: st.points,
     };
+
+    if (st.participant_id === team.id) {
+      result['is_current_team'] = true;
+    }
+
+    return result;
   });
 }
 
-export const filterOdds = (odds: TOdd[], probability = '0%') => {
+export const modifyScores = (obj) => {
+  if (Array.isArray(obj)) {
+    // Loop through array elements
+    obj.forEach(item => modifyScores(item)); // Recursively process nested arrays
+  } else if (typeof obj === "object" && obj !== null) {
+    // Check if the current object has the "scores" key
+    if (obj.hasOwnProperty('scores') && Array.isArray(obj.scores) && obj.scores.length >= 2) {
+      // Find which score corresponds to home and which corresponds to away
+      const homeScore = obj.scores.find(score => score.score.participant === "home");
+      const awayScore = obj.scores.find(score => score.score.participant === "away");
+
+      // If both home and away scores are found, format as "home : away"
+      if (homeScore && awayScore) {
+        const homeGoals = homeScore.score.goals || 0; // Get home goals (default 0 if missing)
+        const awayGoals = awayScore.score.goals || 0; // Get away goals (default 0 if missing)
+        obj.scores = `${homeGoals}:${awayGoals}`; // Set the value of "scores" as a string
+      }
+    }
+
+    // Recursively process nested objects
+    for (let key in obj) {
+      modifyScores(obj[key]);
+    }
+  }
+
+  return obj;
+}
+
+export const modifySchedules = (schedules) => {
+  let result = schedules.map((sc) => {
+    return {
+      name: sc.name,
+      // finished: sc.finished,
+      starting_at: sc.starting_at,
+      ending_at: sc.ending_at,
+      fixtures: sc.fixtures ? sc.fixtures.map((fx) => {
+        return {
+          name: fx.name,
+          starting_at: fx.starting_at,
+          result_info: fx.result_info,
+          length: fx.length,
+          // participants: fx.participants.map((pt) => {
+          //   return {
+          //     name: pt.name,
+          //     last_played_at: pt.last_played_at,
+          //   };
+          // }),
+          scores: fx.scores ? fx.scores.map((sc) => {
+            return {
+              score: sc.score,
+              description: sc.description,
+            };
+          }).filter((sc) => {
+            return sc.description === 'CURRENT';
+          }) : [],
+        };
+      }) : [],
+      rounds: sc.rounds ? sc.rounds.map((rd) => {
+        return {
+          // name: rd.name,
+          starting_at: rd.starting_at,
+          result_info: rd.result_info,
+          // length: rd.length,
+          // participants: rd.participants ? rd.participants.map((pt) => {
+          //   return {
+          //     name: pt.name,
+          //     last_played_at: pt.last_played_at,
+          //   };
+          // }) : [],
+          scores: rd.scores ? rd.scores.map((sc) => {
+            return {
+              score: sc.score,
+              description: sc.description,
+            };
+          }).filter((sc) => {
+            return sc.description === 'CURRENT';
+          }) : [],
+          fixtures: rd.fixtures ? rd.fixtures.map((fx) => {
+            return {
+              name: fx.name,
+              starting_at: fx.starting_at,
+              result_info: fx.result_info,
+              // length: fx.length,
+              // participants: fx.participants.map((pt) => {
+              //   return {
+              //     name: pt.name,
+              //     last_played_at: pt.last_played_at,
+              //   };
+              // }),
+              scores: fx.scores ? fx.scores.map((sc) => {
+                return {
+                  score: sc.score,
+                  description: sc.description,
+                };
+              }).filter((sc) => {
+                return sc.description === 'CURRENT';
+              }) : [],
+            };
+          }) : [],
+        };
+      }) : [],
+      // aggregates: sc.rounds ? sc.rounds.map((agg) => {
+      //   return {
+      //     name: agg.name,
+      //     starting_at: agg.starting_at,
+      //     result_info: agg.result_info,
+      //     length: agg.length,
+      //     // participants: agg.participants ? agg.participants.map((pt) => {
+      //     //   return {
+      //     //     name: pt.name,
+      //     //     last_played_at: pt.last_played_at,
+      //     //   };
+      //     // }) : [],
+      //     scores: agg.scores ? agg.scores.map((sc) => {
+      //       return {
+      //         score: sc.score,
+      //         description: sc.description,
+      //       };
+      //     }) : [],
+      //   };
+      // }) : [],
+    };
+  });
+
+  result = removeEmptyArrays(result);
+  result = removeNullValues(result);
+  result = modifyScores(result);
+  return result;
+}
+
+export const modifyOdds = (odds: TOdd[], minProbability = '0%', maxProbability = '100%') => {
   const markets = sportmonksMarkets;
   const marketsIds = markets.map((m) => m.id);
 
@@ -139,11 +295,13 @@ export const filterOdds = (odds: TOdd[], probability = '0%') => {
     .filter((odd) => marketsIds.includes(odd.market_id))
     .map((odd) => {
       const newOdd = {
+        id: odd.id,
         label: odd.label,
-        value: odd.value,
-        market_description: odd.market_description,
-        probability: odd.probability,
-        dp3: odd.dp3,
+        // value: odd.value,
+        market: odd.market_description,
+        prob: odd.probability,
+        odd: odd.dp3,
+        market_id: odd.market_id,
       };
 
       if (odd.handicap) newOdd['handicap'] = odd.handicap;
@@ -152,110 +310,71 @@ export const filterOdds = (odds: TOdd[], probability = '0%') => {
       return newOdd;
     })
     .filter((odd) => {
-      const prob = odd.probability
+      const prob = odd.prob
         .replace('%', '');
 
-      return Decimal(prob).gt(probability.replace('%', ''));
+      return Decimal(prob).gt(minProbability.replace('%', ''));
+    })
+    .filter((odd) => {
+      const prob = odd.prob
+        .replace('%', '');
+
+      return Decimal(prob).lt(maxProbability.replace('%', ''));
     });
 }
 
-export const filterStatistics = (statistics: any[], seasonId: number) => {
-  // const types = sportmonksTypes;
-  //
-  // return statistics
-  //   .filter((stat) => stat.has_values && stat.season_id === seasonId)
-  //   .map((stat) => {
-  //     return {
-  //       season_id: stat.season_id,
-  //       details: stat.details.map((detail) => {
-  //         const type = types.find((t) => t.id === detail.type_id);
-  //
-  //         return {
-  //           type: type ? type.name : null,
-  //           value: detail.value,
-  //         };
-  //       }),
-  //     }
-  //   });
-
-  const types = sportmonksTypes;
-
-  return statistics
-    .filter((stat) =>
-      stat.has_values
-      && stat.hasOwnProperty('details')
-      && stat.details.length > 0
-      && stat.season_id === seasonId
-    )
-    .map((stat) => {
-      return {
-        season_id: stat.season_id,
-        details: stat.details.map((detail) => {
-          const type = types.find((t) => t.id === detail.type_id);
-
-          return {
-            type: type ? type.name : null,
-            value: detail.value,
-          }
-        }),
-      }
-    })
-    .map((stat) => {
-      return stat.details.map((detail) => {
-        return {[detail.type]: detail.value};
-      })
-    })
-    .flat();
+export const modifyH2h = (h2h) => {
+  return h2h.map((fx) => {
+    return {
+      name: fx.name,
+      starting_at: fx.starting_at,
+      result_info: fx.result_info,
+      leg: fx.leg,
+      length: fx.length,
+    }
+  });
 }
 
-// export const filterSquad = (squad: TSquad[]) => {
-//   const types = sportmonksTypes;
-//
-//   return squad
-//     .map((sq: TSquad) => {
-//       return {
-//         squad_id: sq.id,
-//         player_id: sq.player.id,
-//         name: sq.player.name,
-//         height: sq.player.height,
-//         weight: sq.player.weight,
-//         date_of_birth: sq.player.date_of_birth,
-//         position: types.find((type) => type.id === sq.position_id).name,
-//       };
-//     });
-// }
-
-export const filterPlayerStatistics = (statistics: any[], seasonId: number) => {
-  const types = sportmonksTypes;
-
-  return statistics
-    .filter((stat) =>
-      stat.has_values
-      && stat.hasOwnProperty('details')
-      && stat.details.length > 0
-      && stat.season_id === seasonId
-    )
-    .map((stat) => {
-      return {
-        season_id: stat.season_id,
-        details: stat.details.map((detail) => {
-          const type = types.find((t) => t.id === detail.type_id);
-
-          return {
-            type: type ? type.name : null,
-            value: detail.value,
-          }
-        }),
-      }
-    })
-    .map((stat) => {
-      return stat.details.map((detail) => {
-        return {[detail.type]: detail.value};
-      })
-    })
-    .flat();
+export const modifyLeague = (fixture) => {
+  fixture['league'] = leagueNameById(fixture.league_id);
+  return fixture;
 }
 
-export const filterSchedules = () => {
+export const modifyLineups = (fixture) => {
+  if (!fixture.lineups || !fixture.lineups.length) {
+    delete fixture.lineups;
+    return fixture;
+  }
 
+  fixture.participants[0]['lineup'] = [];
+  fixture.participants[1]['lineup'] = [];
+
+  fixture.lineups.forEach((player) => {
+    if (fixture.participants[0].id === player.team_id)
+      fixture.participants[0]['lineup'].push(player);
+    if (fixture.participants[1].id === player.team_id)
+      fixture.participants[1]['lineup'].push(player);
+  });
+
+  fixture.participants[0]['lineup'] = fixture.participants[0]['lineup']
+    .map((player) => {
+      return {
+        formation_field: player.formation_field,
+        player_name: player.player_name,
+        position: positionNameById(player.position_id),
+      };
+    });
+
+  fixture.participants[1]['lineup'] = fixture.participants[1]['lineup']
+    .map((player) => {
+      return {
+        formation_field: player.formation_field,
+        player_name: player.player_name,
+        position: positionNameById(player.position_id),
+      };
+    });
+
+  delete fixture.lineups;
+
+  return fixture;
 }

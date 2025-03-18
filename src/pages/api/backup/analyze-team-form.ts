@@ -1,12 +1,12 @@
 // @ts-nocheck
 import type {NextApiRequest, NextApiResponse} from 'next';
 import OpenAI from 'openai';
-import SportmonksApiClient from '../../services/sportmonksApiClient';
-import {ParticipantEnum} from '../../enums/sportmonks';
-import {leagueNameById, positionNameById} from '../../utils';
-import sportmonksTypes from '../../database/sportmonks/types.json';
-import {TOdd} from '../../types/sportmonks/Odd';
-import sportmonksMarkets from '../../database/sportmonks/markets.json';
+import SportmonksApiClient from '../../../services/sportmonksApiClient';
+import {ParticipantEnum} from '../../../enums/sportmonks';
+import {leagueNameById, positionNameById} from '../../../utils';
+import sportmonksTypes from '../../../database/sportmonks/types.json';
+import {TOdd} from '../../../types/sportmonks/Odd';
+import sportmonksMarkets from '../../../database/sportmonks/markets.json';
 import Decimal from 'decimal.js';
 
 const sportmonksApiClient = new SportmonksApiClient();

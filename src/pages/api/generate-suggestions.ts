@@ -949,6 +949,11 @@ const collectTeamData = async (teamId) => {
 
   team['activeseasons'] = modifyActiveSeasons(team['activeseasons']);
   team['players'] = modifyPlayers(team['players']);
+
+  for (let i = 0; i < team['coaches'].length; i++) {
+    team['coaches']['data'] = await sportmonksApiClient.getCoachById(team['coaches'][i]['coach_id']);
+  }
+
   team['coaches'] = await modifyCoaches(team['coaches']);
   team = await appendSeasonsStatistics(team);
   team = await appendPlayersStatistics(team);

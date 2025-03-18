@@ -2,17 +2,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Pinecone } from '@pinecone-database/pinecone';
 import OpenAI from 'openai';
-import SportradarApiClient from '../../services/sportradarApiClient';
-import SportmonksApiClient from '../../services/sportmonksApiClient';
+import SportradarApiClient from '../../../services/sportradarApiClient';
+import SportmonksApiClient from '../../../services/sportmonksApiClient';
 import {
   filterDailySchedules,
   filterSportEventMarkets,
   filterCompetitorSummaries,
-} from '../../filters';
-import { pause } from '../../utils';
-import { TDailySchedule } from '../../types/sportradar/DailySchedule';
-import { TSportEventMarket } from '../../types/sportradar/SportEventMarket';
-import { TCompetitorSummary } from '../../types/sportradar/CompetitorSummary';
+} from '../../../filters/backup';
+import { pause } from '../../../utils';
+import { TDailySchedule } from '../../../types/sportradar/DailySchedule';
+import { TSportEventMarket } from '../../../types/sportradar/SportEventMarket';
+import { TCompetitorSummary } from '../../../types/sportradar/CompetitorSummary';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {

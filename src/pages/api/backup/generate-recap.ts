@@ -1,8 +1,8 @@
 // @ts-nocheck
 import type { NextApiRequest, NextApiResponse } from 'next';
 import OpenAI from 'openai';
-import SportmonksApiClient from '../../services/sportmonksApiClient';
-import { TFixture } from '../../types/sportmonks/Fixture';
+import SportmonksApiClient from '../../../services/sportmonksApiClient';
+import { TFixture } from '../../../types/sportmonks/Fixture';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY as string,

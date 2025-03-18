@@ -1,16 +1,16 @@
 // @ts-nocheck
 import type { NextApiRequest, NextApiResponse } from 'next';
-import SportmonksApiClient from '../../services/sportmonksApiClient';
+import SportmonksApiClient from '../../../services/sportmonksApiClient';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
       const sportmonksApiClient = new SportmonksApiClient();
-      const markets = await sportmonksApiClient.getAllMarkets();
+      const news = await sportmonksApiClient.getPostMatchNews();
       return res.status(200).json({
         data: {
-          count: markets.length,
-          types: markets,
+          count: news.length,
+          news: news,
         },
       });
     } catch (error) {

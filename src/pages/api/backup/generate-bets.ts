@@ -1,15 +1,15 @@
 // @ts-nocheck
 import type { NextApiRequest, NextApiResponse } from 'next';
 import OpenAI from 'openai';
-import SportmonksApiClient from '../../services/sportmonksApiClient';
-import { ParticipantEnum } from '../../enums/sportmonks';
-import { pause } from '../../utils';
+import SportmonksApiClient from '../../../services/sportmonksApiClient';
+import { ParticipantEnum } from '../../../enums/sportmonks';
+import { pause } from '../../../utils';
 import {
   filterTeams,
   filterOdds,
   filterStatistics,
-} from '../../filters';
-import { TFixture } from '../../types/sportmonks/Fixture';
+} from '../../../filters/backup';
+import { TFixture } from '../../../types/sportmonks/Fixture';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY as string,
