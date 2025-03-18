@@ -296,7 +296,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       let fixtureOdds = await sportmonksApiClient
         .getOddsByFixtureIdAndBookmakerId(fixtureId, bookmakerId);
 
-      if (!fixtureOdds) {
+      if (!fixtureOdds || fixtureOdds?.length < 10) {
+        const allFixtureOdds = await sportmonksApiClient.getOddsByFixtureId(fixtureId);
+        if (!allFixtureOdds) {
+          console.log(`fixture ${fixture.name} has no odds.`);
+          return res.status(400).json({
+            message: 'Fixture has no odd within any bookmaker',
+            fixture: fixture,
+          });
+        }
+
         const alternativeBookmakerOdds = await findAlternativeBookmakerOdds(fixture, bookmakerId);
         if (alternativeBookmakerOdds.odds && alternativeBookmakerOdds.odds?.length > 0) {
           fixtureOdds = alternativeBookmakerOdds.odds;

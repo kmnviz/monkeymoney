@@ -16,6 +16,7 @@ import sportmonksMarkets from '../../database/sportmonks/markets.json';
 import {TOdd} from '../../types/sportmonks/Odd';
 import {TFixture} from '../../types/sportmonks/Fixture';
 import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
+import sportmonksBookmakers from "../../database/sportmonks/bookmakers.json";
 
 const googleCloudStorageClient = new GoogleCloudStorageClient();
 const sportmonksApiClient = new SportmonksApiClient();
@@ -966,6 +967,44 @@ const collectTeamData = async (teamId) => {
   return team;
 }
 
+const findAlternativeBookmakerOdds = async (fixture, bookmakerId, enoughOdds = 200) => {
+  console.log(`fixture ${fixture.name} has no odds within main bookmaker:${bookmakerId} odds.`);
+
+  let alternativeOdds, alternativeBookmakerId;
+  for (let i = 0 ; i < sportmonksBookmakers.length; i++) {
+    console.log(`fixture ${fixture.name} check for odds within bookmaker:${sportmonksBookmakers[i].id}.`);
+    if (sportmonksBookmakers[i].id === bookmakerId) continue;
+
+    const lAlternativeOdds = await sportmonksApiClient
+      .getOddsByFixtureIdAndBookmakerId(fixture.id, sportmonksBookmakers[i].id);
+
+    if (i === 0) {
+      alternativeOdds = lAlternativeOdds;
+      alternativeBookmakerId = sportmonksBookmakers[i].id;
+      if (alternativeOdds && alternativeOdds.length) {
+        console.log(`fixture ${fixture.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
+      }
+    } else {
+      if (lAlternativeOdds && lAlternativeOdds.length > 0) {
+        if (!alternativeOdds) {
+          alternativeOdds = lAlternativeOdds;
+          console.log(`fixture ${fixture.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
+        } else if (lAlternativeOdds.length > alternativeOdds.length) {
+          alternativeOdds = lAlternativeOdds;
+          console.log(`fixture ${fixture.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
+        }
+      }
+    }
+
+    if (alternativeOdds && alternativeOdds.length >= enoughOdds) break;
+  }
+
+  return {
+    odds: alternativeOdds,
+    bookmakerId: alternativeBookmakerId,
+  };
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     if (
@@ -1046,13 +1085,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const h2h = modifyH2h(await sportmonksApiClient
           .getFixturesByHeadToHead(teamAId, teamBId));
         console.log(`head to head data fetched.`);
-        const initialOdds = await sportmonksApiClient
+
+        let fixtureOdds = await sportmonksApiClient
           .getOddsByFixtureIdAndBookmakerId(fixtureId, bookmakerId);
-        if (!initialOdds) {
-          console.log(`fixture ${i}:${fixture.name} has no odds, continue.`);
-          continue;
+
+        if (!fixtureOdds || fixtureOdds?.length < 10) {
+          const allFixtureOdds = await sportmonksApiClient.getOddsByFixtureId(fixtureId);
+          if (!allFixtureOdds) {
+            console.log(`fixture ${i}:${fixture.name} has no odds, continue.`);
+            continue;
+          }
+
+          const alternativeBookmakerOdds = await findAlternativeBookmakerOdds(fixture, bookmakerId);
+          if (alternativeBookmakerOdds.odds && alternativeBookmakerOdds.odds?.length > 0) {
+            fixtureOdds = alternativeBookmakerOdds.odds;
+          } else {
+            console.log(`fixture ${i}:${fixture.name} has no odds, continue.`);
+            continue;
+          }
         }
-        const odds = modifyOdds(initialOdds, '20%', '80%');
+
+        const odds = modifyOdds(fixtureOdds, '20%', '80%');
         console.log(`fixture odds data fetched.`);
 
         console.log(`starting fixture bet suggestion completion...`);
