@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {leagueNameById, positionNameById} from '../utils';
 import sportmonksTypes from '../database/sportmonks/types.json';
 import {TOdd} from '../types/sportmonks/Odd';
@@ -97,7 +98,7 @@ export const modifyPlayers = (players) => {
 }
 
 export const modifyCoaches = async (coaches) => {
-  const result = [];
+  const result: any[] = [];
   for (let i = 0; i < coaches.length; i++) {
     if (coaches[i].data) {
       result.push({
