@@ -1072,7 +1072,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         };
         suggestions.push(suggestion);
 
-        await googleCloudStorageClient.upsertJsonFile(suggestions, `suggestions/${date}.json`);
+        await googleCloudStorageClient.upsertJsonFile(suggestion, `suggestions/${date}.json`);
         console.log(`finished upsert suggestion ${i}.`);
       }
 
