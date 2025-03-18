@@ -304,6 +304,7 @@ const createBetSuggestionCompletion = async (content, mainModel = null) => {
       model: model,
       data: formatJsonStringToJson(completion.choices[0].message.content),
       reasoning: completion.choices[0].message['reasoning_content'],
+      tokens: completion.usage?.total_tokens,
     };
   } catch (error) {
     try {
@@ -320,6 +321,7 @@ const createBetSuggestionCompletion = async (content, mainModel = null) => {
       return {
         model: model,
         data: JSON.parse(completion.choices[0].message.content as string),
+        tokens: completion.usage?.total_tokens,
       };
     } catch (err) {
       console.log('err: ', err);
