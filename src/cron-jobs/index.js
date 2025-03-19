@@ -98,6 +98,7 @@ const postGenerateSuggestions = async () => {
 
   const payload = {
     date: todayDate,
+    suggestionsCount: 12,
   };
 
   try {
