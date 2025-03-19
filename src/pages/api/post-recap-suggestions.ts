@@ -2,6 +2,7 @@
 import type {NextApiRequest, NextApiResponse} from 'next';
 import OpenAI from 'openai';
 import {TwitterApi} from 'twitter-api-v2';
+import Decimal from 'decimal.js';
 import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
 import TelegramBotClient from '../../services/telegramBotClient';
 import ZohoMailerClient from '../../services/zohoMailerClient';
@@ -135,12 +136,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           message: 'Emails file not found.',
         });
       }
-      await zohoMailerClient.sendEmails(emailAddresses, `Daily recap ${date}`, message);
+       await zohoMailerClient.sendEmails(emailAddresses, `Daily recap ${date}`, message);
+
+      let win = new Decimal(0);
+      for (let i = 0; i < guessed.length; i++) {
+        win = win.plus(new Decimal(guessed[i].suggestion.odd));
+      }
+      const pnl = win.minus(new Decimal(suggestionsRecap.length)).toFixed(3);
 
       return res.status(200).json({
         data: {
           completion: completion,
           suggestionsRecap: suggestionsRecap,
+          suggestionsTotal: suggestionsRecap.length,
+          pnl: pnl,
         },
       });
     } catch (error) {
