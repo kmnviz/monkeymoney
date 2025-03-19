@@ -56,3 +56,8 @@ export const positionNameById = (positionId: number): string => {
   const position = sportmonksTypes.find((tp) => tp.id === positionId);
   return position ? position.name : '';
 }
+
+export const bookmakerNameById = (bookmakerId: number): string => {
+  const bookmaker = sportmonksBookmakers.find((bk) => bk.id === bookmakerId);
+  return bookmaker ? bookmaker.name : '';
+}
