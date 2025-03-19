@@ -93,8 +93,7 @@ const postRecapSuggestions = async () => {
 
 const postGenerateSuggestions = async () => {
   const nowDate = DateTime.utc().toFormat('yyyy-MM-dd HH:mm:ss');
-  const todayDate = DateTime.utc()
-    .plus({ days: 1 }).toFormat('yyyy-MM-dd');
+  const todayDate = DateTime.utc().toFormat('yyyy-MM-dd');
   console.log(`fullDate job triggered on ${nowDate} for ${todayDate}`);
 
   const payload = {
