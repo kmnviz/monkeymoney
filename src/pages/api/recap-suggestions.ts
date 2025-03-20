@@ -174,6 +174,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             odd: suggestions[i].completion.data.odd,
             probability: suggestions[i].completion.data.probability,
             market_description: suggestions[i].completion.data.market_description,
+	    free: suggestions[i].free,
+	    bookmakerId: suggestions[i].bookmakerId,
           },
           result: {
             scores: scores,

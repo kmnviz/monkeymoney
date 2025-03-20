@@ -125,7 +125,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       }
 
-      const guessed = (suggestionsRecap as object[]).filter((suggestion) => suggestion.result.is_guessed === 'YES');
+      const guessed = (suggestionsRecap as object[]).filter((suggestion) => suggestion.result.is_guessed === 'YES' && suggestion.suggestion.free === true);
       const completion = await createRecapSuggestionPostCompletion(guessed, date);
       const message = (completion as object).data;
       await twitterClient.v2.tweet(message);

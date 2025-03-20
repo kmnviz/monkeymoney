@@ -225,36 +225,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         fields: {
           date: 'YYYY-MM-DD',
         },
-        optional: {
-          suggestionsCount: 0,
-        },
       });
     }
 
     try {
       const date = req.body.date;
-      const suggestionsCount = +req.body.suggestionsCount || 0;
 
-      const allSuggestions: object[] = (await googleCloudStorageClient.readJsonFile(`suggestions/${date}.json`) as object[]);
+      let allSuggestions: object[] = (await googleCloudStorageClient.readJsonFile(`suggestions/${date}.json`) as object[]);
       if (!allSuggestions) {
         return res.status(404).json({
           message: 'File not found.',
         });
       }
+      allSuggestions = allSuggestions.filter((suggestion) => suggestion.free === true);
 
-      let suggestions = [];
-      if (suggestionsCount > 0) {
-        const selectedFixturesCompletion = await createSelectFixturesCompletion(suggestionsCount, allSuggestions);
-        const selectedFixturesIds = (selectedFixturesCompletion.data as string)
-          .split(',').map((id) => parseInt(id, 10));
-
-        suggestions = allSuggestions.filter((suggestion) => {
-          return selectedFixturesIds.includes(suggestion.data.fixture.id);
-        });
-      } else {
-        suggestions = allSuggestions as object[];
-      }
-
+      let suggestions = allSuggestions;
       const fDailySuggestions = (suggestions as object[]).map((suggestion) => {
         return {
           fixture: suggestion.fixture,
