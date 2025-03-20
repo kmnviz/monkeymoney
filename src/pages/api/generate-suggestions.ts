@@ -4,24 +4,24 @@ import OpenAI from 'openai';
 import SportmonksApiClient from '../../services/sportmonksApiClient';
 import {ParticipantEnum} from '../../enums/sportmonks';
 import {
-  leagueNameById,
-  pause,
-  formatJsonStringToJson
+    leagueNameById,
+    pause,
+    formatJsonStringToJson
 } from '../../utils';
 import {removeEmptyObjects, removeZeroValues, countTokens} from '../../helpers';
 import {
-  modifyActiveSeasons,
-  modifyCoaches,
-  modifyH2h,
-  modifyLeague,
-  modifyLineups,
-  modifyOdds,
-  modifyPlayers,
-  modifyPlayerStatistics,
-  modifySchedules,
-  modifyStandings,
-  modifyStatistics,
-  modifyTeam,
+    modifyActiveSeasons,
+    modifyCoaches,
+    modifyH2h,
+    modifyLeague,
+    modifyLineups,
+    modifyOdds,
+    modifyPlayers,
+    modifyPlayerStatistics,
+    modifySchedules,
+    modifyStandings,
+    modifyStatistics,
+    modifyTeam,
 } from '../../filters';
 import {TFixture} from '../../types/sportmonks/Fixture';
 import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
@@ -31,36 +31,36 @@ const googleCloudStorageClient = new GoogleCloudStorageClient();
 const sportmonksApiClient = new SportmonksApiClient();
 const TPM_LIMIT = 30000;
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY as string,
+    apiKey: process.env.OPENAI_API_KEY as string,
 });
 const deepSeek = new OpenAI({
-  baseURL: process.env.DEEPSEEK_API_URL,
-  apiKey: process.env.DEEPSEEK_API_KEY as string,
+    baseURL: process.env.DEEPSEEK_API_URL,
+    apiKey: process.env.DEEPSEEK_API_KEY as string,
 });
 const models = {
-  gpt4Turbo: 'gpt-4-turbo',
-  gpt4o: 'gpt-4o',
-  gpt4oLatest: 'chatgpt-4o-latest',
-  deepSeekReasoner: 'deepseek-reasoner',
-  deepSeekChat: 'deepseek-chat',
+    gpt4Turbo: 'gpt-4-turbo',
+    gpt4o: 'gpt-4o',
+    gpt4oLatest: 'chatgpt-4o-latest',
+    deepSeekReasoner: 'deepseek-reasoner',
+    deepSeekChat: 'deepseek-chat',
 };
 
 const createSelectFixturesCompletion = async (count: number, fixtures: any[]) => {
-  const content = fixtures.map((fixture) => {
-    return {
-      fixture_id: fixture.id,
-      fixture: `${fixture.participants[0].name} vs ${fixture.participants[1].name}`,
-    };
-  });
+    const content = fixtures.map((fixture) => {
+        return {
+            fixture_id: fixture.id,
+            fixture: `${fixture.participants[0].name} vs ${fixture.participants[1].name}`,
+        };
+    });
 
-  const messages = [
-    {
-      role: 'system',
-      content: `You are an expert football analyst and betting strategist. Your task is to analyze a given list of football fixtures and select the top ${count} fixtures that have the highest potential for successful betting promotion. Use a data-driven approach based on value, team's popularity, historical number of viewer, overall fixture popularity.`,
-    },
-    {
-      role: 'user',
-      content: `
+    const messages = [
+        {
+            role: 'system',
+            content: `You are an expert football analyst and betting strategist. Your task is to analyze a given list of football fixtures and select the top ${count} fixtures that have the highest potential for successful betting promotion. Use a data-driven approach based on value, team's popularity, historical number of viewer, overall fixture popularity.`,
+        },
+        {
+            role: 'user',
+            content: `
       ### Task:
       Analyze the following list of football fixtures and select the best ${count} fixtures for betting promotion. Rank them based on their betting potential and provide reasoning for each selection.
 
@@ -75,104 +75,104 @@ const createSelectFixturesCompletion = async (count: number, fixtures: any[]) =>
       Return ONLY a comma-separated list of ${count} fixture_ids like:
       X,Y,Z
       `,
-    },
-    {
-      role: 'assistant',
-      content: JSON.stringify(content),
-    },
-  ];
+        },
+        {
+            role: 'assistant',
+            content: JSON.stringify(content),
+        },
+    ];
 
-  const completion = await deepSeek.chat.completions.create({
-    model: models.deepSeekChat,
-    messages: messages,
-    temperature: 0,
-  } as any);
+    const completion = await deepSeek.chat.completions.create({
+        model: models.deepSeekChat,
+        messages: messages,
+        temperature: 0,
+    } as any);
 
-  console.log('createSelectFixturesCompletion completion: ', completion.usage?.total_tokens);
-  console.log('createSelectFixturesCompletion completion: ', completion.choices[0].message);
+    console.log('createSelectFixturesCompletion completion: ', completion.usage?.total_tokens);
+    console.log('createSelectFixturesCompletion completion: ', completion.choices[0].message);
 
-  return {
-    data: completion.choices[0].message.content,
-  };
+    return {
+        data: completion.choices[0].message.content,
+    };
 }
 
 const createBetSuggestionCompletion = async (content, mainModel = null) => {
-  const lContent = {...content};
-  lContent['odds'] = lContent['odds'].map(({prob, ...rest}) => rest);
-  // const probInstruction = `**PROBABILITY MUST BE MORE THAN 70% AND THE ODD MUST BE MORE THAN 1.70**`;
-  const probInstruction = `Think strategically and prioritize bets where **real probability > 70% and odds > 1.70.**`;
+    const lContent = {...content};
+    lContent['odds'] = lContent['odds'].map(({prob, ...rest}) => rest);
+    // const probInstruction = `**PROBABILITY MUST BE MORE THAN 70% AND THE ODD MUST BE MORE THAN 1.70**`;
+    const probInstruction = `Think strategically and prioritize bets where **real probability > 70% and odds > 1.70.**`;
 
-  const messages = [
-    {
-      role: 'system',
-      content: `You are a world-class football data analyst. Analyze the JSON data and provide insights. Return a JSON response.`,
-    },
-    {
-      role: 'user',
-      content:
-      //   `
-      //     🔹 Step 1: Deep Team & Player Analysis
-      //     Perform a precise breakdown of both teams’ current form, momentum shifts, and season-long trends.
-      //     Analyze each key player’s performance metrics (goals, assists, defensive actions, xG, xGA, etc.).
-      //     Evaluate injuries, suspensions, and player fatigue—determine their true impact on the match.
-      //     Assess psychological factors:
-      //     Team confidence level (winning streak, losing streak)
-      //     Pressure due to league standing
-      //     Motivation in different competitions
-      //
-      //     🔹 Step 2: Advanced Tactical & Strategic Insights
-      //     Formations & Tactical Setup:
-      //     Expected line-ups and formation matchups (e.g., 4-3-3 vs 3-5-2).
-      //     Strengths/weaknesses of each approach.
-      //     Pressing Intensity & Defensive Stability:
-      //     High-press vs. Low-block teams: how does this affect match dynamics?
-      //     Set-piece Efficiency:
-      //     Which team is stronger in corners, free kicks, or penalties?
-      //     Head-to-Head Managerial Battle:
-      //     How well do the coaches adapt to different situations?
-      //     Historical results when they have faced off.
-      //
-      //     🔹 Step 3: Contextual & Motivational Analysis
-      //     Match Importance:
-      //     Is this a must-win game for either team?
-      //     Are they prioritizing another competition (e.g., Champions League vs domestic league)?
-      //     Fixture Congestion:
-      //     How many games have each team played recently?
-      //     How will fatigue & squad rotation affect performance?
-      //     Home/Away Impact & External Factors:
-      //     Does the venue provide an advantage? (e.g., altitude, crowd effect)
-      //     Weather conditions that may impact playing style (e.g., rain, snow, heat).
-      //
-      //     🔹 Step 4: Data-Driven Probability & Betting Optimization
-      //     Use logical, data-backed reasoning to determine the most probable outcome.
-      //     Identify the best-value betting market by comparing odds to real probabilities.
-      //     If the most obvious bet has low profitability, search for market inefficiencies.
-      //     Ensure the final bet selection has an implied probability much higher than bookmaker odds suggest.
-      //
-      //     🔹 Step 5: Final instruction
-      //     Think outside of the box and leverage your deepest football knowledge.
-      //     Do not provide generic answers—focus on unique insights, tactical angles, and betting inefficiencies that others might overlook.
-      //     Your goal is to find the smartest and most profitable bet, not just the most obvious one.
-      //     **Take the statistics data and the odds data from the provided context ONLY**.
-      //     ${probInstruction}
-      //
-      //     🔹 Step 6: **Output Format (Strictly Follow This JSON Structure):**
-      //     {
-      //       "bet": "<Team A vs Team B>",
-      //       "bet": "<Detailed Bet Selection>",
-      //       "probability": "<Calculated Probability (%)>",
-      //       "odd": "<Selected Odd>",
-      //       "market_description": "<Brief Explanation of the Market>",
-      //       "comprehensive_detailed_reason": "<Comprehensive Detailed Reason>"
-      //     }
-      //
-      //     🔹 Additional Instructions for GPT:
-      //     Do not provide generic responses.
-      //     Every prediction must be backed by data, tactical logic, or psychological insight.
-      //     Consider multiple angles before settling on the best bet.
-      //     Always compare real probability vs. bookmaker odds for expected value.
-      // `,
-        `
+    const messages = [
+        {
+            role: 'system',
+            content: `You are a world-class football data analyst. Analyze the JSON data and provide insights. Return a JSON response.`,
+        },
+        {
+            role: 'user',
+            content:
+            //   `
+            //     🔹 Step 1: Deep Team & Player Analysis
+            //     Perform a precise breakdown of both teams’ current form, momentum shifts, and season-long trends.
+            //     Analyze each key player’s performance metrics (goals, assists, defensive actions, xG, xGA, etc.).
+            //     Evaluate injuries, suspensions, and player fatigue—determine their true impact on the match.
+            //     Assess psychological factors:
+            //     Team confidence level (winning streak, losing streak)
+            //     Pressure due to league standing
+            //     Motivation in different competitions
+            //
+            //     🔹 Step 2: Advanced Tactical & Strategic Insights
+            //     Formations & Tactical Setup:
+            //     Expected line-ups and formation matchups (e.g., 4-3-3 vs 3-5-2).
+            //     Strengths/weaknesses of each approach.
+            //     Pressing Intensity & Defensive Stability:
+            //     High-press vs. Low-block teams: how does this affect match dynamics?
+            //     Set-piece Efficiency:
+            //     Which team is stronger in corners, free kicks, or penalties?
+            //     Head-to-Head Managerial Battle:
+            //     How well do the coaches adapt to different situations?
+            //     Historical results when they have faced off.
+            //
+            //     🔹 Step 3: Contextual & Motivational Analysis
+            //     Match Importance:
+            //     Is this a must-win game for either team?
+            //     Are they prioritizing another competition (e.g., Champions League vs domestic league)?
+            //     Fixture Congestion:
+            //     How many games have each team played recently?
+            //     How will fatigue & squad rotation affect performance?
+            //     Home/Away Impact & External Factors:
+            //     Does the venue provide an advantage? (e.g., altitude, crowd effect)
+            //     Weather conditions that may impact playing style (e.g., rain, snow, heat).
+            //
+            //     🔹 Step 4: Data-Driven Probability & Betting Optimization
+            //     Use logical, data-backed reasoning to determine the most probable outcome.
+            //     Identify the best-value betting market by comparing odds to real probabilities.
+            //     If the most obvious bet has low profitability, search for market inefficiencies.
+            //     Ensure the final bet selection has an implied probability much higher than bookmaker odds suggest.
+            //
+            //     🔹 Step 5: Final instruction
+            //     Think outside of the box and leverage your deepest football knowledge.
+            //     Do not provide generic answers—focus on unique insights, tactical angles, and betting inefficiencies that others might overlook.
+            //     Your goal is to find the smartest and most profitable bet, not just the most obvious one.
+            //     **Take the statistics data and the odds data from the provided context ONLY**.
+            //     ${probInstruction}
+            //
+            //     🔹 Step 6: **Output Format (Strictly Follow This JSON Structure):**
+            //     {
+            //       "bet": "<Team A vs Team B>",
+            //       "bet": "<Detailed Bet Selection>",
+            //       "probability": "<Calculated Probability (%)>",
+            //       "odd": "<Selected Odd>",
+            //       "market_description": "<Brief Explanation of the Market>",
+            //       "comprehensive_detailed_reason": "<Comprehensive Detailed Reason>"
+            //     }
+            //
+            //     🔹 Additional Instructions for GPT:
+            //     Do not provide generic responses.
+            //     Every prediction must be backed by data, tactical logic, or psychological insight.
+            //     Consider multiple angles before settling on the best bet.
+            //     Always compare real probability vs. bookmaker odds for expected value.
+            // `,
+                `
           🔹 Step 1: Deep Team & Player Analysis
             - Prioritize recent form (last 5 games) over full-season trends.
             - Weigh xG, xGA, key passes, and shots on target.
@@ -210,77 +210,77 @@ const createBetSuggestionCompletion = async (content, mainModel = null) => {
             "comprehensive_detailed_reason": "<Comprehensive Detailed Reason>"
           }
       `
-    },
-    {
-      role: 'assistant',
-      content: JSON.stringify(lContent),
-    },
-  ];
+        },
+        {
+            role: 'assistant',
+            content: JSON.stringify(lContent),
+        },
+    ];
 
-  let model;
-  if (mainModel) {
-    model = mainModel;
-    try {
-      const completion = await openai.chat.completions.create({
-        model: model,
-        messages: messages,
-        temperature: 0,
-      } as any);
+    let model;
+    if (mainModel) {
+        model = mainModel;
+        try {
+            const completion = await openai.chat.completions.create({
+                model: model,
+                messages: messages,
+                temperature: 0,
+            } as any);
 
-      console.log('createBetSuggestionCompletion completion: ', completion.usage?.total_tokens);
-      console.log('createBetSuggestionCompletion completion: ', completion.choices[0].message);
+            console.log('createBetSuggestionCompletion completion: ', completion.usage?.total_tokens);
+            console.log('createBetSuggestionCompletion completion: ', completion.choices[0].message);
 
-      return {
-        model: model,
-        data: JSON.parse(completion.choices[0].message.content as string),
-      };
-    } catch (error) {
-      console.log('error: ', error);
-      const tokensCount = countTokens(messages, models.gpt4Turbo);
-      console.log('tokenCounts: ', tokensCount);
+            return {
+                model: model,
+                data: JSON.parse(completion.choices[0].message.content as string),
+            };
+        } catch (error) {
+            console.log('error: ', error);
+            const tokensCount = countTokens(messages, models.gpt4Turbo);
+            console.log('tokenCounts: ', tokensCount);
 
-      if (tokensCount >= TPM_LIMIT) {
-        return {
-          data:
-            `
+            if (tokensCount >= TPM_LIMIT) {
+                return {
+                    data:
+                        `
               fixture ${lContent.fixture.name} has context with ${tokensCount} tokens,
               which is higher than the limit of ${TPM_LIMIT}. the error is probably
               due to rate limit hit.
             `
-        };
-      }
+                };
+            }
 
-      return {
-        data: `fixture ${lContent.fixture.name} failed with ${error.message}`,
-      };
+            return {
+                data: `fixture ${lContent.fixture.name} failed with ${error.message}`,
+            };
+        }
     }
-  }
 
-  try {
-    model = models.deepSeekReasoner;
-    // model = models.deepSeekChat;
-    const lMessages = messages;
-    lMessages[3] = {
-      role: 'user',
-      content:
-      //   `
-      //   Final Instruction:
-      //   Think outside of the box and leverage your deepest football knowledge.
-      //   Do not provide generic answers—focus on unique insights, tactical angles, and betting inefficiencies that others might overlook.
-      //   Your goal is to find the smartest and most profitable bet, not just the most obvious one.
-      //   ${probInstruction}
-      //
-      //   **Output Format (Strictly Follow This JSON Structure):**
-      //     {
-      //       "bet": "<Team A vs Team B>",
-      //       "bet": "<Detailed Bet Selection>",
-      //       "probability": "<Calculated Probability (%)>",
-      //       "odd": "<Selected Odd>",
-      //       "market_description": "<Brief Explanation of the Market>",
-      //       "comprehensive_detailed_reason": "<Comprehensive Detailed Reason>"
-      //     }
-      // `,
-        `
+    try {
+        model = models.deepSeekReasoner;
+        // model = models.deepSeekChat;
+        const lMessages = messages;
+        lMessages[3] = {
+            role: 'user',
+            content:
+            //   `
+            //   Final Instruction:
+            //   Think outside of the box and leverage your deepest football knowledge.
+            //   Do not provide generic answers—focus on unique insights, tactical angles, and betting inefficiencies that others might overlook.
+            //   Your goal is to find the smartest and most profitable bet, not just the most obvious one.
+            //   ${probInstruction}
+            //
+            //   **Output Format (Strictly Follow This JSON Structure):**
+            //     {
+            //       "bet": "<Team A vs Team B>",
+            //       "bet": "<Detailed Bet Selection>",
+            //       "probability": "<Calculated Probability (%)>",
+            //       "odd": "<Selected Odd>",
+            //       "market_description": "<Brief Explanation of the Market>",
+            //       "comprehensive_detailed_reason": "<Comprehensive Detailed Reason>"
+            //     }
+            // `,
+                `
         **Final Instruction**
           - ${probInstruction}
           - ** Think outside the box and leverage your deepest football knowledge. **
@@ -299,397 +299,409 @@ const createBetSuggestionCompletion = async (content, mainModel = null) => {
             "comprehensive_detailed_reason": "<Comprehensive Detailed Reason>"
           }
       `
-    };
+        };
 
-    const completion = await deepSeek.chat.completions.create({
-      model: model,
-      messages: lMessages,
-      temperature: 0,
-    } as any);
+        const completion = await deepSeek.chat.completions.create({
+            model: model,
+            messages: lMessages,
+            temperature: 0,
+        } as any);
 
-    console.log('createBetSuggestionCompletion completion: ', completion.usage);
-    console.log('createBetSuggestionCompletion completion: ', completion.choices[0].message);
+        console.log('createBetSuggestionCompletion completion: ', completion.usage);
+        console.log('createBetSuggestionCompletion completion: ', completion.choices[0].message);
 
-    return {
-      model: model,
-      data: formatJsonStringToJson(completion.choices[0].message.content),
-      reasoning: completion.choices[0].message['reasoning_content'],
-      tokens: completion.usage?.total_tokens,
-    };
-  } catch (error) {
-    try {
-      model = models.gpt4Turbo;
-      const completion = await openai.chat.completions.create({
-        model: model,
-        messages: messages,
-        temperature: 0,
-      } as any);
-
-      console.log('createBetSuggestionCompletion completion: ', completion.usage);
-      console.log('createBetSuggestionCompletion completion: ', completion.choices[0].message);
-
-      return {
-        model: model,
-        data: JSON.parse(completion.choices[0].message.content as string),
-        tokens: completion.usage?.total_tokens,
-      };
-    } catch (err) {
-      console.log('err: ', err);
-      const tokensCount = countTokens(messages, models.gpt4Turbo);
-      console.log('tokenCounts: ', tokensCount);
-
-      if (tokensCount >= TPM_LIMIT) {
         return {
-          data:
-            `
+            model: model,
+            data: formatJsonStringToJson(completion.choices[0].message.content),
+            reasoning: completion.choices[0].message['reasoning_content'],
+            tokens: completion.usage?.total_tokens,
+        };
+    } catch (error) {
+        try {
+            model = models.gpt4Turbo;
+            const completion = await openai.chat.completions.create({
+                model: model,
+                messages: messages,
+                temperature: 0,
+            } as any);
+
+            console.log('createBetSuggestionCompletion completion: ', completion.usage);
+            console.log('createBetSuggestionCompletion completion: ', completion.choices[0].message);
+
+            return {
+                model: model,
+                data: JSON.parse(completion.choices[0].message.content as string),
+                tokens: completion.usage?.total_tokens,
+            };
+        } catch (err) {
+            console.log('err: ', err);
+            const tokensCount = countTokens(messages, models.gpt4Turbo);
+            console.log('tokenCounts: ', tokensCount);
+
+            if (tokensCount >= TPM_LIMIT) {
+                return {
+                    data:
+                        `
               fixture ${lContent.fixture.name} has context with ${tokensCount} tokens,
               which is higher than the limit of ${TPM_LIMIT}. the error is probably
               due to rate limit hit.
             `
-        };
-      }
+                };
+            }
 
-      return {
-        data: `fixture ${lContent.fixture.name} failed with ${error.message}`,
-      };
+            return {
+                data: `fixture ${lContent.fixture.name} failed with ${error.message}`,
+            };
+        }
     }
-  }
 
-  // if (model === 'deepseek-reasoner') {
-  //   messages[3] = {
-  //     role: 'user',
-  //     content:
-  //       `
-  //       Final Instruction:
-  //       Think outside of the box and leverage your deepest football knowledge.
-  //       Do not provide generic answers—focus on unique insights, tactical angles, and betting inefficiencies that others might overlook.
-  //       Your goal is to find the smartest and most profitable bet, not just the most obvious one.
-  //       Try your best to find THE MOST UNOBVIOUS MARKET OVER 2.00 with the HIGHEST PROBABILITY OVER 75%
-  //     `,
-  //   };
-  // }
-  //
-  // try {
-  //   const completion = await openai.chat.completions.create({
-  //     model: model,
-  //     messages: messages,
-  //     temperature: 0,
-  //   } as any);
-  //
-  //   console.log('createBetSuggestionCompletion completion: ', completion.usage);
-  //   console.log('createBetSuggestionCompletion completion: ', completion.choices[0].message);
-  //
-  //   const response = {
-  //     data: completion.choices[0].message.content,
-  //   };
-  //
-  //   if (model === 'deepseek-reasoner') {
-  //     response['reasoning'] = completion.choices[0].message['reasoning_content'];
-  //   }
-  //
-  //   return response;
-  // } catch (error) {
-  //   console.log('error: ', error);
-  //   if (model !== 'deepseek-reasoner') {
-  //     const tokensCount = countTokens(messages, model);
-  //     console.log('tokenCounts: ', tokensCount);
-  //
-  //     if (tokensCount >= TPM_LIMIT) {
-  //       return {
-  //         data:
-  //           `
-  //             fixture ${lContent.fixture.name} has context with ${tokensCount} tokens,
-  //             which is higher than the limit of ${TPM_LIMIT}. the error is probably
-  //             due to rate limit hit.
-  //           `
-  //       };
-  //     }
-  //   }
-  //
-  //   return {
-  //     data: `fixture ${lContent.fixture.name} failed with ${error.message}`,
-  //   };
-  // }
+    // if (model === 'deepseek-reasoner') {
+    //   messages[3] = {
+    //     role: 'user',
+    //     content:
+    //       `
+    //       Final Instruction:
+    //       Think outside of the box and leverage your deepest football knowledge.
+    //       Do not provide generic answers—focus on unique insights, tactical angles, and betting inefficiencies that others might overlook.
+    //       Your goal is to find the smartest and most profitable bet, not just the most obvious one.
+    //       Try your best to find THE MOST UNOBVIOUS MARKET OVER 2.00 with the HIGHEST PROBABILITY OVER 75%
+    //     `,
+    //   };
+    // }
+    //
+    // try {
+    //   const completion = await openai.chat.completions.create({
+    //     model: model,
+    //     messages: messages,
+    //     temperature: 0,
+    //   } as any);
+    //
+    //   console.log('createBetSuggestionCompletion completion: ', completion.usage);
+    //   console.log('createBetSuggestionCompletion completion: ', completion.choices[0].message);
+    //
+    //   const response = {
+    //     data: completion.choices[0].message.content,
+    //   };
+    //
+    //   if (model === 'deepseek-reasoner') {
+    //     response['reasoning'] = completion.choices[0].message['reasoning_content'];
+    //   }
+    //
+    //   return response;
+    // } catch (error) {
+    //   console.log('error: ', error);
+    //   if (model !== 'deepseek-reasoner') {
+    //     const tokensCount = countTokens(messages, model);
+    //     console.log('tokenCounts: ', tokensCount);
+    //
+    //     if (tokensCount >= TPM_LIMIT) {
+    //       return {
+    //         data:
+    //           `
+    //             fixture ${lContent.fixture.name} has context with ${tokensCount} tokens,
+    //             which is higher than the limit of ${TPM_LIMIT}. the error is probably
+    //             due to rate limit hit.
+    //           `
+    //       };
+    //     }
+    //   }
+    //
+    //   return {
+    //     data: `fixture ${lContent.fixture.name} failed with ${error.message}`,
+    //   };
+    // }
 }
 
 const appendSeasonsStatistics = async (team) => {
-  const statistics = modifyStatistics(await sportmonksApiClient
-    .getSeasonStatisticsByParticipant(ParticipantEnum.Teams, team.id));
-  team['activeseasons'].forEach((as) => {
-    const stats = statistics
-      .filter((stat) => stat.season_id === as.id);
+    const statistics = modifyStatistics(await sportmonksApiClient
+        .getSeasonStatisticsByParticipant(ParticipantEnum.Teams, team.id));
+    team['activeseasons'].forEach((as) => {
+        const stats = statistics
+            .filter((stat) => stat.season_id === as.id);
 
-    as['statistics'] = (stats && stats.length) ? stats[0].details : [];
-  });
+        as['statistics'] = (stats && stats.length) ? stats[0].details : [];
+    });
 
-  return team;
+    return team;
 }
 
 const appendPlayersStatistics = async (team) => {
-  const activeSeasonsIds = team['activeseasons'].map((as) => as.id);
+    const activeSeasonsIds = team['activeseasons'].map((as) => as.id);
 
-  for (let i = 0; i < team['players'].length; i++) {
-    team['players'][i]['statistics'] = await sportmonksApiClient
-      .getSeasonStatisticsByParticipant(ParticipantEnum.Players, team['players'][i]['player_id']);
-    team['players'][i]['statistics'] = team['players'][i]['statistics']
-      .filter((stat) => activeSeasonsIds.includes(stat.season_id));
-    team['players'][i]['statistics'] = modifyStatistics(team['players'][i]['statistics']);
+    for (let i = 0; i < team['players'].length; i++) {
+        team['players'][i]['statistics'] = await sportmonksApiClient
+            .getSeasonStatisticsByParticipant(ParticipantEnum.Players, team['players'][i]['player_id']);
+        team['players'][i]['statistics'] = team['players'][i]['statistics']
+            .filter((stat) => activeSeasonsIds.includes(stat.season_id));
+        team['players'][i]['statistics'] = modifyStatistics(team['players'][i]['statistics']);
 
-    team['players'][i]['statistics'].forEach((stat) => {
-      stat['details'] = modifyPlayerStatistics(stat['details']);
+        team['players'][i]['statistics'].forEach((stat) => {
+            stat['details'] = modifyPlayerStatistics(stat['details']);
+        });
+    }
+
+    team['players'] = team['players'].filter((pl) => {
+        return pl.hasOwnProperty('statistics')
+            && pl['statistics'].length > 0;
     });
-  }
 
-  team['players'] = team['players'].filter((pl) => {
-    return pl.hasOwnProperty('statistics')
-      && pl['statistics'].length > 0;
-  });
-
-  return team;
+    return team;
 }
 
 const appendPlayersData = async (team) => {
-  for (let i = 0; i < team['players'].length; i++) {
-    const playerData = await sportmonksApiClient
-      .getPlayerById(team['players'][i]['player_id']);
+    for (let i = 0; i < team['players'].length; i++) {
+        const playerData = await sportmonksApiClient
+            .getPlayerById(team['players'][i]['player_id']);
 
-    team['players'][i] = {...team['players'][i], ...{name: playerData.name}};
-  }
+        team['players'][i] = {...team['players'][i], ...{name: playerData.name}};
+    }
 
-  return team;
+    return team;
 }
 
 const appendSeasonsStandings = async (team) => {
-  for (let i = 0; i < team['activeseasons'].length; i++) {
-    const standings = await sportmonksApiClient
-      .getStandingsBySeasonId(team['activeseasons'][i]['id']);
+    for (let i = 0; i < team['activeseasons'].length; i++) {
+        const standings = await sportmonksApiClient
+            .getStandingsBySeasonId(team['activeseasons'][i]['id']);
 
-    if (standings) {
-      team['activeseasons'][i]['standings'] = modifyStandings(standings, team);
+        if (standings) {
+            team['activeseasons'][i]['standings'] = modifyStandings(standings, team);
+        }
     }
-  }
 
-  return team;
+    return team;
 }
 
 const appendSeasonsSchedules = async (team) => {
-  for (let i = 0; i < team['activeseasons'].length; i++) {
-    team['activeseasons'][i]['schedules'] = await sportmonksApiClient
-      .getSchedulesBySeasonIdAndTeamId(team['activeseasons'][i]['id'], team.id);
+    for (let i = 0; i < team['activeseasons'].length; i++) {
+        team['activeseasons'][i]['schedules'] = await sportmonksApiClient
+            .getSchedulesBySeasonIdAndTeamId(team['activeseasons'][i]['id'], team.id);
 
-    team['activeseasons'][i]['schedules'] = modifySchedules(team['activeseasons'][i]['schedules']);
-  }
+        team['activeseasons'][i]['schedules'] = modifySchedules(team['activeseasons'][i]['schedules']);
+    }
 
-  return team;
+    return team;
 }
 
 const collectTeamData = async (teamId) => {
-  let team = modifyTeam(await sportmonksApiClient.getTeamById(teamId));
+    let team = modifyTeam(await sportmonksApiClient.getTeamById(teamId));
 
-  team['activeseasons'] = modifyActiveSeasons(team['activeseasons']);
-  team['players'] = modifyPlayers(team['players']);
+    team['activeseasons'] = modifyActiveSeasons(team['activeseasons']);
+    team['players'] = modifyPlayers(team['players']);
 
-  for (let i = 0; i < team['coaches'].length; i++) {
-    team['coaches']['data'] = await sportmonksApiClient.getCoachById(team['coaches'][i]['coach_id']);
-  }
+    for (let i = 0; i < team['coaches'].length; i++) {
+        team['coaches']['data'] = await sportmonksApiClient.getCoachById(team['coaches'][i]['coach_id']);
+    }
 
-  team['coaches'] = await modifyCoaches(team['coaches']);
-  team = await appendSeasonsStatistics(team);
-  team = await appendPlayersStatistics(team);
-  team = await appendPlayersData(team);
-  team = await appendSeasonsStandings(team);
-  team = await appendSeasonsSchedules(team);
-  team = removeZeroValues(team);
-  team = removeEmptyObjects(team);
+    team['coaches'] = await modifyCoaches(team['coaches']);
+    team = await appendSeasonsStatistics(team);
+    team = await appendPlayersStatistics(team);
+    team = await appendPlayersData(team);
+    team = await appendSeasonsStandings(team);
+    team = await appendSeasonsSchedules(team);
+    team = removeZeroValues(team);
+    team = removeEmptyObjects(team);
 
-  return team;
+    return team;
 }
 
 const findAlternativeBookmakerOdds = async (fixture, bookmakerId, enoughOdds = 200) => {
-  console.log(`fixture ${fixture.name} has no odds within main bookmaker:${bookmakerId} odds.`);
+    console.log(`fixture ${fixture.name} has no odds within main bookmaker:${bookmakerId} odds.`);
 
-  let alternativeOdds, alternativeBookmakerId;
-  for (let i = 0 ; i < sportmonksBookmakers.length; i++) {
-    console.log(`fixture ${fixture.name} check for odds within bookmaker:${sportmonksBookmakers[i].id}.`);
-    if (sportmonksBookmakers[i].id === bookmakerId) continue;
+    let alternativeOdds, alternativeBookmakerId;
+    for (let i = 0 ; i < sportmonksBookmakers.length; i++) {
+        console.log(`fixture ${fixture.name} check for odds within bookmaker:${sportmonksBookmakers[i].id}.`);
+        if (sportmonksBookmakers[i].id === bookmakerId) continue;
 
-    const lAlternativeOdds = await sportmonksApiClient
-      .getOddsByFixtureIdAndBookmakerId(fixture.id, sportmonksBookmakers[i].id);
+        const lAlternativeOdds = await sportmonksApiClient
+            .getOddsByFixtureIdAndBookmakerId(fixture.id, sportmonksBookmakers[i].id);
 
-    if (i === 0) {
-      alternativeOdds = lAlternativeOdds;
-      alternativeBookmakerId = sportmonksBookmakers[i].id;
-      if (alternativeOdds && alternativeOdds.length) {
-        console.log(`fixture ${fixture.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
-      }
-    } else {
-      if (lAlternativeOdds && lAlternativeOdds.length > 0) {
-        if (!alternativeOdds) {
-          alternativeOdds = lAlternativeOdds;
-          console.log(`fixture ${fixture.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
-        } else if (lAlternativeOdds.length > alternativeOdds.length) {
-          alternativeOdds = lAlternativeOdds;
-          console.log(`fixture ${fixture.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
+        if (i === 0) {
+            alternativeOdds = lAlternativeOdds;
+            alternativeBookmakerId = sportmonksBookmakers[i].id;
+            if (alternativeOdds && alternativeOdds.length) {
+                console.log(`fixture ${fixture.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
+            }
+        } else {
+            if (lAlternativeOdds && lAlternativeOdds.length > 0) {
+                if (!alternativeOdds) {
+                    alternativeOdds = lAlternativeOdds;
+                    console.log(`fixture ${fixture.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
+                } else if (lAlternativeOdds.length > alternativeOdds.length) {
+                    alternativeOdds = lAlternativeOdds;
+                    console.log(`fixture ${fixture.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
+                }
+            }
         }
-      }
+
+        if (alternativeOdds && alternativeOdds.length >= enoughOdds) break;
     }
 
-    if (alternativeOdds && alternativeOdds.length >= enoughOdds) break;
-  }
-
-  return {
-    odds: alternativeOdds,
-    bookmakerId: alternativeBookmakerId,
-  };
+    return {
+        odds: alternativeOdds,
+        bookmakerId: alternativeBookmakerId,
+    };
 }
 
+const MAX_SUGGESTIONS_LIMIT = 30;
+const FREE_SUGGESTIONS_LIMIT = 12;
+// const MAX_SUGGESTIONS_LIMIT = 1;
+// const FREE_SUGGESTIONS_LIMIT = 1;
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'POST') {
-    if (
-      !req.body
-      || !('date' in req.body)
-      || !('bookmakerId' in req.body)
-      || !('suggestionsCount' in req.body)
-    ) {
-      return res.status(422).json({
-        message: 'There are required fields',
-        fields: {
-          date: 'YYYY-MM-DD',
-          bookmakerId: 'X',
-          suggestionsCount: 'X',
-        },
-        optional: {
-          mainModel: 'gpt-4-turbo',
-          allFixtures: false,
-        },
-      });
-    }
-
-    const date = req.body.date;
-    const bookmakerId = +req.body.bookmakerId;
-    const suggestionsCount = +req.body.suggestionsCount;
-    const mainModel = req.body.mainModel || null;
-    const allFixtures = req.body.allFixtures ?? false;
-    // const timeBetweenCompletions = 2 * 60 * 1000;
-    const timeBetweenCompletions = 15 * 1000;
-
-    if (mainModel && !Object.values(models).includes(mainModel)) {
-      return res.status(422).json({
-        availableModels: Object.values(models),
-      });
-    }
-
-    try {
-      let selectedFixtures;
-      const totalFixtures = await sportmonksApiClient.getFixturesByDate(req.body.date);
-      console.log(`fetched total ${totalFixtures.length} fixtures for ${date}.`);
-
-      if (allFixtures) {
-        selectedFixtures = totalFixtures;
-        console.log(`starting all ${totalFixtures.length} fixtures...`);
-      } else {
-        let selectedFixturesIds = totalFixtures.map((tf: TFixture) => tf.id);
-        if (totalFixtures.length > suggestionsCount) {
-          console.log('starting fixtures selection completion...');
-          const selectedFixturesCompletion = await createSelectFixturesCompletion(suggestionsCount, totalFixtures);
-          selectedFixturesIds = (selectedFixturesCompletion.data as string)
-            .split(',').map((id) => parseInt(id, 10));
+    if (req.method === 'POST') {
+        if (
+            !req.body
+            || !('date' in req.body)
+            || !('bookmakerId' in req.body)
+        ) {
+            return res.status(422).json({
+                message: 'There are required fields',
+                fields: {
+                    date: 'YYYY-MM-DD',
+                    bookmakerId: 'X',
+                },
+                optional: {
+                    mainModel: 'gpt-4-turbo',
+                },
+            });
         }
 
-        selectedFixtures = totalFixtures
-          .filter((fx) => selectedFixturesIds.includes(fx.id));
-        console.log(`finished ${selectedFixtures.length} fixtures selection completion.`);
-      }
+        const date = req.body.date;
+        const bookmakerId = +req.body.bookmakerId;
+        const mainModel = req.body.mainModel || null;
+        // const timeBetweenCompletions = 2 * 60 * 1000;
+        const timeBetweenCompletions = 15 * 1000;
 
-      const suggestions = [];
-      console.log(`starting to loop selected fixtures...`);
-      for (let i = 0; i < selectedFixtures.length; i++) {
-        let fixture = totalFixtures
-          .find((fx) => fx.id === +selectedFixtures[i].id) as TFixture;
-        fixture = modifyLineups(fixture);
-        fixture = modifyLeague(fixture);
-        fixture['league'] = leagueNameById(fixture['league_id']);
-        console.log(`fixture ${i}:${fixture.name} found.`);
-
-        const teamAId = fixture['participants'][0]['id'];
-        const teamBId = fixture['participants'][1]['id'];
-        const fixtureId = fixture['id'];
-
-        const teamA = await collectTeamData(teamAId);
-        console.log(`teamA data collected.`);
-        const teamB = await collectTeamData(teamBId);
-        console.log(`teamB data collected.`);
-
-        const h2h = modifyH2h(await sportmonksApiClient
-          .getFixturesByHeadToHead(teamAId, teamBId));
-        console.log(`head to head data fetched.`);
-
-        let fixtureOdds = await sportmonksApiClient
-          .getOddsByFixtureIdAndBookmakerId(fixtureId, bookmakerId);
-
-        if (!fixtureOdds || fixtureOdds?.length < 10) {
-          const allFixtureOdds = await sportmonksApiClient.getOddsByFixtureId(fixtureId);
-          if (!allFixtureOdds) {
-            console.log(`fixture ${i}:${fixture.name} has no odds, continue.`);
-            continue;
-          }
-
-          const alternativeBookmakerOdds = await findAlternativeBookmakerOdds(fixture, bookmakerId);
-          if (alternativeBookmakerOdds.odds && alternativeBookmakerOdds.odds?.length > 0) {
-            fixtureOdds = alternativeBookmakerOdds.odds;
-          } else {
-            console.log(`fixture ${i}:${fixture.name} has no odds, continue.`);
-            continue;
-          }
+        if (mainModel && !Object.values(models).includes(mainModel)) {
+            return res.status(422).json({
+                availableModels: Object.values(models),
+            });
         }
 
-        const odds = modifyOdds(fixtureOdds, '20%', '80%');
-        console.log(`fixture odds data fetched.`);
+        try {
+            let selectedFixtures;
+            const totalFixtures = await sportmonksApiClient.getFixturesByDate(req.body.date);
+            console.log(`fetched total ${totalFixtures.length} fixtures for ${date}.`);
 
-        console.log(`starting fixture bet suggestion completion...`);
-        const completion = await createBetSuggestionCompletion({
-          fixture: fixture,
-          teamA: teamA,
-          teamB: teamB,
-          h2h: h2h,
-          odds: odds,
-        }, mainModel);
-        console.log(`finished fixture bet suggestion completion.`);
-        if (i < selectedFixtures.length - 1) await pause(timeBetweenCompletions);
+            // Select fixtures for ALL suggestions generations
+            let selectedFixturesIds = totalFixtures.map((tf: TFixture) => tf.id);
+            if (totalFixtures.length > MAX_SUGGESTIONS_LIMIT) {
+                console.log('starting ALL fixtures selection completion...');
+                const selectedFixturesCompletion = await createSelectFixturesCompletion(MAX_SUGGESTIONS_LIMIT, totalFixtures);
+                selectedFixturesIds = (selectedFixturesCompletion.data as string)
+                    .split(',').map((id) => parseInt(id, 10));
+            }
 
-        const suggestion = {
-          fixture: fixture.name,
-          completion: completion,
-          data: {
-            fixture: fixture,
-            teamA: teamA,
-            teamB: teamB,
-            h2h: h2h,
-            odds: odds,
-          },
-        };
-        suggestions.push(suggestion);
+            selectedFixtures = totalFixtures
+                .filter((fx) => selectedFixturesIds.includes(fx.id));
+            console.log(`finished ${selectedFixtures.length} fixtures selection completion.`);
 
-        await googleCloudStorageClient.upsertJsonFile(suggestion, `suggestions/${date}.json`);
-        console.log(`finished upsert suggestion ${i}.`);
-      }
+            // Select fixtures IDs for FREE suggestions generations
+            let freeSelectedFixturesIds = selectedFixtures.map((tf: TFixture) => tf.id);
+            if (selectedFixtures > FREE_SUGGESTIONS_LIMIT) {
+                console.log('starting FREE fixtures selection completion...');
+                const freeSelectedFixturesCompletion = await createSelectFixturesCompletion(FREE_SUGGESTIONS_LIMIT, selectedFixtures);
+                freeSelectedFixturesIds = (freeSelectedFixturesCompletion.data as string)
+                    .split(',').map((id) => parseInt(id, 10));
+            }
 
-      console.log(`finished to loop selected fixtures for ${date}.`);
+            const suggestions = [];
+            console.log(`starting to loop selected fixtures...`);
+            for (let i = 0; i < selectedFixtures.length; i++) {
+                let fixture = totalFixtures
+                    .find((fx) => fx.id === +selectedFixtures[i].id) as TFixture;
+                fixture = modifyLineups(fixture);
+                fixture = modifyLeague(fixture);
+                fixture['league'] = leagueNameById(fixture['league_id']);
+                console.log(`fixture ${i}:${fixture.name} found.`);
 
-      return res.status(200).json({
-        data: {
-          suggestions: suggestions,
-        },
-      });
-    } catch (error) {
-      console.log('error: ', error);
-      return res.status(500).json({
-        message: error.message,
-      });
+                const teamAId = fixture['participants'][0]['id'];
+                const teamBId = fixture['participants'][1]['id'];
+                const fixtureId = fixture['id'];
+
+                const teamA = await collectTeamData(teamAId);
+                console.log(`teamA data collected.`);
+                const teamB = await collectTeamData(teamBId);
+                console.log(`teamB data collected.`);
+
+                const h2h = modifyH2h(await sportmonksApiClient
+                    .getFixturesByHeadToHead(teamAId, teamBId));
+                console.log(`head to head data fetched.`);
+
+                let fixtureOdds = await sportmonksApiClient
+                    .getOddsByFixtureIdAndBookmakerId(fixtureId, bookmakerId);
+
+                let alternativeBookmakerOdds;
+                if (!fixtureOdds || fixtureOdds?.length < 10) {
+                    const allFixtureOdds = await sportmonksApiClient.getOddsByFixtureId(fixtureId);
+                    if (!allFixtureOdds) {
+                        console.log(`fixture ${i}:${fixture.name} has no odds, continue.`);
+                        continue;
+                    }
+
+                    alternativeBookmakerOdds = await findAlternativeBookmakerOdds(fixture, bookmakerId);
+                    if (alternativeBookmakerOdds.odds && alternativeBookmakerOdds.odds?.length > 0) {
+                        fixtureOdds = alternativeBookmakerOdds.odds;
+                    } else {
+                        console.log(`fixture ${i}:${fixture.name} has no odds, continue.`);
+                        continue;
+                    }
+                }
+
+                const odds = modifyOdds(fixtureOdds, '20%', '80%');
+                console.log(`fixture odds data fetched.`);
+
+                console.log(`starting fixture bet suggestion completion...`);
+                const completion = await createBetSuggestionCompletion({
+                    fixture: fixture,
+                    teamA: teamA,
+                    teamB: teamB,
+                    h2h: h2h,
+                    odds: odds,
+                }, mainModel);
+                console.log(`finished fixture bet suggestion completion.`);
+                if (i < selectedFixtures.length - 1) await pause(timeBetweenCompletions);
+
+                const isFreeSuggestion = freeSelectedFixturesIds.includes(fixture.id);
+		const suggestion = {
+                    fixture: fixture.name,
+		    free: isFreeSuggestion,
+		    bookmakerId: alternativeBookmakerOdds
+                        ? alternativeBookmakerOdds.bookmakerId
+                        : bookmakerId,
+                    completion: completion,
+                    data: {
+                        fixture: fixture,
+                        teamA: teamA,
+                        teamB: teamB,
+                        h2h: h2h,
+                        odds: odds,
+                    },
+                };
+
+                suggestions.push(suggestion);
+
+                await googleCloudStorageClient.upsertJsonFile(suggestion, `suggestions/${date}.json`);
+                console.log(`finished upsert ALL suggestion ${i}.`);
+            }
+
+            console.log(`finished to loop selected fixtures for ${date}.`);
+
+            return res.status(200).json({
+                data: {
+                    suggestions: suggestions,
+                },
+            });
+        } catch (error) {
+            console.log('error: ', error);
+            return res.status(500).json({
+                message: error.message,
+            });
+        }
+    } else {
+        return res.status(405).json({message: 'Method Not Allowed'});
     }
-  } else {
-    return res.status(405).json({message: 'Method Not Allowed'});
-  }
 }
 
 // ### **Custom GPT Instructions for Soccer Betting Predictions (Professional Bettor Perspective)**
