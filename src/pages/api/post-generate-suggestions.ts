@@ -292,13 +292,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         await twitterClient.v2.tweet(singleMessages[i]);
       }
 
-      const postedSuggestions = allSuggestions.filter((suggestion) => {
-        return suggestions.map((s) => s.data.fixture.id)
-          .includes(suggestion.data.fixture.id);
-      });
-      await googleCloudStorageClient.uploadJsonFile(postedSuggestions, `suggestions/posted/${date}.json`);
-      console.log(`finished upload posted suggestions.`);
-
       return res.status(200).json({
         data: {
           completions: {
