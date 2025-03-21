@@ -546,8 +546,8 @@ const findAlternativeBookmakerOdds = async (fixture, bookmakerId, enoughOdds = 2
   };
 }
 
-const MAX_SUGGESTIONS_LIMIT = 30000;
-const FREE_SUGGESTIONS_LIMIT = 12000;
+const MAX_SUGGESTIONS_LIMIT = 30;
+const FREE_SUGGESTIONS_LIMIT = 12;
 // const MAX_SUGGESTIONS_LIMIT = 1;
 // const FREE_SUGGESTIONS_LIMIT = 1;
 
