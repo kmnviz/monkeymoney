@@ -7,7 +7,9 @@ import {pause} from '../../utils';
 import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
 import TelegramBotClient from '../../services/telegramBotClient';
 import ZohoMailerClient from '../../services/zohoMailerClient';
+import WebflowService from '../../services/webflowService';
 
+const webflowService = new WebflowService();
 const zohoMailerClient = new ZohoMailerClient();
 const googleCloudStorageClient = new GoogleCloudStorageClient();
 const telegramBotClient = new TelegramBotClient();
@@ -251,6 +253,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       fDailySuggestions.forEach((ds) => {
         totalOdds = totalOdds.mul(new Decimal(ds.data.odd));
       });
+
+      // Post suggestions to the website
+      await webflowService.updateFreePicksCollection(date, allSuggestions);
 
       // Post single daily post with all matches
       const bundleCompletion = await createSuggestionsPostCompletion(fDailySuggestions, date, totalOdds.toFixed(2));

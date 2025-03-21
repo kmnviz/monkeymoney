@@ -508,44 +508,6 @@ const collectTeamData = async (teamId) => {
   return team;
 }
 
-const findAlternativeBookmakerOdds = async (fixture, bookmakerId, enoughOdds = 200) => {
-  console.log(`fixture ${fixture.name} has no odds within main bookmaker:${bookmakerId} odds.`);
-
-  let alternativeOdds, alternativeBookmakerId;
-  for (let i = 0; i < sportmonksBookmakers.length; i++) {
-    console.log(`fixture ${fixture.name} check for odds within bookmaker:${sportmonksBookmakers[i].id}.`);
-    if (sportmonksBookmakers[i].id === bookmakerId) continue;
-
-    const lAlternativeOdds = await sportmonksApiClient
-      .getOddsByFixtureIdAndBookmakerId(fixture.id, sportmonksBookmakers[i].id);
-
-    if (i === 0) {
-      alternativeOdds = lAlternativeOdds;
-      alternativeBookmakerId = sportmonksBookmakers[i].id;
-      if (alternativeOdds && alternativeOdds.length) {
-        console.log(`fixture ${fixture.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
-      }
-    } else {
-      if (lAlternativeOdds && lAlternativeOdds.length > 0) {
-        if (!alternativeOdds) {
-          alternativeOdds = lAlternativeOdds;
-          console.log(`fixture ${fixture.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
-        } else if (lAlternativeOdds.length > alternativeOdds.length) {
-          alternativeOdds = lAlternativeOdds;
-          console.log(`fixture ${fixture.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
-        }
-      }
-    }
-
-    if (alternativeOdds && alternativeOdds.length >= enoughOdds) break;
-  }
-
-  return {
-    odds: alternativeOdds,
-    bookmakerId: alternativeBookmakerId,
-  };
-}
-
 const MAX_SUGGESTIONS_LIMIT = 30;
 const FREE_SUGGESTIONS_LIMIT = 12;
 // const MAX_SUGGESTIONS_LIMIT = 1;
@@ -581,8 +543,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
       let selectedFixtures;
-      const totalFixtures = await sportmonksApiClient.getFixturesByDate(req.body.date);
+      let totalFixtures = await sportmonksApiClient.getFixturesByDate(req.body.date);
       console.log(`fetched total ${totalFixtures.length} fixtures for ${date}.`);
+      totalFixtures = totalFixtures.filter((fx) => fx.has_odds);
+      console.log(`fetched total ${totalFixtures.length} fixtures with odds for ${date}.`);
 
       // Select fixtures for ALL suggestions generations
       let selectedFixturesIds = totalFixtures.map((tf: TFixture) => tf.id);

@@ -1,6 +1,4 @@
 // @ts-nocheck
-import fs from 'fs';
-import path from 'path';
 import type {NextApiRequest, NextApiResponse} from 'next';
 import OpenAI from 'openai';
 import SportmonksApiClient from '../../services/sportmonksApiClient';
