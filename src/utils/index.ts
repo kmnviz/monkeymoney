@@ -65,7 +65,7 @@ export const bookmakerNameById = (bookmakerId: number): string => {
 
 export const groupOdds = (allOdds) => {
   return allOdds.reduce((acc, obj) => {
-    const key = `market_id:${obj.market_id || '-'}-label:${obj.label || '-'}-total:${obj.total || '-'}-handicap:${obj.handicap || '-'}-name:${obj.name || '-'}`;
+    const key = `market_id:${obj.market_id || ':'}-label:${obj.label || ':'}-total:${obj.total || ':'}-handicap:${obj.handicap || ':'}-name:${obj.name || ':'}`;
 
     if (!acc[key]) {
       acc[key] = [];
@@ -85,11 +85,9 @@ export const findHighestOdds = (allOdds) => {
 
     if (Array.isArray(marketData)) {
       if (marketData.length > 0) {
-        const highest = marketData.reduce((max, current) => {
+        result[marketKey] = marketData.reduce((max, current) => {
           return new Decimal(current.value).gt(new Decimal(max.value)) ? current : max;
         });
-
-        result[marketKey] = [highest];
       }
     }
   }
@@ -106,11 +104,9 @@ export const findLowestOdds = (allOdds) => {
 
     if (Array.isArray(marketData)) {
       if (marketData.length > 0) {
-        const lowest = marketData.reduce((min, current) => {
+        result[marketKey] = marketData.reduce((min, current) => {
           return new Decimal(current.value).lt(new Decimal(min.value)) ? current : min;
         });
-
-        result[marketKey] = [lowest];
       }
     }
   }

@@ -27,7 +27,8 @@ import {
 } from '../../filters';
 import {TFixture} from '../../types/sportmonks/Fixture';
 import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
-import sportmonksBookmakers from "../../database/sportmonks/bookmakers.json";
+import sportmonksBookmakers from '../../database/sportmonks/bookmakers.json';
+import {TOdd} from '../../types/sportmonks/Odd';
 
 const googleCloudStorageClient = new GoogleCloudStorageClient();
 const sportmonksApiClient = new SportmonksApiClient();
@@ -545,8 +546,8 @@ const findAlternativeBookmakerOdds = async (fixture, bookmakerId, enoughOdds = 2
   };
 }
 
-const MAX_SUGGESTIONS_LIMIT = 30;
-const FREE_SUGGESTIONS_LIMIT = 12;
+const MAX_SUGGESTIONS_LIMIT = 30000;
+const FREE_SUGGESTIONS_LIMIT = 12000;
 // const MAX_SUGGESTIONS_LIMIT = 1;
 // const FREE_SUGGESTIONS_LIMIT = 1;
 
@@ -629,7 +630,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log(`head to head data fetched.`);
 
         const fixtureOdds = await sportmonksApiClient.getOddsByFixtureId(fixtureId);
-        const highestOdds = Object.values(findHighestOdds(fixtureOdds)).flat();
+        const highestOdds = Object.values(findHighestOdds(fixtureOdds)) as TOdd[];
         const modifiedOdds = modifyOdds(highestOdds, '20%', '80%');
         const enrichedOdds = enrichOdds(highestOdds);
         console.log(`fixture odds data fetched.`);
