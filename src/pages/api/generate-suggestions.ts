@@ -563,7 +563,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Select fixtures IDs for FREE suggestions generations
       let freeSelectedFixturesIds = selectedFixtures.map((tf: TFixture) => tf.id);
-      if (selectedFixtures > FREE_SUGGESTIONS_LIMIT) {
+      if (selectedFixtures.length > FREE_SUGGESTIONS_LIMIT) {
         console.log('starting FREE fixtures selection completion...');
         const freeSelectedFixturesCompletion = await createSelectFixturesCompletion(FREE_SUGGESTIONS_LIMIT, selectedFixtures);
         freeSelectedFixturesIds = (freeSelectedFixturesCompletion.data as string)
