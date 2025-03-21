@@ -5,6 +5,7 @@ import {TOdd} from '../types/sportmonks/Odd';
 import sportmonksMarkets from '../database/sportmonks/markets.json';
 import Decimal from 'decimal.js';
 import {removeEmptyArrays, removeNullValues} from '../helpers';
+import {bookmakerNameById} from '../utils';
 
 export const modifyTeam = (team) => {
   return {
@@ -298,7 +299,6 @@ export const modifyOdds = (odds: TOdd[], minProbability = '0%', maxProbability =
       const newOdd = {
         id: odd.id,
         label: odd.label,
-        // value: odd.value,
         market: odd.market_description,
         prob: odd.probability,
         odd: odd.dp3,
@@ -307,6 +307,7 @@ export const modifyOdds = (odds: TOdd[], minProbability = '0%', maxProbability =
 
       if (odd.handicap) newOdd['handicap'] = odd.handicap;
       if (odd.total) newOdd['total'] = odd.total;
+      if (odd.name) newOdd['name'] = odd.name;
 
       return newOdd;
     })
@@ -322,6 +323,15 @@ export const modifyOdds = (odds: TOdd[], minProbability = '0%', maxProbability =
 
       return Decimal(prob).lt(maxProbability.replace('%', ''));
     });
+}
+
+export const enrichOdds = (odds) => {
+  return odds.map((odd) => {
+    return {
+      ...odd,
+      bookmaker: bookmakerNameById(odd.bookmaker_id),
+    };
+  });
 }
 
 export const modifyH2h = (h2h) => {

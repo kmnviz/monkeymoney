@@ -5,6 +5,7 @@ import sportmonksMarkets from '../database/sportmonks/markets.json';
 import sportmonksBookmakers from '../database/sportmonks/bookmakers.json';
 import sportmonksLeagues from '../database/sportmonks/leagues.json';
 import sportmonksSeasons from '../database/sportmonks/seasons.json';
+import Decimal from "decimal.js";
 
 export const pause = async (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -61,3 +62,58 @@ export const bookmakerNameById = (bookmakerId: number): string => {
   const bookmaker = sportmonksBookmakers.find((bk) => bk.id === bookmakerId);
   return bookmaker ? bookmaker.name : '';
 }
+
+export const groupOdds = (allOdds) => {
+  return allOdds.reduce((acc, obj) => {
+    const key = `market_id:${obj.market_id || '-'}-label:${obj.label || '-'}-total:${obj.total || '-'}-handicap:${obj.handicap || '-'}-name:${obj.name || '-'}`;
+
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+
+    acc[key].push(obj);
+    return acc;
+  }, {});
+}
+
+export const findHighestOdds = (allOdds) => {
+  const groupedOdds = groupOdds(allOdds);
+  const result = {};
+
+  for (const marketKey in groupedOdds) {
+    const marketData = groupedOdds[marketKey];
+
+    if (Array.isArray(marketData)) {
+      if (marketData.length > 0) {
+        const highest = marketData.reduce((max, current) => {
+          return new Decimal(current.value).gt(new Decimal(max.value)) ? current : max;
+        });
+
+        result[marketKey] = [highest];
+      }
+    }
+  }
+
+  return result;
+};
+
+export const findLowestOdds = (allOdds) => {
+  const groupedOdds = groupOdds(allOdds);
+  const result = {};
+
+  for (const marketKey in groupedOdds) {
+    const marketData = groupedOdds[marketKey];
+
+    if (Array.isArray(marketData)) {
+      if (marketData.length > 0) {
+        const lowest = marketData.reduce((min, current) => {
+          return new Decimal(current.value).lt(new Decimal(min.value)) ? current : min;
+        });
+
+        result[marketKey] = [lowest];
+      }
+    }
+  }
+
+  return result;
+};
