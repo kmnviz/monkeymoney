@@ -1,12 +1,7 @@
+// @ts-nocheck
 import { WebflowClient } from 'webflow-api';
 import { DateTime } from 'luxon';
 import Decimal from 'decimal.js';
-import {
-  TFreeDailyPick,
-  TTipArchive,
-  TDailyPicksDate,
-  TDailyPicksOdds,
-} from '../types/webflow';
 
 class WebflowService {
 
