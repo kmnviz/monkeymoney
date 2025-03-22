@@ -174,6 +174,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             market_description: suggestions[i].completion.data.market_description,
             free: suggestions[i].free,
             bookmakerId: suggestions[i].bookmakerId,
+            comprehensive_detailed_reason: suggestions[i].completion.data.comprehensive_detailed_reason,
           },
           result: {
             scores: scores,
@@ -194,8 +195,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           guessed: guessed.length,
           missed: missed.length,
         },
-        guessed: guessed,
-        missed: missed,
+        outcomes: outcomes,
       };
 
       return res.status(200).json({

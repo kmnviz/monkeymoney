@@ -233,15 +233,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const date = req.body.date;
 
-      let allSuggestions: object[] = (await googleCloudStorageClient.readJsonFile(`suggestions/${date}.json`) as object[]);
+      const allSuggestions: object[] = (await googleCloudStorageClient.readJsonFile(`suggestions/${date}.json`) as object[]);
       if (!allSuggestions) {
         return res.status(404).json({
           message: 'File not found.',
         });
       }
-      allSuggestions = allSuggestions.filter((suggestion) => suggestion.free === true);
+      const freeSuggestions = allSuggestions.filter((suggestion) => suggestion.free === true);
 
-      let suggestions = allSuggestions;
+      let suggestions = freeSuggestions;
       const fDailySuggestions = (suggestions as object[]).map((suggestion) => {
         return {
           fixture: suggestion.fixture,
@@ -249,13 +249,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         };
       });
 
-      let totalOdds = new Decimal(1);
-      fDailySuggestions.forEach((ds) => {
-        totalOdds = totalOdds.mul(new Decimal(ds.data.odd));
-      });
+      // let totalOdds = new Decimal(1);
+      // fDailySuggestions.forEach((ds) => {
+      //   totalOdds = totalOdds.mul(new Decimal(ds.data.odd));
+      // });
+      const totalOdds = suggestions.reduce((sum, suggestion) =>
+        sum.plus(new Decimal(suggestion.completion.data.odd)), new Decimal(0)
+      );
 
       // Post suggestions to the website
-      await webflowService.updateFreePicksCollection(date, allSuggestions);
+      await webflowService.updateFreePicksCollection(date, freeSuggestions);
 
       // Post single daily post with all matches
       const bundleCompletion = await createSuggestionsPostCompletion(fDailySuggestions, date, totalOdds.toFixed(2));

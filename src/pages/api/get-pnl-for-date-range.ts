@@ -6,7 +6,7 @@ import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
 const googleCloudStorageClient = new GoogleCloudStorageClient();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method === 'POST') {
+    if (req.method === 'GET') {
         if (
             !req.body
             || !('fromDate' in req.body)

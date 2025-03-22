@@ -131,10 +131,9 @@ class WebflowService {
       }
     );
 
-    let totalOdds = new Decimal(0);
-    suggestions.forEach((suggestion) => {
-      totalOdds.plus(new Decimal(suggestion.completion.data.odd));
-    });
+    const totalOdds = suggestions.reduce((sum, suggestion) =>
+      sum.plus(new Decimal(suggestion.completion.data.odd)), new Decimal(0)
+    );
 
     await this.collectionsItemsUpdateItemLive(
       this._dailyPicksOddsCollectionId,
@@ -150,21 +149,26 @@ class WebflowService {
     );
   }
 
-  // async updateTipsArchiveCollection(date: string, suggestionsRecap: object[]) {
-  //   await this.collectionsItemsCreateItemLive(this._tipsArchiveCollectionId, {
-  //     "fieldData": {
-  //       "start-date-time": DateTime.fromISO(date, { zone: 'utc' })
-  //         .set({hour: 7, minute: 24, second: 0, millisecond: 0}),
-  //       "tip-suggestion": `${suggestions[i].completion.data.bet} - ${suggestions[i].completion.data.market_description}`,
-  //       "chance": suggestions[i].completion.data.probability,
-  //       "odd": suggestions[i].completion.data.odd,
-  //       "name": suggestions[i].completion.data.fixture,
-  //       "slug": suggestions[i].completion.data.fixture.toLowerCase().replace(' ', '-'),
-  //       "result": "2-1",
-  //       "result-color-status": "rgba(77, 255, 92, 0.15)"
-  //     },
-  //   });
-  // }
+  async updateTipsArchiveCollection(date: string, suggestionRecap: object) {
+    await this.collectionsItemsCreateItemLive(this._tipsArchiveCollectionId, {
+      "fieldData": {
+        "start-date-time": DateTime.fromISO(date, { zone: 'utc' })
+          .set({hour: 7, minute: 24, second: 0, millisecond: 0}),
+        "tip-suggestion": `${suggestionRecap.suggestion.bet} - ${suggestionRecap.suggestion.market_description}`,
+        "chance": suggestionRecap.suggestion.probability,
+        "odd": suggestionRecap.suggestion.odd,
+        "name": suggestionRecap.fixture,
+        "slug": suggestionRecap.fixture.toLowerCase()
+          .replaceAll(' ', '-')
+          .replace(/[^_a-zA-Z0-9-]/g, '')
+        ,
+        "result": `${suggestionRecap.result.scores.total.home}:${suggestionRecap.result.scores.total.away}`,
+        "result-color-status": suggestionRecap.result.is_guessed === 'YES'
+          ? "rgba(77, 255, 92, 0.15)"
+          : "rgba(203, 21, 21, 0.35)",
+      },
+    });
+  }
 }
 
 export default WebflowService;

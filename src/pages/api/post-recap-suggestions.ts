@@ -6,7 +6,9 @@ import Decimal from 'decimal.js';
 import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
 import TelegramBotClient from '../../services/telegramBotClient';
 import ZohoMailerClient from '../../services/zohoMailerClient';
+import WebflowService from '../../services/webflowService';
 
+const webflowService = new WebflowService();
 const zohoMailerClient = new ZohoMailerClient();
 const googleCloudStorageClient = new GoogleCloudStorageClient();
 const telegramBotClient = new TelegramBotClient();
@@ -118,11 +120,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
       const date = req.body.date;
-      const suggestionsRecap = await googleCloudStorageClient.readJsonFile(`recaps/${date}.json`);
+      const suggestionsRecap = (await googleCloudStorageClient.readJsonFile(`recaps/${date}.json`) as object[]);
       if (!suggestionsRecap) {
         return res.status(404).json({
           message: 'Recap file not found.',
         });
+      }
+
+      for (let i = 0; i < suggestionsRecap.length; i++) {
+        await webflowService.updateTipsArchiveCollection(date, suggestionsRecap[i]);
       }
 
       const guessed = (suggestionsRecap as object[]).filter((suggestion) => suggestion.result.is_guessed === 'YES' && suggestion.suggestion.free === true);
@@ -136,7 +142,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           message: 'Emails file not found.',
         });
       }
-       await zohoMailerClient.sendEmails(emailAddresses, `Daily recap ${date}`, message);
+      await zohoMailerClient.sendEmails(emailAddresses, `Daily recap ${date}`, message);
 
       let win = new Decimal(0);
       for (let i = 0; i < guessed.length; i++) {

@@ -198,8 +198,13 @@ const createBetSuggestionCompletion = async (content, mainModel = null) => {
 
           🔹 Step 5: **Final Instruction**
             - ${probInstruction}
-            - If the selected bet does not meet these criteria, **recalculate** the selection.
-            - ** IN ANY CASE THERE SHOULD BE A RECOMMENDED BET **
+            - If a bet does not align with the provided data, **reject it** and recalculate strictly based on the available statistics.
+            - **DO NOT assume, infer, or fabricate any information that is not explicitly given.**
+            - **You MUST base the analysis ONLY on the provided statistics.**
+            - **DO NOT make up results, win/loss records, or trends that are not explicitly provided.**
+            - **If any necessary data is missing, state that clearly instead of making assumptions.**
+            - **IN ANY CASE, THERE MUST BE A RECOMMENDED BET.**
+            - **STRICT DATA USAGE RULE: Use ONLY what is provided. NO extra assumptions.**
 
           🔹 Step 6: **Output Format (Strictly Follow This JSON Structure):**
           {
