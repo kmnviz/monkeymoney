@@ -8,6 +8,7 @@ class WebflowService {
   client;
   _siteId;
   _freePicksCollectionId;
+  _premiumPicksCollectionId;
   _tipsArchiveCollectionId;
   _blogPostsCollectionId;
   _blogTagsCollectionId;
@@ -22,6 +23,7 @@ class WebflowService {
     });
     this._siteId = process.env.WEBFLOW_BETBRO_SITE_ID as string;
     this._freePicksCollectionId = process.env.WEBFLOW_BETBRO_FREE_PICKS_COLLECTION_ID as string;
+    this._premiumPicksCollectionId = process.env.WEBFLOW_BETBRO_PREMIUM_PICKS_COLLECTION_ID as string;
     this._tipsArchiveCollectionId = process.env.WEBFLOW_BETBRO_TIPS_ARCHIVE_COLLECTION_ID as string;
     this._blogPostsCollectionId = process.env.WEBFLOW_BETBRO_BLOG_POSTS_COLLECTION_ID as string;
     this._blogTagsCollectionId = process.env.WEBFLOW_BETBRO_BLOG_TAGS_COLLECTION_ID as string;
@@ -142,6 +144,35 @@ class WebflowService {
         },
       }
     );
+  }
+
+  async updatePremiumPicksCollection(date: string, suggestions: object[]) {
+    const collectionLiveItems = await this
+      .collectionsItemsListItemsLive(this._premiumPicksCollectionId);
+    for (let i = 0; i < collectionLiveItems.length; i++) {
+      await this.collectionsItemsDeleteItemLive(this._premiumPicksCollectionId, collectionLiveItems[i].id);
+    }
+
+    const collectionLiveStaged = await this
+      .collectionsItemsListItemsStaged(this._premiumPicksCollectionId);
+    for (let i = 0; i < collectionLiveStaged.length; i++) {
+      await this.collectionsItemsDeleteItemStaged(this._premiumPicksCollectionId, collectionLiveStaged[i].id);
+    }
+
+    for (let i = 0; i < suggestions.length; i++) {
+      await this.collectionsItemsCreateItemLive(this._premiumPicksCollectionId, {
+        "fieldData": {
+          "start-date-time": DateTime.fromISO(date, { zone: 'utc' })
+            .set({hour: 7, minute: 24, second: 0, millisecond: 0}),
+          "name": suggestions[i].completion.data.fixture,
+          "odd": suggestions[i].completion.data.odd,
+          "chance": suggestions[i].completion.data.probability,
+          "slug": suggestions[i].completion.data.fixture.toLowerCase()
+            .replaceAll(' ', '-')
+            .replace(/[^_a-zA-Z0-9-]/g, ''),
+        }
+      });
+    }
   }
 
   async updateTipsArchiveCollection(date: string, suggestionRecap: object) {

@@ -10,6 +10,16 @@ export type TFreeDailyPick = {
   },
 };
 
+export type TPremiumDailyPick = {
+  "fieldData": {
+    "start-date-time": string, // "2025-03-22T08:20:00.000Z",
+    "odd": string, // "1.90",
+    "chance": string, // "88%",
+    "name": string, // "Strømmen vs Grorud",
+    "slug": string, // "strommen-vs-grorud"
+  }
+};
+
 export type TTipArchive = {
   "fieldData": {
     "start-date-time": string, // "2025-03-09T07:24:00.000Z",

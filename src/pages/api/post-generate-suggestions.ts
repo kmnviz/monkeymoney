@@ -31,57 +31,6 @@ const models = {
   deepSeekChat: 'deepseek-chat',
 };
 
-const createSelectFixturesCompletion = async (count: number, fixtures: any[]) => {
-  const content = fixtures.map((fixture) => {
-    return {
-      fixture_id: fixture.data.fixture.id,
-      fixture: fixture.fixture,
-    };
-  });
-
-  const messages = [
-    {
-      role: 'system',
-      content: `You are an expert football analyst and betting strategist. Your task is to analyze a given list of football fixtures and select the top ${count} fixtures that have the highest potential for successful betting promotion. Use a data-driven approach based on value, team's popularity, historical number of viewer, overall fixture popularity.`,
-    },
-    {
-      role: 'user',
-      content: `
-      ### Task:
-      Analyze the following list of football fixtures and select the best ${count} fixtures for betting promotion. Rank them based on their betting potential and provide reasoning for each selection.
-
-      ### Selection Criteria:
-      - **Market Popularity**: Choose fixtures trending in betting discussions and social media.
-      - **League/Competition Importance**: Focus on top leagues and competitions.
-
-      ### Input Fixtures:
-      [{\\"fixture_id\\": \\"X\\", \\"fixture\\": \\"Team A vs Team B\\"}, {\\"fixture_id\\": \\"Y\\", \\"fixture\\": \\"Team C vs Team D\\"}]
-
-      ### Expected Output Format:
-      Return ONLY a comma-separated list of ${count} fixture_ids like:
-      X,Y,Z
-      `,
-    },
-    {
-      role: 'assistant',
-      content: JSON.stringify(content),
-    },
-  ];
-
-  const completion = await deepSeek.chat.completions.create({
-    model: models.deepSeekChat,
-    messages: messages,
-    temperature: 0,
-  } as any);
-
-  console.log('createSelectFixturesCompletion completion: ', completion.usage?.total_tokens);
-  console.log('createSelectFixturesCompletion completion: ', completion.choices[0].message);
-
-  return {
-    data: completion.choices[0].message.content,
-  };
-}
-
 const createSuggestionsPostCompletion = async (content, date, totalOdds) => {
   const messages = [
     {
@@ -112,15 +61,21 @@ const createSuggestionsPostCompletion = async (content, date, totalOdds) => {
           DO NOT ADD ADDITIONAL *'s TO THE TEXT AS TWITTER DOES NOT RECOGNIZES THEM.
           **FOR EACH SUGGESTION THERE MUST BE ONLY FIXTURE NAME, BET, CANCE AND ODD. NOTHING ELSE**
 
-          USE FOLLOWING EXAMPLE FOR EACH SUGGESTION:
+          USE FOLLOWING EXAMPLE FOR FREE SUGGESTION:
           1️⃣ Juventus vs Atalanta
           🔹 Bet: Over 2.5 Goals
           🔹 Chance: 82%
           🔹 Odd: 1.93
 
+          USE FOLLOWING EXAMPLE FOR PREMIUM SUGGESTION:
+          1️⃣ Juventus vs Atalanta
+          🔹 Tip: [https://www.betbro.ai/premium]
+          🔹 Chance: 75%
+          🔹 Odd: 1.666
+
           ---
           In the beginning of the text add:
-          🎯 FREE DAILY TIPS
+          🎯 DAILY TIPS
           📅 [${date}]
 
           In the end of the text add following:
@@ -186,10 +141,17 @@ const createSingleSuggestionsPostCompletion = async (content) => {
           **FOR EACH SUGGESTION THERE MUST BE ONLY FIXTURE NAME, BET, CANCE AND ODD. NOTHING ELSE**
           **ADD SEPARATOR AFTER EACH SUGGESTION. THE SEPARATOR MUST BE: !!! bet separator !!!**
 
-          USE FOLLOWING EXAMPLE FOR EACH SUGGESTION:
+          USE FOLLOWING EXAMPLE FOR FREE EACH SUGGESTION:
           🔥 Tips of the Day: Cercle Brugge vs Club Brugge 🔥
 
           💰 Prediction: Both Teams to Score - No
+          📊 Odds: 1.95
+          ⚽ Chance: 85%
+
+          USE FOLLOWING EXAMPLE FOR PREMIUM EACH SUGGESTION:
+          🔥 Tips of the Day: Cercle Brugge vs Club Brugge 🔥
+
+          💰 Prediction: [https://www.betbro.ai/premium]
           📊 Odds: 1.95
           ⚽ Chance: 85%
 
@@ -239,30 +201,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           message: 'File not found.',
         });
       }
+      const postSuggestions = allSuggestions.filter((suggestion) => suggestion.free === true || suggestion.premium);
       const freeSuggestions = allSuggestions.filter((suggestion) => suggestion.free === true);
+      const premiumSuggestions = allSuggestions.filter((suggestion) => suggestion.premium);
 
-      let suggestions = freeSuggestions;
+      let suggestions = postSuggestions;
       const fDailySuggestions = (suggestions as object[]).map((suggestion) => {
         return {
           fixture: suggestion.fixture,
+          free: suggestion.free,
+          premium: suggestion.premium,
           data: suggestion.completion.data,
         };
       });
 
-      // let totalOdds = new Decimal(1);
-      // fDailySuggestions.forEach((ds) => {
-      //   totalOdds = totalOdds.mul(new Decimal(ds.data.odd));
-      // });
       const totalOdds = suggestions.reduce((sum, suggestion) =>
         sum.plus(new Decimal(suggestion.completion.data.odd)), new Decimal(0)
       );
 
-      // Post suggestions to the website
-      await webflowService.updateFreePicksCollection(date, freeSuggestions);
-
       // Post single daily post with all matches
       const bundleCompletion = await createSuggestionsPostCompletion(fDailySuggestions, date, totalOdds.toFixed(2));
       const bundleMessage = bundleCompletion.data as string;
+
+      // Post all suggestions
+      await webflowService.updateFreePicksCollection(date, freeSuggestions);
+      await webflowService.updatePremiumPicksCollection(date, premiumSuggestions);
       await twitterClient.v2.tweet(bundleMessage);
       await telegramBotClient.sendMessage(bundleMessage);
       const emailAddresses = (await googleCloudStorageClient.readJsonFile(`emails.json`) as string[]);
@@ -271,7 +234,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           message: 'Emails file not found.',
         });
       }
-      await zohoMailerClient.sendEmails(emailAddresses, `Free daily tips ${date}`, bundleMessage);
+      await zohoMailerClient.sendEmails(emailAddresses, `Daily tips ${date}`, bundleMessage);
 
       // Post each suggestion one by one
       const singlesCompletions = await createSingleSuggestionsPostCompletion(fDailySuggestions);
