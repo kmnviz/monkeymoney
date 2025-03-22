@@ -514,7 +514,8 @@ const collectTeamData = async (teamId) => {
 }
 
 const MAX_SUGGESTIONS_LIMIT = 30;
-const FREE_SUGGESTIONS_LIMIT = 12;
+const FREE_SUGGESTIONS_LIMIT = 3;
+const PREMIUM_SUGGESTIONS_LIMIT = 7;
 // const MAX_SUGGESTIONS_LIMIT = 1;
 // const FREE_SUGGESTIONS_LIMIT = 1;
 
@@ -570,9 +571,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       let freeSelectedFixturesIds = selectedFixtures.map((tf: TFixture) => tf.id);
       if (selectedFixtures.length > FREE_SUGGESTIONS_LIMIT) {
         console.log('starting FREE fixtures selection completion...');
-        const freeSelectedFixturesCompletion = await createSelectFixturesCompletion(FREE_SUGGESTIONS_LIMIT, selectedFixtures);
+        const freeSelectedFixturesCompletion =
+          await createSelectFixturesCompletion(FREE_SUGGESTIONS_LIMIT, selectedFixtures);
         freeSelectedFixturesIds = (freeSelectedFixturesCompletion.data as string)
           .split(',').map((id) => parseInt(id, 10));
+      }
+
+      // Select fixtures IDs for PREMIUM suggestions generations
+      let premiumSelectedFixturesIds = selectedFixtures.map((tf: TFixture) => tf.id);
+      if (selectedFixtures.length > PREMIUM_SUGGESTIONS_LIMIT) {
+        // Exclude FREE suggestions from selection
+        const selectedFixturesWithoutFreeOnes = selectedFixtures.filter((fx) => {
+          return !freeSelectedFixturesIds.includes(fx.id);
+        });
+        const premiumSelectedFixturesCompletion =
+          await createSelectFixturesCompletion(PREMIUM_SUGGESTIONS_LIMIT, selectedFixturesWithoutFreeOnes);
+        premiumSelectedFixturesIds = (premiumSelectedFixturesCompletion.data as string)
+          .split(',').map((id) => parseInt(id, 10));
+        premiumSelectedFixturesIds = premiumSelectedFixturesIds.concat(freeSelectedFixturesIds).flat();
       }
 
       const suggestions = [];
@@ -616,9 +632,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (i < selectedFixtures.length - 1) await pause(timeBetweenCompletions);
 
         const isFreeSuggestion = freeSelectedFixturesIds.includes(fixture.id);
+        const isPremiumSuggestion = premiumSelectedFixturesIds.includes(fixture.id);
         const suggestion = {
           fixture: fixture.name,
           free: isFreeSuggestion,
+          premium: isPremiumSuggestion,
           completion: completion,
           data: {
             fixture: fixture,

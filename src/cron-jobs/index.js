@@ -15,8 +15,6 @@ const generateSuggestions = async () => {
 
   const payload = {
     date: tomorrowDate,
-    bookmakerId: '2',
-    suggestionsCount: '30',
     mainModel: 'gpt-4-turbo',
   };
 

@@ -135,8 +135,8 @@ class WebflowService {
       this._dailyPicksOddsItemId,
       {
         "fieldData": {
-          "name": totalOdds.toFixed(3),
-          "slug": totalOdds.toFixed(3)
+          "name": totalOdds.toFixed(2),
+          "slug": totalOdds.toFixed(2)
             .replaceAll(',', '-')
             .replaceAll('.', '-'),
         },
