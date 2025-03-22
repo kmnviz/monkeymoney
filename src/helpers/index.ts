@@ -10,6 +10,25 @@ export const countTokens = (messages, model) => {
   }
 
   return tokenCount;
+};
+
+export const countContentTokens = (content, model) => {
+  const messages = [
+    {
+      role: 'system',
+      content: `Test`,
+    },
+    {
+      role: 'user',
+      content: `Test`,
+    },
+    {
+      role: 'assistant',
+      content: JSON.stringify(content),
+    },
+  ];
+
+  return countTokens(messages, model);
 }
 
 export const removeEmptyArrays = (obj) => {

@@ -9,7 +9,7 @@ import {
   formatJsonStringToJson,
   findHighestOdds,
 } from '../../utils';
-import {removeEmptyObjects, removeZeroValues, countTokens} from '../../helpers';
+import {removeEmptyObjects, removeZeroValues, countTokens, countContentTokens} from '../../helpers';
 import {
   modifyActiveSeasons,
   modifyCoaches,
@@ -620,6 +620,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const enrichedOdds = enrichOdds(highestOdds);
         console.log(`fixture odds data fetched.`);
 
+        const contentTokens = countContentTokens({fixture, teamA, teamB, h2h}, models.gpt4Turbo);
+        const oddsTokens = countContentTokens({modifiedOdds}, models.gpt4Turbo);
+        console.log(`fixture:${i} ${fixture.name} contentTokens ${contentTokens}`);
         console.log(`starting fixture bet suggestion completion...`);
         const completion = await createBetSuggestionCompletion({
           fixture: fixture,
@@ -637,6 +640,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           fixture: fixture.name,
           free: isFreeSuggestion,
           premium: isPremiumSuggestion,
+          contentTokens: contentTokens,
+          oddsTokens: oddsTokens,
           completion: completion,
           data: {
             fixture: fixture,
