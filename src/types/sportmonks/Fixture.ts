@@ -24,4 +24,9 @@ export type TFixture = {
   "starting_at_timestamp": number, // 1722780000
   "participants": TTeam[],
   "scores"?: TScore[]
+  "statistics": any,
+  "events": any,
+  "coaches": any,
+  "lineups": any,
+  "pressure": any,
 }

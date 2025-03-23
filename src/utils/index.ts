@@ -5,6 +5,8 @@ import sportmonksMarkets from '../database/sportmonks/markets.json';
 import sportmonksBookmakers from '../database/sportmonks/bookmakers.json';
 import sportmonksLeagues from '../database/sportmonks/leagues.json';
 import sportmonksSeasons from '../database/sportmonks/seasons.json';
+import sportmonksRounds from '../database/sportmonks/rounds.json';
+import sportmonksVenues from '../database/sportmonks/venues.json';
 import Decimal from "decimal.js";
 
 export const pause = async (ms) => {
@@ -49,7 +51,7 @@ export const leagueNameById = (leagueId: number): string => {
 }
 
 export const seasonNameById = (seasonId: number): string => {
-  const season = sportmonksLeagues.find((ss) => ss.id === seasonId);
+  const season = sportmonksSeasons.find((ss) => ss.id === seasonId);
   return season ? season.name : '';
 }
 
@@ -58,9 +60,24 @@ export const positionNameById = (positionId: number): string => {
   return position ? position.name : '';
 }
 
+export const typeNameById = (typeId: number): string => {
+  const type = sportmonksTypes.find((tp) => tp.id === typeId);
+  return type ? type.name : '';
+}
+
 export const bookmakerNameById = (bookmakerId: number): string => {
   const bookmaker = sportmonksBookmakers.find((bk) => bk.id === bookmakerId);
   return bookmaker ? bookmaker.name : '';
+}
+
+export const roundNameById = (roundId: number): string => {
+  const round = sportmonksRounds.find((r) => r.id === roundId);
+  return round ? round.name : '';
+}
+
+export const venueNameById = (venueId: number): string => {
+  const venue = sportmonksVenues.find((v) => v.id === venueId);
+  return venue ? venue.name : '';
 }
 
 export const groupOdds = (allOdds) => {

@@ -17,6 +17,7 @@ import marketsJson from '../database/sportmonks/markets.json';
 import bookmakersJson from '../database/sportmonks/bookmakers.json';
 import leaguesJson from '../database/sportmonks/leagues.json';
 import seasonsJson from '../database/sportmonks/seasons.json';
+import venuesJson from '../database/sportmonks/venues.json';
 
 class SportmonksApiClient {
 
@@ -30,6 +31,16 @@ class SportmonksApiClient {
     this.headers = {
       'Accept': 'application/json',
     };
+  }
+
+  async getLeagueById(leagueId: number): Promise<TRound> {
+    try {
+      const response = await this.get(`/v3/football/leagues/${leagueId}`, 'stages;latest;upcoming');
+      return response.data?.data;
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
   }
 
   async getAllLeagues(): Promise<TLeague[]> {
@@ -62,6 +73,16 @@ class SportmonksApiClient {
       console.log(`stored sportmonks/leagues.json file.`);
 
       return leagues.flat();
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
+  async getSeasonById(seasonId: number): Promise<TRound> {
+    try {
+      const response = await this.get(`/v3/football/seasons/${seasonId}`, '');
+      return response.data?.data;
     } catch (error) {
       console.log('error: ', error);
       throw error;
@@ -106,7 +127,7 @@ class SportmonksApiClient {
 
   async getRoundById(roundId: number): Promise<TRound> {
     try {
-      const response = await this.get(`/v3/football/rounds/${roundId}`);
+      const response = await this.get(`/v3/football/rounds/${roundId}`, 'fixtures');
       return response.data?.data;
     } catch (error) {
       console.log('error: ', error);
@@ -150,9 +171,9 @@ class SportmonksApiClient {
     }
   }
 
-  async getFixtureById(fixtureId: number): Promise<TFixture> {
+  async getFixtureById(fixtureId: number, includes = ''): Promise<TFixture> {
     try {
-      const response = await this.get(`/v3/football/fixtures/${fixtureId}`, 'participants;scores;statistics');
+      const response = await this.get(`/v3/football/fixtures/${fixtureId}`, includes);
       return response.data?.data;
     } catch (error) {
       console.log('error: ', error);
@@ -171,6 +192,35 @@ class SportmonksApiClient {
           .get(
             `/v3/football/fixtures/date/${dateYYYYMMDD}`,
             'participants;lineups',
+            '50',
+            currentPage,
+          );
+
+        if (response.data.data) fixtures.push(response.data.data);
+        hasMore = response.data.pagination;
+        currentPage += 1;
+
+        // await pause(1500);
+      }
+
+      return fixtures.flat();
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
+  async getFixturesByDateRangeForTeam(startDate: string, endDate: string, teamId: number, includes = ''): Promise<TFixture[]> {
+    try {
+      const fixtures: any[] | never = [];
+
+      let hasMore = true;
+      let currentPage = 1;
+      while (hasMore) {
+        const response = await this
+          .get(
+            `/v3/football/fixtures/between/${startDate}/${endDate}/${teamId}`,
+            includes,
             '50',
             currentPage,
           );
@@ -420,6 +470,43 @@ class SportmonksApiClient {
       console.log(`stored sportmonks/markets.json file.`);
 
       return markets.flat();
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
+  async getAllVenues(): Promise<TMarket[]> {
+    if (venuesJson.length > 0) {
+      return venuesJson as TMarket[];
+    }
+
+    try {
+      const venues: any[] | never = [];
+
+      let hasMore = true;
+      let currentPage = 1;
+      while (hasMore) {
+        const response = await this
+          .get(
+            `/v3/football/venues`,
+            '',
+            '50',
+            currentPage,
+          );
+
+        if (response.data.data) venues.push(response.data.data);
+        hasMore = response.data.pagination;
+        currentPage += 1;
+
+        // await pause(1500);
+        console.log('currentPage: ', currentPage);
+      }
+
+      await writeIntoFile(venues.flat(), '/sportmonks/venues.json');
+      console.log(`stored sportmonks/venues.json file.`);
+
+      return venues.flat();
     } catch (error) {
       console.log('error: ', error);
       throw error;
