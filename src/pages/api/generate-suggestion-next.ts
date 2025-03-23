@@ -2,6 +2,7 @@
 import type {NextApiRequest, NextApiResponse} from 'next';
 import OpenAI from 'openai';
 import {DateTime} from 'luxon';
+import Decimal from 'decimal.js';
 import SportmonksApiClient from '../../services/sportmonksApiClient';
 import {
   leagueNameById,
@@ -102,6 +103,37 @@ const formatLineups = (matchLineups) => {
     };
   });
 };
+
+const formatPlayerStatistics = (statistics) => {
+  const resultMap = new Map();
+
+  statistics.flat().forEach((item) => {
+    const { type, value } = item;
+
+    if (!resultMap.has(type)) {
+      resultMap.set(type, { type, value: {} });
+    }
+
+    const existingValue = resultMap.get(type).value;
+
+    // Sum up each key inside the "value" object
+    for (const key in value) {
+      if (!existingValue[key]) {
+        existingValue[key] = new Decimal(value[key]);
+      } else {
+        existingValue[key] = existingValue[key].plus(new Decimal(value[key]));
+      }
+    }
+  });
+
+  // Convert Decimal.js numbers back to regular numbers
+  return Array.from(resultMap.values()).map((item) => {
+    item.value = Object.fromEntries(
+      Object.entries(item.value).map(([key, val]) => [key, val.toNumber()])
+    );
+    return item;
+  });
+}
 
 const fetchPastFixtures = async (fixture, teamId) => {
   const dateFrom = DateTime
@@ -231,22 +263,24 @@ const formatFixture = (fx: TFixture) => {
         location: p.meta.location,
         post_matches: p['past_matches'],
         next_matches: p['next_matches'],
-        // players: p['players'],
         players: p['players'] && p['players'].length ? p['players'].map((p) => {
           return {
             name: p.name,
             date_of_birth: p.date_of_birth,
             height: p.height,
             position: positionNameById(p.position_id),
-            // statistics: p.statistics && p.statistics.length ? p.statistics.map((s) => {
-            //   return s.details && s.details.length ? s.details.map((d) => {
-            //     return {
-            //       type: typeNameById(d.type_id),
-            //       value: d.value,
-            //     };
-            //   }): [];
-            // }): [],
-            statistics: p.statistics,
+            statistics: p.statistics && p.statistics.length ? p.statistics
+              .filter((s) => s.season_id === fx.season_id)
+              .map((s) => {
+              return s.details && s.details.length ? s.details.map((d) => {
+                return {
+                  type: typeNameById(d.type_id),
+                  value: d.value,
+                };
+              }): [];
+            // }).map((item) => ({ [item.type]: item.value.total })): [],
+            }): [],
+            // statistics: p.statistics,
           };
         }) : [],
         active_seasons: p['active_seasons'] && p['active_seasons'].length
@@ -323,15 +357,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       fx['participants'][0]['next_matches'] = prepareNextFixtures(await fetchNextFixtures(fx, fx['participants'][0].id));
       fx['participants'][1]['next_matches'] = prepareNextFixtures(await fetchNextFixtures(fx, fx['participants'][1].id));
 
-      // const player = await sportmonksApiClient.getPlayerById(teamA['players'][0].id)
-      // console.log('player: ', player);
-
       fx['participants'][0]['players'] = teamA['players'];
       for (let i = 0; i < fx['participants'][0]['players'].length; i++) {
         const playerId = fx['participants'][0]['players'][i]['player_id'];
         fx['participants'][0]['players'][i] = await sportmonksApiClient.getPlayerById(playerId);
         if (fx['participants'][0]['players'][i] && fx['participants'][0]['players'][i]['statistics']) {
           fx['participants'][0]['players'][i]['statistics']
+            = await sportmonksApiClient.getSeasonStatisticsByParticipant(ParticipantEnum.Players, playerId);
+        }
+      }
+
+      fx['participants'][1]['players'] = teamB['players'];
+      for (let i = 0; i < fx['participants'][1]['players'].length; i++) {
+        const playerId = fx['participants'][1]['players'][i]['player_id'];
+        fx['participants'][1]['players'][i] = await sportmonksApiClient.getPlayerById(playerId);
+        if (fx['participants'][1]['players'][i] && fx['participants'][1]['players'][i]['statistics']) {
+          fx['participants'][1]['players'][i]['statistics']
             = await sportmonksApiClient.getSeasonStatisticsByParticipant(ParticipantEnum.Players, playerId);
         }
       }
