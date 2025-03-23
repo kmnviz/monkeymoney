@@ -274,7 +274,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      let fixture = await sportmonksApiClient.getFixtureById(fixtureId, ';scores;statistics');
+      let fixture = await sportmonksApiClient.getFixtureById(fixtureId);
 
       fixture = modifyLineups(fixture);
       fixture = modifyLeague(fixture);

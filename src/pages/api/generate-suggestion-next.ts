@@ -39,11 +39,6 @@ const models = {
   deepSeekChat: 'deepseek-chat',
 };
 
-const enrichFixture = (fixture) => {
-  fixture['league'] = leagueNameById(fixture.league_id);
-  return fixture;
-};
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     if (
@@ -61,12 +56,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const fixtureId = +req.body.fixtureId;
 
-      let fixture = await sportmonksApiClient.getFixtureById(fixtureId);
-      fixture = enrichFixture(fixture);
+      const fixture = await sportmonksApiClient.getFixtureById(fixtureId);
+      const round = await sportmonksApiClient.getRoundById(fixture.round_id);
 
       return res.status(200).json({
         data: {
           fixture: fixture,
+          round: round,
         },
       });
     } catch (error) {

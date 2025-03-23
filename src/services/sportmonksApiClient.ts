@@ -104,6 +104,16 @@ class SportmonksApiClient {
     }
   }
 
+  async getRoundById(roundId: number): Promise<TRound> {
+    try {
+      const response = await this.get(`/v3/football/rounds/${roundId}`);
+      return response.data?.data;
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
   async getAllRounds(): Promise<TRound[]> {
     // if (seasonsJson.length > 0) {
     //   return seasonsJson as TSeason[];
@@ -140,9 +150,9 @@ class SportmonksApiClient {
     }
   }
 
-  async getFixtureById(fixtureId: number, includes = ''): Promise<TFixture> {
+  async getFixtureById(fixtureId: number): Promise<TFixture> {
     try {
-      const response = await this.get(`/v3/football/fixtures/${fixtureId}`, `participants`);
+      const response = await this.get(`/v3/football/fixtures/${fixtureId}`, 'participants;scores;statistics');
       return response.data?.data;
     } catch (error) {
       console.log('error: ', error);
