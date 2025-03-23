@@ -3,36 +3,20 @@ import type {NextApiRequest, NextApiResponse} from 'next';
 import OpenAI from 'openai';
 import {DateTime} from 'luxon';
 import SportmonksApiClient from '../../services/sportmonksApiClient';
-import {ParticipantEnum} from '../../enums/sportmonks';
 import {
   leagueNameById,
   seasonNameById,
   roundNameById,
   venueNameById,
   typeNameById,
-  formatJsonStringToJson,
-  pause, positionNameById, teamNameById,
+  pause,
+  positionNameById,
+  teamNameById,
 } from '../../utils';
-import sportmonksTypes from '../../database/sportmonks/types.json';
-import sportmonksBookmakers from '../../database/sportmonks/bookmakers.json';
-import betSuggestionPrompt from '../../prompts/bet-suggestion';
-import {removeEmptyObjects, removeZeroValues} from '../../helpers';
-import {
-  modifyActiveSeasons,
-  modifyCoaches,
-  modifyH2h,
-  modifyLeague,
-  modifyLineups,
-  modifyOdds,
-  modifyPlayers,
-  modifyPlayerStatistics,
-  modifySchedules,
-  modifyStandings,
-  modifyStatistics,
-  modifyTeam,
-} from '../../filters';
 import {TFixture} from "../../types/sportmonks/Fixture";
 import {TTeam} from "../../types/sportmonks/Team";
+import {TPlayer} from "../../types/sportmonks/Player";
+import {ParticipantEnum} from "../../enums/sportmonks";
 
 const sportmonksApiClient = new SportmonksApiClient();
 const deepSeek = new OpenAI({
@@ -247,6 +231,24 @@ const formatFixture = (fx: TFixture) => {
         location: p.meta.location,
         post_matches: p['past_matches'],
         next_matches: p['next_matches'],
+        // players: p['players'],
+        players: p['players'] && p['players'].length ? p['players'].map((p) => {
+          return {
+            name: p.name,
+            date_of_birth: p.date_of_birth,
+            height: p.height,
+            position: positionNameById(p.position_id),
+            // statistics: p.statistics && p.statistics.length ? p.statistics.map((s) => {
+            //   return s.details && s.details.length ? s.details.map((d) => {
+            //     return {
+            //       type: typeNameById(d.type_id),
+            //       value: d.value,
+            //     };
+            //   }): [];
+            // }): [],
+            statistics: p.statistics,
+          };
+        }) : [],
         active_seasons: p['active_seasons'] && p['active_seasons'].length
           ? p['active_seasons'].map((a) => {
             return {
@@ -321,10 +323,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       fx['participants'][0]['next_matches'] = prepareNextFixtures(await fetchNextFixtures(fx, fx['participants'][0].id));
       fx['participants'][1]['next_matches'] = prepareNextFixtures(await fetchNextFixtures(fx, fx['participants'][1].id));
 
+      // const player = await sportmonksApiClient.getPlayerById(teamA['players'][0].id)
+      // console.log('player: ', player);
+
+      fx['participants'][0]['players'] = teamA['players'];
+      for (let i = 0; i < fx['participants'][0]['players'].length; i++) {
+        const playerId = fx['participants'][0]['players'][i]['player_id'];
+        fx['participants'][0]['players'][i] = await sportmonksApiClient.getPlayerById(playerId);
+        if (fx['participants'][0]['players'][i] && fx['participants'][0]['players'][i]['statistics']) {
+          fx['participants'][0]['players'][i]['statistics']
+            = await sportmonksApiClient.getSeasonStatisticsByParticipant(ParticipantEnum.Players, playerId);
+        }
+      }
+
       fx['round'] = await sportmonksApiClient.getRoundById(fx.round_id);
 
       return res.status(200).json({
         data: {
+          // teamA: teamA,
           fixture: formatFixture(fx),
         },
       });

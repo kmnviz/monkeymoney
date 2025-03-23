@@ -312,7 +312,7 @@ class SportmonksApiClient {
 
   async getPlayerById(playerId: number) {
     try {
-      const response = await this.get(`/v3/football/players/${playerId}`, '');
+      const response = await this.get(`/v3/football/players/${playerId}`, 'statistics');
       return response.data?.data;
     } catch (error) {
       console.log('error: ', error);
