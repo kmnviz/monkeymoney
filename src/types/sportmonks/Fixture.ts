@@ -29,4 +29,5 @@ export type TFixture = {
   "coaches": any,
   "lineups": any,
   "pressure": any,
+  "round": any,
 }

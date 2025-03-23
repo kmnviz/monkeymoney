@@ -7,6 +7,7 @@ import sportmonksLeagues from '../database/sportmonks/leagues.json';
 import sportmonksSeasons from '../database/sportmonks/seasons.json';
 import sportmonksRounds from '../database/sportmonks/rounds.json';
 import sportmonksVenues from '../database/sportmonks/venues.json';
+import sportmonksTeams from '../database/sportmonks/teams.json';
 import Decimal from "decimal.js";
 
 export const pause = async (ms) => {
@@ -78,6 +79,11 @@ export const roundNameById = (roundId: number): string => {
 export const venueNameById = (venueId: number): string => {
   const venue = sportmonksVenues.find((v) => v.id === venueId);
   return venue ? venue.name : '';
+}
+
+export const teamNameById = (teamId: number): string => {
+  const team = sportmonksTeams.find((t) => t.id === teamId);
+  return team ? team.name : '';
 }
 
 export const groupOdds = (allOdds) => {

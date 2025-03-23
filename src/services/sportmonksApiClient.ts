@@ -10,6 +10,7 @@ import {TSeason} from '../types/sportmonks/Seaason';
 import {TSchedule} from '../types/sportmonks/Schedule';
 import {TStanding} from '../types/sportmonks/Standing';
 import {TRound} from '../types/sportmonks/Round';
+import {TTeam} from '../types/sportmonks/Team';
 import {ParticipantEnum} from '../enums/sportmonks';
 import {pause, writeIntoFile} from '../utils';
 import typesJson from '../database/sportmonks/types.json';
@@ -18,6 +19,7 @@ import bookmakersJson from '../database/sportmonks/bookmakers.json';
 import leaguesJson from '../database/sportmonks/leagues.json';
 import seasonsJson from '../database/sportmonks/seasons.json';
 import venuesJson from '../database/sportmonks/venues.json';
+import teamsJson from '../database/sportmonks/teams.json';
 
 class SportmonksApiClient {
 
@@ -470,6 +472,42 @@ class SportmonksApiClient {
       console.log(`stored sportmonks/markets.json file.`);
 
       return markets.flat();
+    } catch (error) {
+      console.log('error: ', error);
+      throw error;
+    }
+  }
+
+  async getAllTeams(): Promise<TTeam[]> {
+    if (teamsJson.length > 0) {
+      return teamsJson as TTeam[];
+    }
+
+    try {
+      const teams: any[] | never = [];
+
+      let hasMore = true;
+      let currentPage = 1;
+      while (hasMore) {
+        const response = await this
+          .get(
+            `/v3/football/teams`,
+            '',
+            '50',
+            currentPage,
+          );
+
+        if (response.data.data) teams.push(response.data.data);
+        hasMore = response.data.pagination;
+        currentPage += 1;
+
+        // await pause(1500);
+      }
+
+      await writeIntoFile(teams.flat(), '/sportmonks/teams.json');
+      console.log(`stored sportmonks/teams.json file.`);
+
+      return teams.flat();
     } catch (error) {
       console.log('error: ', error);
       throw error;

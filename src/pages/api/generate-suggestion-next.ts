@@ -11,7 +11,7 @@ import {
   venueNameById,
   typeNameById,
   formatJsonStringToJson,
-  pause, positionNameById,
+  pause, positionNameById, teamNameById,
 } from '../../utils';
 import sportmonksTypes from '../../database/sportmonks/types.json';
 import sportmonksBookmakers from '../../database/sportmonks/bookmakers.json';
@@ -140,6 +140,20 @@ const fetchPastFixtures = async (fixture, teamId) => {
   }));
 };
 
+const fetchNextFixtures = async (fixture, teamId) => {
+  const dateFrom = DateTime
+    .fromFormat(fixture.starting_at, 'yyyy-MM-dd HH:mm:ss')
+    .plus({days: 1})
+    .toFormat('yyyy-MM-dd');
+  const dateTo = DateTime
+    .fromFormat(fixture.starting_at, 'yyyy-MM-dd HH:mm:ss')
+    .plus({days: 30})
+    .toFormat('yyyy-MM-dd');
+
+  return await sportmonksApiClient
+    .getFixturesByDateRangeForTeam(dateFrom, dateTo, teamId, 'participants');
+};
+
 const preparePastFixtures = (fixtures: TFixture[]) => {
   const pastFixtures = fixtures.map((fx: TFixture) => {
     return {
@@ -195,13 +209,34 @@ const preparePastFixtures = (fixtures: TFixture[]) => {
   return pastFixtures;
 };
 
+const prepareNextFixtures = (fixtures: TFixture[]) => {
+  return fixtures.map((fx: TFixture) => {
+    return {
+      fixture: fx.name,
+      league: leagueNameById(fx.league_id),
+      season: seasonNameById(fx.season_id),
+      round: roundNameById(fx.round_id),
+      venue: venueNameById(fx.venue_id),
+      starting_at: fx.starting_at,
+      participants: fx.participants.map((p) => {
+        return {
+          name: p.name,
+          location: p.meta.location,
+        };
+      }),
+    };
+  });
+};
+
 const formatFixture = (fx: TFixture) => {
   return {
     id: fx.id,
-    league_id: leagueNameById(fx.league_id),
-    season_id: seasonNameById(fx.season_id),
-    round_id: roundNameById(fx.round_id),
-    venue_id: venueNameById(fx.venue_id),
+    // league: fx.league_id,
+    // season: fx.season_id,
+    // venue: fx.venue_id,
+    league: leagueNameById(fx.league_id),
+    season: seasonNameById(fx.season_id),
+    venue: venueNameById(fx.venue_id),
     name: fx.name,
     starting_at: fx.starting_at,
     has_odds: fx.has_odds,
@@ -210,13 +245,39 @@ const formatFixture = (fx: TFixture) => {
         id: p.id,
         name: p.name,
         location: p.meta.location,
-        // post_matches: p['past_matches'],
-        team: p['team'],
+        post_matches: p['past_matches'],
+        next_matches: p['next_matches'],
+        active_seasons: p['active_seasons'] && p['active_seasons'].length
+          ? p['active_seasons'].map((a) => {
+            return {
+              leagues: leagueNameById(a.league_id),
+              name: seasonNameById(a.id),
+              starting_at: a.starting_at,
+              ending_at: a.ending_at,
+              standings: a.standings && a.standings.length ? a.standings.map((s) => {
+                return {
+                  participant: teamNameById(s.participant_id),
+                  points: s.points,
+                  position: s.position,
+                };
+              }) : [],
+            }
+        }) : [],
       };
     }).reduce((acc, { name, ...rest }) => {
       acc[name] = rest;
       return acc;
     }, {}),
+    lineups: fx.lineups,
+    round: {
+      name: fx.round.name,
+      fixtures: fx.round.fixtures && fx.round.fixtures.length ? fx.round.fixtures.map((f) => {
+        return {
+          name: f.name,
+          starting_at: f.starting_at,
+        };
+      }) : [],
+    },
   };
 };
 
@@ -239,62 +300,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Fixture // 19135582
       const fx = await sportmonksApiClient.getFixtureById(fixtureId, 'participants;lineups');
-      const league = await sportmonksApiClient.getLeagueById(fx.league_id);
-      const season = await sportmonksApiClient.getSeasonById(fx.season_id);
-      const round = await sportmonksApiClient.getRoundById(fx.round_id);
 
       fx['participants'][0]['past_matches'] = preparePastFixtures(await fetchPastFixtures(fx, fx['participants'][0].id));
       fx['participants'][1]['past_matches'] = preparePastFixtures(await fetchPastFixtures(fx, fx['participants'][1].id));
 
-      fx['participants'][0]['team'] = await sportmonksApiClient.getTeamById(fx['participants'][0].id);
-      fx['participants'][1]['team'] = await sportmonksApiClient.getTeamById(fx['participants'][1].id);
+      const teamA =  await sportmonksApiClient.getTeamById(fx['participants'][0].id);
+      const teamB =  await sportmonksApiClient.getTeamById(fx['participants'][1].id);
+      fx['participants'][0]['active_seasons'] = teamA['activeseasons'];
+      fx['participants'][1]['active_seasons'] = teamB['activeseasons'];
 
-      // const dateFrom = DateTime
-      //   .fromFormat(fx.starting_at, 'yyyy-MM-dd HH:mm:ss')
-      //   .minus({days: 366})
-      //   .toFormat('yyyy-MM-dd');
-      // const dateTo = DateTime
-      //   .fromFormat(fx.starting_at, 'yyyy-MM-dd HH:mm:ss')
-      //   .minus({days: 1})
-      //   .toFormat('yyyy-MM-dd');
-      //
-      // // Team
-      // const teams = fx.participants.map((p) => p.id);
-      // const tmA = await sportmonksApiClient.getTeamById(teams[0]);
-      //
-      // let tmAFxs1 = await sportmonksApiClient
-      //   .getFixturesByDateRangeForTeam(dateFrom, dateTo, teams[0], 'scores;statistics;events');
-      // let tmAFxs2 = await sportmonksApiClient
-      //   .getFixturesByDateRangeForTeam(dateFrom, dateTo, teams[0], 'coaches;lineups;participants');
-      // const tmAFxs = tmAFxs1.map((obj, index) => ({
-      //   ...obj,
-      //   ...tmAFxs2[index],
-      //   // ...arr3[index]
-      // }));
-      //
-      // const tmAPFxs = preparePastFixtures(tmAFxs);
-      // const tb = await sportmonksApiClient.getTeamById(teams[1]);
-      // const tbfxs = await sportmonksApiClient
-      //   .getFixturesByDateRangeForTeam(
-      //     DateTime.fromFormat(fixture.starting_at, 'yyyy-MM-dd HH:mm:ss').minus({days: 365}).toFormat('yyyy-MM-dd'),
-      //     DateTime.fromFormat(fixture.starting_at, 'yyyy-MM-dd HH:mm:ss').toFormat('yyyy-MM-dd'),
-      //     teams[1]
-      //   );
+      for (let i = 0; i < fx['participants'][0]['active_seasons'].length; i++) {
+        fx['participants'][0]['active_seasons'][i]['standings']
+          = await sportmonksApiClient.getStandingsBySeasonId(fx['participants'][0]['active_seasons'][i].id);
+      }
+      for (let i = 0; i < fx['participants'][1]['active_seasons'].length; i++) {
+        fx['participants'][1]['active_seasons'][i]['standings']
+          = await sportmonksApiClient.getStandingsBySeasonId(fx['participants'][1]['active_seasons'][i].id);
+      }
+
+      fx['participants'][0]['next_matches'] = prepareNextFixtures(await fetchNextFixtures(fx, fx['participants'][0].id));
+      fx['participants'][1]['next_matches'] = prepareNextFixtures(await fetchNextFixtures(fx, fx['participants'][1].id));
+
+      fx['round'] = await sportmonksApiClient.getRoundById(fx.round_id);
 
       return res.status(200).json({
         data: {
           fixture: formatFixture(fx),
-          // league: league,
-          // season: season,
-          // round: round,
-          // teams: teams,
-          // ta: ta,
-          // countta: tafxs.length,
-          // tafxs: tafxs,
-          // tmAPFxs: tmAPFxs[0],
-          // tb: tb,
-          // counttb: tbfxs.length,
-          // tbfxs: tbfxs,
         },
       });
     } catch (error) {
