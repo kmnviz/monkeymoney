@@ -31,7 +31,7 @@ const models = {
   deepSeekChat: 'deepseek-chat',
 };
 
-const createSuggestionsPostCompletion = async (content, date, totalOdds) => {
+const createFreeSuggestionsPostCompletion = async (content, date, totalOdds) => {
   const messages = [
     {
       role: 'system',
@@ -72,6 +72,79 @@ const createSuggestionsPostCompletion = async (content, date, totalOdds) => {
           🔹 Tip: [https://www.betbro.ai/premium]
           🔹 Chance: 75%
           🔹 Odd: 1.666
+
+          ---
+          In the beginning of the text add:
+          🎯 DAILY TIPS
+          📅 [${date}]
+
+          In the end of the text add following:
+          📊 Total Odds: ${totalOdds}
+
+          🎲 Prepared by AI, validated by top experts.
+
+          For instant tips and updates:
+          👉 Telegram: http://t.me/betbro_ai
+          👉 Website: http://betbro.ai
+          👉 X (Twitter): https://x.com/betbro_ai
+
+          Add Following hashtags:
+          #DailyPicks #Football #Soccer #EuropeanFootball #SportsPicks
+          Additionally add a hashtag for each team that is mentioned in the provided context.
+        `,
+    }
+  ];
+
+  const completion = await deepSeek.chat.completions.create({
+    model: models.deepSeekChat,
+    messages: messages,
+    temperature: 0,
+  } as any);
+
+  console.log('createBetSuggestionCompletion usage: ', completion.usage);
+  console.log('createBetSuggestionCompletion message: ', completion.choices[0].message);
+
+  return {
+    model: models.deepSeekChat,
+    data: completion.choices[0].message.content,
+  };
+};
+
+const createPremiumSuggestionsPostCompletion = async (content, date, totalOdds) => {
+  const messages = [
+    {
+      role: 'system',
+      content: ``,
+    },
+    {
+      role: 'user',
+      content: `
+      ### Task:
+      You receive an object that contains a football matches names and a betting predictions for them
+      with related bet, odd, probability, market description and a comprehensive reasoning.
+
+      Create a Twitter post that tells about the each suggestion.
+      `,
+    },
+    {
+      role: 'assistant',
+      content: JSON.stringify(content),
+    },
+    {
+      role: 'user',
+      content:
+        `
+          Voice of the text should be like a professional football analyst.
+          DO NOT USE THE WORD BET, IF NEEDED USE THE WORD TIP INSTEAD OF BET.
+          DO NOT WRAP THE TEXT IN ANY QUOTES.
+          DO NOT ADD ADDITIONAL *'s TO THE TEXT AS TWITTER DOES NOT RECOGNIZES THEM.
+          **FOR EACH SUGGESTION THERE MUST BE ONLY FIXTURE NAME, BET, CANCE AND ODD. NOTHING ELSE**
+
+          USE FOLLOWING EXAMPLE FOR SUGGESTION:
+          1️⃣ Juventus vs Atalanta
+          🔹 Bet: Over 2.5 Goals
+          🔹 Chance: 82%
+          🔹 Odd: 1.93
 
           ---
           In the beginning of the text add:
@@ -178,6 +251,60 @@ const createSingleSuggestionsPostCompletion = async (content) => {
   };
 };
 
+const preparePostingSuggestions = (allSuggestions) => {
+  return {
+    total: allSuggestions.filter((suggestion) => suggestion.free || suggestion.premium),
+    free: allSuggestions.filter((suggestion) => suggestion.free),
+    premium: allSuggestions.filter((suggestion) => !suggestion.free && suggestion.premium),
+  }
+};
+
+const prepareGroupedMessages = async (suggestions: object[], date, totalOdds) => {
+  const filtered = suggestions.map((suggestion) => {
+    return {
+      fixture: suggestion.fixture,
+      free: suggestion.free,
+      premium: suggestion.premium,
+      data: suggestion.completion.data,
+    };
+  });
+
+  const freeCompletion = await createFreeSuggestionsPostCompletion(filtered, date, totalOdds.toFixed(2));
+  const premiumCompletion = await createPremiumSuggestionsPostCompletion(filtered, date, totalOdds.toFixed(2));
+
+  const free = freeCompletion.data as string;
+  const premium = premiumCompletion.data as string;
+
+  return {
+    free: free,
+    premium: premium,
+  };
+};
+
+const prepareSingleMessages = async (groupedMessage: string) => {
+  const singlesCompletions = (await createSingleSuggestionsPostCompletion(groupedMessage) as object).data;
+  return singlesCompletions
+    .split('!!! bet separator !!!')
+    .map((s) => s.trim())
+    .filter((s) => s);
+}
+
+const postGroupedMessages = async (postingSuggestions, groupedMessages, date, emailAddresses) => {
+  await webflowService.updateFreePicksCollection(date, postingSuggestions.free);
+  await webflowService.updatePremiumPicksCollection(date, postingSuggestions.premium);
+  await twitterClient.v2.tweet(groupedMessages.free);
+  await telegramBotClient.sendMessage(groupedMessages.free);
+  await zohoMailerClient.sendEmails(emailAddresses.free, `Daily tips ${date}`, groupedMessages.free);
+  await zohoMailerClient.sendEmails(emailAddresses.premium, `Daily premium tips ${date}`, groupedMessages.premium);
+};
+
+const postSingleMessages = async (singleMessages) => {
+  for (let i = 0; i < singleMessages.length; i++) {
+    await pause(2 * 60 * 1000);
+    await twitterClient.v2.tweet(singleMessages[i]);
+  }
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     if (
@@ -194,73 +321,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
       const date = req.body.date;
-
       const allSuggestions: object[] = (await googleCloudStorageClient.readJsonFile(`suggestions/${date}.json`) as object[]);
+      const emailAddresses = {
+        free: (await googleCloudStorageClient.readJsonFile(`emails.json`) as string[]) || [],
+        premium: ['kamenovivanzdravkov@gmail.com', 'omaretz@gmail.com', 'iambozhidar@gmail.com'],
+      };
       if (!allSuggestions) {
         return res.status(404).json({
-          message: 'File not found.',
+          message: `${date} suggestions not found.`,
         });
       }
-      const postSuggestions = allSuggestions.filter((suggestion) => suggestion.free === true || suggestion.premium);
-      const freeSuggestions = allSuggestions.filter((suggestion) => suggestion.free === true);
-      const premiumSuggestions = allSuggestions.filter((suggestion) => suggestion.premium);
 
-      let suggestions = postSuggestions;
-      const fDailySuggestions = (suggestions as object[]).map((suggestion) => {
-        return {
-          fixture: suggestion.fixture,
-          free: suggestion.free,
-          premium: suggestion.premium,
-          data: suggestion.completion.data,
-        };
-      });
-
-      const totalOdds = suggestions.reduce((sum, suggestion) =>
+      const postingSuggestions = preparePostingSuggestions(allSuggestions);
+      const totalOdds = postingSuggestions.total.reduce((sum, suggestion) =>
         sum.plus(new Decimal(suggestion.completion.data.odd)), new Decimal(0)
       );
+      const groupedMessages = await prepareGroupedMessages(allSuggestions, date, totalOdds);
+      const singleMessages = await prepareSingleMessages(groupedMessages.free);
 
-      // Post single daily post with all matches
-      const bundleCompletion = await createSuggestionsPostCompletion(fDailySuggestions, date, totalOdds.toFixed(2));
-      const bundleMessage = bundleCompletion.data as string;
-
-      // Post all suggestions
-      await webflowService.updateFreePicksCollection(date, freeSuggestions);
-      await webflowService.updatePremiumPicksCollection(date, premiumSuggestions);
-      await twitterClient.v2.tweet(bundleMessage);
-      await telegramBotClient.sendMessage(bundleMessage);
-      const emailAddresses = (await googleCloudStorageClient.readJsonFile(`emails.json`) as string[]);
-      if (!emailAddresses) {
-        return res.status(404).json({
-          message: 'Emails file not found.',
-        });
-      }
-      await zohoMailerClient.sendEmails(emailAddresses, `Daily tips ${date}`, bundleMessage);
-
-      // Post each suggestion one by one
-      const singlesCompletions = await createSingleSuggestionsPostCompletion(fDailySuggestions);
-      const singleMessages = (singlesCompletions.data as string)
-        .split('!!! bet separator !!!')
-        .map((s) => s.trim())
-        .filter((s) => s);
-
-      for (let i = 0; i < singleMessages.length; i++) {
-        await pause(2 * 60 * 1000);
-        await twitterClient.v2.tweet(singleMessages[i]);
-      }
+      // Post grouped messages
+      await postGroupedMessages(postingSuggestions, groupedMessages, date, emailAddresses);
+      // Post single messages
+      await postSingleMessages(singleMessages);
 
       return res.status(200).json({
         data: {
-          completions: {
-            bundle: bundleMessage,
-            singles: singleMessages,
-          },
-          total: suggestions.length,
-          daily_total: fDailySuggestions.length,
-          suggestions: fDailySuggestions,
+          groupedMessages: groupedMessages,
+          postingSuggestions: postingSuggestions,
         },
       });
     } catch (error) {
       console.log('error: ', error);
+      console.log('error.data: ', error.data);
       return res.status(500).json({
         message: error.message,
       });

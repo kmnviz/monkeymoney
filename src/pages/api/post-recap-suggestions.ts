@@ -120,18 +120,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
       const date = req.body.date;
-      const suggestionsRecap = (await googleCloudStorageClient.readJsonFile(`recaps/${date}.json`) as object[]);
-      if (!suggestionsRecap) {
+      const recapTotal = (await googleCloudStorageClient.readJsonFile(`recaps/${date}.json`) as object[]);
+      if (!recapTotal) {
         return res.status(404).json({
-          message: 'Recap file not found.',
+          message: `${date} recap not found`,
         });
       }
+      const recapFreeAndPremium = recapTotal.filter((r) => r.suggestion.free || r.suggestion.premium);
 
-      for (let i = 0; i < suggestionsRecap.length; i++) {
-        await webflowService.updateTipsArchiveCollection(date, suggestionsRecap[i]);
+      for (let i = 0; i < recapFreeAndPremium.length; i++) {
+        await webflowService.updateTipsArchiveCollection(date, recapFreeAndPremium[i]);
       }
 
-      const guessed = (suggestionsRecap as object[]).filter((suggestion) => suggestion.result.is_guessed === 'YES' && suggestion.suggestion.free === true);
+      const guessed = (recapTotal as object[]).filter((suggestion) => suggestion.result.is_guessed === 'YES' && suggestion.suggestion.free === true);
       const completion = await createRecapSuggestionPostCompletion(guessed, date);
       const message = (completion as object).data;
       await twitterClient.v2.tweet(message);
@@ -148,13 +149,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       for (let i = 0; i < guessed.length; i++) {
         win = win.plus(new Decimal(guessed[i].suggestion.odd));
       }
-      const pnl = win.minus(new Decimal(suggestionsRecap.length)).toFixed(3);
+      const pnl = win.minus(new Decimal(recapTotal.length)).toFixed(3);
 
       return res.status(200).json({
         data: {
           completion: completion,
-          suggestionsRecap: suggestionsRecap,
-          suggestionsTotal: suggestionsRecap.length,
+          recapTotal: recapTotal,
+          suggestionsTotal: recapTotal.length,
           pnl: pnl,
         },
       });

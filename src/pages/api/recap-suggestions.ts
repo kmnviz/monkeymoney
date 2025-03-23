@@ -151,7 +151,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       for (let i = 0; i < (suggestions as object[]).length; i++) {
         const suggestion = suggestions[i].completion.data;
         const fixtureOutcome = await sportmonksApiClient
-          .getFixtureById(suggestions[i].data.fixture.id);
+          .getFixtureById(suggestions[i].data.fixture.id, ';scores;statistics');
 
         fixtureOutcome['statistics'] = modifyStatistics(fixtureOutcome['statistics']);
 
