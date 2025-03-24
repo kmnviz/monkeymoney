@@ -10,7 +10,6 @@ import {
   roundNameById,
   venueNameById,
   typeNameById,
-  pause,
   positionNameById,
   teamNameById,
 } from '../../utils';
@@ -18,6 +17,7 @@ import {TFixture} from "../../types/sportmonks/Fixture";
 import {TTeam} from "../../types/sportmonks/Team";
 import {TPlayer} from "../../types/sportmonks/Player";
 import {ParticipantEnum} from "../../enums/sportmonks";
+import {countContentTokens} from '../../helpers';
 
 const sportmonksApiClient = new SportmonksApiClient();
 const deepSeek = new OpenAI({
@@ -103,37 +103,6 @@ const formatLineups = (matchLineups) => {
     };
   });
 };
-
-const formatPlayerStatistics = (statistics) => {
-  const resultMap = new Map();
-
-  statistics.flat().forEach((item) => {
-    const { type, value } = item;
-
-    if (!resultMap.has(type)) {
-      resultMap.set(type, { type, value: {} });
-    }
-
-    const existingValue = resultMap.get(type).value;
-
-    // Sum up each key inside the "value" object
-    for (const key in value) {
-      if (!existingValue[key]) {
-        existingValue[key] = new Decimal(value[key]);
-      } else {
-        existingValue[key] = existingValue[key].plus(new Decimal(value[key]));
-      }
-    }
-  });
-
-  // Convert Decimal.js numbers back to regular numbers
-  return Array.from(resultMap.values()).map((item) => {
-    item.value = Object.fromEntries(
-      Object.entries(item.value).map(([key, val]) => [key, val.toNumber()])
-    );
-    return item;
-  });
-}
 
 const fetchPastFixtures = async (fixture, teamId) => {
   const dateFrom = DateTime
@@ -278,9 +247,9 @@ const formatFixture = (fx: TFixture) => {
                   value: d.value,
                 };
               }): [];
-            // }).map((item) => ({ [item.type]: item.value.total })): [],
-            }): [],
-            // statistics: p.statistics,
+            }).map((s) => {
+              return s.map((ss) => ({[ss.type]: ss?.value?.total}))
+            }).flat() : [],
           };
         }) : [],
         active_seasons: p['active_seasons'] && p['active_seasons'].length
@@ -381,8 +350,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       return res.status(200).json({
         data: {
-          // teamA: teamA,
-          fixture: formatFixture(fx),
+          fixture: countContentTokens(formatFixture(fx), models.gpt4Turbo),
         },
       });
     } catch (error) {
