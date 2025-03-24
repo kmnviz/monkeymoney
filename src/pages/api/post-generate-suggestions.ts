@@ -341,14 +341,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const groupedMessages = await prepareGroupedMessages(allSuggestions, date, totalOdds);
       const singleMessages = await prepareSingleMessages(groupedMessages.free);
 
-      console.log('groupedMessages: ', groupedMessages);
-      console.log('singleMessages: ', singleMessages);
-      return res.status(200).json({
-        data: {
-          groupedMessages: groupedMessages,
-          singleMessages: singleMessages,
-        },
-      });
+      // console.log('groupedMessages: ', groupedMessages);
+      // console.log('singleMessages: ', singleMessages);
+      // return res.status(200).json({
+      //   data: {
+      //     groupedMessages: groupedMessages,
+      //     singleMessages: singleMessages,
+      //   },
+      // });
 
       // Post grouped messages
       await postGroupedMessages(postingSuggestions, groupedMessages, date, emailAddresses);
