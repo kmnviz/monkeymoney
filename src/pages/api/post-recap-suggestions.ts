@@ -126,24 +126,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           message: `${date} recap not found`,
         });
       }
+      const emailAddresses = {
+        free: (await googleCloudStorageClient.readJsonFile(`emails.json`) as string[]) || [],
+        premium: ['kamenovivanzdravkov@gmail.com', 'omaretz@gmail.com', 'iambozhidar@gmail.com'],
+      };
       const recapFreeAndPremium = recapTotal.filter((r) => r.suggestion.free || r.suggestion.premium);
 
       for (let i = 0; i < recapFreeAndPremium.length; i++) {
         await webflowService.updateTipsArchiveCollection(date, recapFreeAndPremium[i]);
       }
 
-      const guessed = (recapTotal as object[]).filter((suggestion) => suggestion.result.is_guessed === 'YES' && suggestion.suggestion.free === true);
+      const guessed = (recapTotal as object[])
+        .filter((suggestion) => suggestion.result.is_guessed === 'YES' && (suggestion.suggestion.free || suggestion.suggestion.premium));
       const completion = await createRecapSuggestionPostCompletion(guessed, date);
       const message = (completion as object).data;
       await twitterClient.v2.tweet(message);
       await telegramBotClient.sendMessage(message);
-      const emailAddresses = (await googleCloudStorageClient.readJsonFile(`emails.json`) as string[]);
-      if (!emailAddresses) {
-        return res.status(404).json({
-          message: 'Emails file not found.',
-        });
-      }
-      await zohoMailerClient.sendEmails(emailAddresses, `Daily recap ${date}`, message);
+      await zohoMailerClient.sendEmails(emailAddresses.free, `Daily recap ${date}`, message);
+      await zohoMailerClient.sendEmails(emailAddresses.premium, `Premium daily recap ${date}`, message);
 
       let win = new Decimal(0);
       for (let i = 0; i < guessed.length; i++) {

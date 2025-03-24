@@ -173,6 +173,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             probability: suggestions[i].completion.data.probability,
             market_description: suggestions[i].completion.data.market_description,
             free: suggestions[i].free,
+            premium: suggestions[i].premium,
             bookmakerId: suggestions[i].bookmakerId,
             comprehensive_detailed_reason: suggestions[i].completion.data.comprehensive_detailed_reason,
           },

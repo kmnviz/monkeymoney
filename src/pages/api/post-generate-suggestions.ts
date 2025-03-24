@@ -269,16 +269,14 @@ const prepareGroupedMessages = async (suggestions: object[], date, totalOdds) =>
     };
   });
 
-  const freeCompletion = await createFreeSuggestionsPostCompletion(filtered, date, totalOdds.toFixed(2));
-  const premiumCompletion = await createPremiumSuggestionsPostCompletion(filtered, date, totalOdds.toFixed(2));
+  const hasFree = suggestions.filter((s) => s.free).length > 0;
+  const hasPremium = suggestions.filter((s) => !s.free && s.premium).length > 0;
 
-  const free = freeCompletion.data as string;
-  const premium = premiumCompletion.data as string;
+  const completions = {free: '', premium: ''};
+  if (hasFree) completions.free = (await createFreeSuggestionsPostCompletion(filtered, date, totalOdds.toFixed(2))).data as string;
+  if (hasPremium) completions.premium = (await createPremiumSuggestionsPostCompletion(filtered, date, totalOdds.toFixed(2))).data as string;
 
-  return {
-    free: free,
-    premium: premium,
-  };
+  return completions;
 };
 
 const prepareSingleMessages = async (groupedMessage: string) => {
@@ -292,10 +290,14 @@ const prepareSingleMessages = async (groupedMessage: string) => {
 const postGroupedMessages = async (postingSuggestions, groupedMessages, date, emailAddresses) => {
   await webflowService.updateFreePicksCollection(date, postingSuggestions.free);
   await webflowService.updatePremiumPicksCollection(date, postingSuggestions.premium);
-  await twitterClient.v2.tweet(groupedMessages.free);
-  await telegramBotClient.sendMessage(groupedMessages.free);
-  await zohoMailerClient.sendEmails(emailAddresses.free, `Daily tips ${date}`, groupedMessages.free);
-  await zohoMailerClient.sendEmails(emailAddresses.premium, `Daily premium tips ${date}`, groupedMessages.premium);
+  if (groupedMessages.free)
+    await twitterClient.v2.tweet(groupedMessages.free);
+  if (groupedMessages.free)
+    await telegramBotClient.sendMessage(groupedMessages.free);
+  if (groupedMessages.free)
+    await zohoMailerClient.sendEmails(emailAddresses.free, `Daily tips ${date}`, groupedMessages.free);
+  if (groupedMessages.premium)
+    await zohoMailerClient.sendEmails(emailAddresses.premium, `Daily premium tips ${date}`, groupedMessages.premium);
 };
 
 const postSingleMessages = async (singleMessages) => {
