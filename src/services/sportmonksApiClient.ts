@@ -92,9 +92,9 @@ class SportmonksApiClient {
   }
 
   async getAllSeasons(): Promise<TSeason[]> {
-    if (seasonsJson.length > 0) {
-      return seasonsJson as TSeason[];
-    }
+    // if (seasonsJson.length > 0) {
+    //   return seasonsJson as TSeason[];
+    // }
 
     try {
       const seasons: any[] | never = [];
@@ -114,7 +114,7 @@ class SportmonksApiClient {
         hasMore = response.data.pagination;
         currentPage += 1;
 
-        await pause(1500);
+        // await pause(1500);
       }
 
       await writeIntoFile(seasons.flat(), '/sportmonks/seasons.json');

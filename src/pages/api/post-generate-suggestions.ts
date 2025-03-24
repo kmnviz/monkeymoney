@@ -59,15 +59,15 @@ const createFreeSuggestionsPostCompletion = async (content, date, totalOdds) => 
           DO NOT USE THE WORD BET, IF NEEDED USE THE WORD TIP INSTEAD OF BET.
           DO NOT WRAP THE TEXT IN ANY QUOTES.
           DO NOT ADD ADDITIONAL *'s TO THE TEXT AS TWITTER DOES NOT RECOGNIZES THEM.
-          **FOR EACH SUGGESTION THERE MUST BE ONLY FIXTURE NAME, BET, CANCE AND ODD. NOTHING ELSE**
+          **FOR EACH SUGGESTION THERE MUST BE ONLY FIXTURE NAME, BET, CHANCE AND ODD. NOTHING ELSE**
 
-          USE FOLLOWING EXAMPLE FOR FREE SUGGESTION:
+          USE FOLLOWING EXAMPLE FOR EACH **FREE** SUGGESTION:
           1️⃣ Juventus vs Atalanta
           🔹 Bet: Over 2.5 Goals
           🔹 Chance: 82%
           🔹 Odd: 1.93
 
-          USE FOLLOWING EXAMPLE FOR PREMIUM SUGGESTION:
+          USE FOLLOWING EXAMPLE FOR EACH **NOT FREE** SUGGESTION:
           1️⃣ Juventus vs Atalanta
           🔹 Tip: [https://www.betbro.ai/premium]
           🔹 Chance: 75%
@@ -214,14 +214,14 @@ const createSingleSuggestionsPostCompletion = async (content) => {
           **FOR EACH SUGGESTION THERE MUST BE ONLY FIXTURE NAME, BET, CANCE AND ODD. NOTHING ELSE**
           **ADD SEPARATOR AFTER EACH SUGGESTION. THE SEPARATOR MUST BE: !!! bet separator !!!**
 
-          USE FOLLOWING EXAMPLE FOR FREE EACH SUGGESTION:
+          USE FOLLOWING EXAMPLE FOR EACH **FREE** SUGGESTION:
           🔥 Tips of the Day: Cercle Brugge vs Club Brugge 🔥
 
           💰 Prediction: Both Teams to Score - No
           📊 Odds: 1.95
           ⚽ Chance: 85%
 
-          USE FOLLOWING EXAMPLE FOR PREMIUM EACH SUGGESTION:
+          USE FOLLOWING EXAMPLE FOR EACH **NOT FREE** SUGGESTION:
           🔥 Tips of the Day: Cercle Brugge vs Club Brugge 🔥
 
           💰 Prediction: [https://www.betbro.ai/premium]
@@ -340,6 +340,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       );
       const groupedMessages = await prepareGroupedMessages(allSuggestions, date, totalOdds);
       const singleMessages = await prepareSingleMessages(groupedMessages.free);
+
+      console.log('groupedMessages: ', groupedMessages);
+      console.log('singleMessages: ', singleMessages);
+      return res.status(200).json({
+        data: {
+          groupedMessages: groupedMessages,
+          singleMessages: singleMessages,
+        },
+      });
 
       // Post grouped messages
       await postGroupedMessages(postingSuggestions, groupedMessages, date, emailAddresses);

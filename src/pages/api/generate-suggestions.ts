@@ -481,8 +481,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const date = req.body.date;
     const mainModel = req.body.mainModel || null;
-    // const timeBetweenCompletions = 2 * 60 * 1000;
-    const timeBetweenCompletions = 15 * 1000;
+    const timeBetweenCompletions = 2 * 60 * 1000;
+    // const timeBetweenCompletions = 15 * 1000;
 
     if (mainModel && !Object.values(models).includes(mainModel)) {
       return res.status(422).json({
@@ -607,7 +607,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         suggestions.push(suggestion);
 
-        await googleCloudStorageClient.upsertJsonFile(suggestion, `suggestions/${date}-test.json`);
+        await googleCloudStorageClient.upsertJsonFile(suggestion, `suggestions/${date}.json`);
         console.log(`finished upsert ALL suggestion ${i}.`);
       }
 

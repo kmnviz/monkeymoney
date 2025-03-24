@@ -122,6 +122,13 @@ const generateSuggestionsJobs = CronJob.from({
   timeZone: 'UTC',
   start: true,
 });
+const postGenerateSuggestionsJobs = CronJob.from({
+  cronTime: '0 0 22 * * *',
+  onTick: postGenerateSuggestions,
+  timeZone: 'UTC',
+  start: true,
+});
+
 const recapSuggestionsJobs = CronJob.from({
   cronTime: '0 0 5 * * *',
   onTick: recapSuggestions,
@@ -131,12 +138,6 @@ const recapSuggestionsJobs = CronJob.from({
 const postRecapSuggestionsJobs = CronJob.from({
   cronTime: '0 30 5 * * *',
   onTick: postRecapSuggestions,
-  timeZone: 'UTC',
-  start: true,
-});
-const postGenerateSuggestionsJobs = CronJob.from({
-  cronTime: '0 0 6 * * *',
-  onTick: postGenerateSuggestions,
   timeZone: 'UTC',
   start: true,
 });
