@@ -2,6 +2,9 @@
 import OpenAI from 'openai';
 import selectFixturesPrompt from '../prompts/select-fixtures';
 import betSuggestionPrompt from '../prompts/bet-suggestion';
+import freeSuggestionsPrompt from '../prompts/free-suggestions-post';
+import premiumSuggestionsPrompt from '../prompts/premium-suggestions-post';
+import singleSuggestionsPrompt from '../prompts/single-suggestions-post';
 import {formatJsonStringToJson, pause} from '../utils';
 
 class DeepSeekService {
@@ -132,6 +135,105 @@ class DeepSeekService {
         }
       }
     }
+  }
+
+  async createFreeSuggestionsPostCompletion(content, date, totalOdds) {
+    const messages = [
+      {
+        role: 'system',
+        content: ``,
+      },
+      {
+        role: 'user',
+        content: freeSuggestionsPrompt(date, totalOdds),
+      },
+      {
+        role: 'assistant',
+        content: JSON.stringify(content),
+      },
+    ];
+
+    const startTime = performance.now();
+    const completion = await this.client.chat.completions.create({
+      model: this.models.deepSeekChat,
+      messages: messages,
+      temperature: 0,
+    } as any);
+    const endTime = performance.now();
+    console.log(`DeepSeek.createFreeSuggestionsPostCompletion`);
+    console.log(`-- finished in: ${((endTime - startTime) / 1000).toFixed(2)}s`);
+    console.log(`-- used ${completion.usage?.total_tokens} tokens`);
+
+    return {
+      model: this.models.deepSeekChat,
+      data: completion.choices[0].message.content,
+    };
+  }
+
+  async createPremiumSuggestionsPostCompletion(content, date, totalOdds) {
+    const messages = [
+      {
+        role: 'system',
+        content: ``,
+      },
+      {
+        role: 'user',
+        content: premiumSuggestionsPrompt(date, totalOdds),
+      },
+      {
+        role: 'assistant',
+        content: JSON.stringify(content),
+      },
+    ];
+
+    const startTime = performance.now();
+    const completion = await this.client.chat.completions.create({
+      model: this.models.deepSeekChat,
+      messages: messages,
+      temperature: 0,
+    } as any);
+    const endTime = performance.now();
+    console.log(`DeepSeek.createPremiumSuggestionsPostCompletion`);
+    console.log(`-- finished in: ${((endTime - startTime) / 1000).toFixed(2)}s`);
+    console.log(`-- used ${completion.usage?.total_tokens} tokens`);
+
+    return {
+      model: this.models.deepSeekChat,
+      data: completion.choices[0].message.content,
+    };
+  }
+
+  async createSingleSuggestionsPostCompletion(content) {
+    const messages = [
+      {
+        role: 'system',
+        content: ``,
+      },
+      {
+        role: 'user',
+        content: singleSuggestionsPrompt(),
+      },
+      {
+        role: 'assistant',
+        content: JSON.stringify(content),
+      }
+    ];
+
+    const startTime = performance.now();
+    const completion = await this.client.chat.completions.create({
+      model: this.models.deepSeekChat,
+      messages: messages,
+      temperature: 0,
+    } as any);
+    const endTime = performance.now();
+    console.log(`DeepSeek.createSingleSuggestionsPostCompletion`);
+    console.log(`-- finished in: ${((endTime - startTime) / 1000).toFixed(2)}s`);
+    console.log(`-- used ${completion.usage?.total_tokens} tokens`);
+
+    return {
+      model: this.models.deepSeekChat,
+      data: completion.choices[0].message.content,
+    };
   }
 }
 
