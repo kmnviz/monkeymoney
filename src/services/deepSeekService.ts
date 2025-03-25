@@ -49,8 +49,8 @@ class DeepSeekService {
       temperature: 0,
     } as any);
 
-    console.log('createSelectFixturesCompletion completion: ', completion.usage?.total_tokens);
-    console.log('createSelectFixturesCompletion completion: ', completion.choices[0].message);
+    console.log(`DeepSeek.createSelectFixturesCompletion`);
+    console.log(`-- used ${completion.usage?.total_tokens} tokens`);
 
     return {
       data: completion.choices[0].message.content,
@@ -107,12 +107,14 @@ class DeepSeekService {
           temperature: 0,
         } as any);
         const endTime = performance.now();
-        console.log(`DeepSeek.createBetSuggestionCompletion finished in: ${((endTime - startTime) / 1000).toFixed(2)}s`);
+        console.log(`DeepSeek.createBetSuggestionCompletion`);
+        console.log(`-- finished in: ${((endTime - startTime) / 1000).toFixed(2)}s`);
+        console.log(`-- used ${completion.usage?.total_tokens} tokens`);
 
         return {
           model: this.models.deepSeekReasoner,
           data: formatJsonStringToJson(completion.choices[0].message.content),
-          reasoning: completion.choices[0].message['reasoning_content'],
+          // reasoning: completion.choices[0].message['reasoning_content'],
           tokens: completion.usage?.total_tokens,
         };
       } catch (error) {
