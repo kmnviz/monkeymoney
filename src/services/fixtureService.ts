@@ -203,9 +203,6 @@ const prepareNextFixtures = (fixtures: TFixture[]) => {
 };
 
 const formatFixture = (fx: TFixture) => {
-  console.log('fx: ', fx.lineups);
-  console.log('fx: ', fx.season_id);
-
   let formattedFx = {
     id: fx.id,
     // league: fx.league_id,
@@ -222,7 +219,7 @@ const formatFixture = (fx: TFixture) => {
         id: p.id,
         name: p.name,
         location: p.meta.location,
-        post_matches: p['past_matches'],
+        past_matches: p['past_matches'],
         next_matches: p['next_matches'],
         players: p['players'] && p['players'].length ? p['players'].map((p) => {
           return {
@@ -265,7 +262,8 @@ const formatFixture = (fx: TFixture) => {
       acc[name] = rest;
       return acc;
     }, {}),
-    lineups: fx.lineups,
+    // TODO: RESEARCH WHY LINEUPS ARE NOT RETURNED
+    // lineups: fx.lineups,
     round: fx.round ? {
       name: fx.round.name,
       fixtures: fx.round.fixtures && fx.round.fixtures.length ? fx.round.fixtures.map((f) => {
@@ -298,7 +296,7 @@ const formatFixture = (fx: TFixture) => {
 class FixtureService {
 
   async collectData(fixtureId: number) {
-    const fx = await sportmonksApiClient.getFixtureById(fixtureId, 'participants;lineups');
+    const fx = await sportmonksApiClient.getFixtureById(fixtureId, 'participants');
 
     fx['participants'][0]['past_matches'] = preparePastFixtures(await fetchPastFixtures(fx, fx['participants'][0].id));
     fx['participants'][1]['past_matches'] = preparePastFixtures(await fetchPastFixtures(fx, fx['participants'][1].id));
