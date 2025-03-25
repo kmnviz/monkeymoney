@@ -318,12 +318,12 @@ const createBetSuggestionWithDeepSeekReasoner = async (content, retries = 1000) 
         **Output Format (Strictly Follow This JSON Structure):**
           {
             "fixture": "<Team A vs Team B>",
-            "bet": "<Detailed Bet Selection>",
+            "bet": "<Bet Selection>",
             "probability": "<Calculated Probability (%)>",
             "odd_id": "<Selected Odd ID>",
             "odd": "<Selected Odd>",
             "market_id": "<Selected Market ID>",
-            "market_description": "<Brief Explanation of the Market>",
+            "market_description": "<Market Description>",
             "comprehensive_detailed_reason": "<Comprehensive Detailed Reason>"
           }
       `,

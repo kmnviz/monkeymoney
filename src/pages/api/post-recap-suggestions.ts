@@ -142,7 +142,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const message = (completion as object).data;
       await twitterClient.v2.tweet(message);
       await telegramBotClient.sendMessage(message);
-      await zohoMailerClient.sendEmails(emailAddresses.free.concat(emailAddresses.premium), `Daily recap ${date}`, message);
+      await zohoMailerClient.sendEmails([...new Set(emailAddresses.free.concat(emailAddresses.premium))], `Daily recap ${date}`, message);
 
       let win = new Decimal(0);
       for (let i = 0; i < guessed.length; i++) {
