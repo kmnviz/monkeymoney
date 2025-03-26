@@ -26,7 +26,7 @@ module.exports = (date, totalOdds) => {
 
     ---
     In the beginning of the text add:
-    🎯 DAILY TIPS
+    🎯 FREE DAILY TIPS
     📅 [${date}]
 
     In the end of the text add following:

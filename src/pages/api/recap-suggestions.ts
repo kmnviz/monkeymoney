@@ -151,8 +151,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       for (let i = 0; i < (suggestions as object[]).length; i++) {
         const suggestion = suggestions[i].completion.data;
         const fixtureOutcome = await sportmonksApiClient
-          .getFixtureById(suggestions[i].data.fixture.id, 'participants;scores;statistics');
+          // .getFixtureById(suggestions[i].data.fixture.id, 'participants;scores;statistics');
+          .getFixtureById(suggestions[i].data.fixture.id, 'scores;statistics;events');
 
+        // TODO: ADD FIXTURE EVENTS
         fixtureOutcome['statistics'] = modifyStatistics(fixtureOutcome['statistics']);
 
         const suggestionCheck = await createSuggestionCheckCompletion({
@@ -179,6 +181,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           },
           result: {
             scores: scores,
+            statistics: fixtureOutcome['statistics'],
             is_guessed: suggestionCheck['data'],
           },
         };

@@ -2,9 +2,9 @@
 import OpenAI from 'openai';
 import selectFixturesPrompt from '../prompts/select-fixtures';
 import betSuggestionPrompt from '../prompts/bet-suggestion';
-import freeSuggestionsPrompt from '../prompts/free-suggestions-post';
-import premiumSuggestionsPrompt from '../prompts/premium-suggestions-post';
-import singleSuggestionsPrompt from '../prompts/single-suggestions-post';
+import freeSuggestionsPostPrompt from '../prompts/free-suggestions-post';
+import premiumSuggestionsPostPrompt from '../prompts/premium-suggestions-post';
+import freeSuggestionPostPrompt from '../prompts/free-suggestion-post';
 import {formatJsonStringToJson, pause} from '../utils';
 
 class DeepSeekService {
@@ -137,7 +137,7 @@ class DeepSeekService {
     }
   }
 
-  async createFreeSuggestionsPostCompletion(content, date, totalOdds) {
+  async createFreeSuggestionsPostCompletion(suggestions, odds, date) {
     const messages = [
       {
         role: 'system',
@@ -145,11 +145,11 @@ class DeepSeekService {
       },
       {
         role: 'user',
-        content: freeSuggestionsPrompt(date, totalOdds),
+        content: freeSuggestionsPostPrompt(date, odds),
       },
       {
         role: 'assistant',
-        content: JSON.stringify(content),
+        content: JSON.stringify(suggestions),
       },
     ];
 
@@ -170,7 +170,7 @@ class DeepSeekService {
     };
   }
 
-  async createPremiumSuggestionsPostCompletion(content, date, totalOdds) {
+  async createPremiumSuggestionsPostCompletion(suggestions, odds, date) {
     const messages = [
       {
         role: 'system',
@@ -178,11 +178,11 @@ class DeepSeekService {
       },
       {
         role: 'user',
-        content: premiumSuggestionsPrompt(date, totalOdds),
+        content: premiumSuggestionsPostPrompt(date, odds),
       },
       {
         role: 'assistant',
-        content: JSON.stringify(content),
+        content: JSON.stringify(suggestions),
       },
     ];
 
@@ -203,7 +203,7 @@ class DeepSeekService {
     };
   }
 
-  async createSingleSuggestionsPostCompletion(content) {
+  async createFreeSuggestionPostCompletion(suggestion) {
     const messages = [
       {
         role: 'system',
@@ -211,11 +211,11 @@ class DeepSeekService {
       },
       {
         role: 'user',
-        content: singleSuggestionsPrompt(),
+        content: freeSuggestionPostPrompt(),
       },
       {
         role: 'assistant',
-        content: JSON.stringify(content),
+        content: JSON.stringify(suggestion),
       }
     ];
 
@@ -226,7 +226,7 @@ class DeepSeekService {
       temperature: 0,
     } as any);
     const endTime = performance.now();
-    console.log(`DeepSeek.createSingleSuggestionsPostCompletion`);
+    console.log(`DeepSeek.createFreeSuggestionPostCompletion`);
     console.log(`-- finished in: ${((endTime - startTime) / 1000).toFixed(2)}s`);
     console.log(`-- used ${completion.usage?.total_tokens} tokens`);
 

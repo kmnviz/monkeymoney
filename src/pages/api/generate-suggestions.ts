@@ -456,7 +456,7 @@ const collectTeamData = async (teamId) => {
   return team;
 }
 
-const MAX_SUGGESTIONS_LIMIT = 30;
+const MAX_SUGGESTIONS_LIMIT = 10;
 const FREE_SUGGESTIONS_LIMIT = 3;
 const PREMIUM_SUGGESTIONS_LIMIT = 7;
 // const MAX_SUGGESTIONS_LIMIT = 1;

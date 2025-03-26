@@ -109,7 +109,7 @@ class WebflowService {
           "name": suggestions[i].completion.data.fixture,
           "odd": suggestions[i].completion.data.odd,
           "chance": suggestions[i].completion.data.probability,
-          "tip-suggestion": `${suggestions[i].completion.data.bet} - ${suggestions[i].completion.data.market_description}`,
+          "tip-suggestion": `${suggestions[i].completion.data.bet}`,
           "slug": suggestions[i].completion.data.fixture.toLowerCase()
             .replaceAll(' ', '-')
             .replace(/[^_a-zA-Z0-9-]/g, ''),
@@ -180,7 +180,7 @@ class WebflowService {
       "fieldData": {
         "start-date-time": DateTime.fromISO(date, { zone: 'utc' })
           .set({hour: 7, minute: 24, second: 0, millisecond: 0}),
-        "tip-suggestion": `${suggestionRecap.suggestion.bet} - ${suggestionRecap.suggestion.market_description}`,
+        "tip-suggestion": `${suggestionRecap.suggestion.bet}`,
         "chance": suggestionRecap.suggestion.probability,
         "odd": suggestionRecap.suggestion.odd,
         "name": suggestionRecap.fixture,
