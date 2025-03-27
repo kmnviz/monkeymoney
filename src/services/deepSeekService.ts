@@ -275,7 +275,7 @@ class DeepSeekService {
     };
   }
 
-  async createRecapSuggestionPostCompletion(content) {
+  async createRecapSuggestionPostCompletion(content, date) {
     const messages = [
       {
         role: 'system',
@@ -283,7 +283,7 @@ class DeepSeekService {
       },
       {
         role: 'user',
-        content: recapSuggestionsPostPrompt(),
+        content: recapSuggestionsPostPrompt(date),
       },
       {
         role: 'assistant',

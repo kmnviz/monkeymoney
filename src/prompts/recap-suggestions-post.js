@@ -1,4 +1,4 @@
-module.exports = () => {
+module.exports = (date) => {
   return `
     ### Task:
     You receive an object that contains a football matches suggestions with related

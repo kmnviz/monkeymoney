@@ -3,7 +3,7 @@ import type {NextApiRequest, NextApiResponse} from 'next';
 import SportmonksApiClient from '../../../services/sportmonksApiClient';
 import GoogleCloudStorageClient from '../../../services/googleCloudStorageClient';
 import DeepSeekService from '../../../services/deepSeekService';
-import {typeNameById} from "../../../utils";
+import {typeNameById} from '../../../utils';
 
 const deepSeekService = new DeepSeekService();
 const googleCloudStorageClient = new GoogleCloudStorageClient();
@@ -130,8 +130,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           fixture_id: suggestion.fixture.id,
           fixture: suggestion.fixture.name,
           plan: suggestion.plan,
-          completion: suggestionCompletion,
-          outcome: fixtureOutcome,
+          suggestion: suggestionCompletion,
+          result: fixtureOutcome,
           is_guessed: suggestionCheckCompletion['data'],
         };
         outcomes.push(outcome);
