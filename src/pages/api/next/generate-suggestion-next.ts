@@ -1,7 +1,7 @@
 // @ts-nocheck
 import type {NextApiRequest, NextApiResponse} from 'next';
-import FixtureService from '../../services/fixtureService';
-import OddsService from '../../services/oddsService';
+import FixtureService from '../../../services/fixtureService';
+import OddsService from '../../../services/oddsService';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {

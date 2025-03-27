@@ -2,12 +2,12 @@
 import type {NextApiRequest, NextApiResponse} from 'next';
 import {TwitterApi} from 'twitter-api-v2';
 import Decimal from 'decimal.js';
-import {pause} from '../../utils';
-import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
-import TelegramBotClient from '../../services/telegramBotClient';
-import ZohoMailerClient from '../../services/zohoMailerClient';
-import WebflowService from '../../services/webflowService';
-import DeepSeekService from '../../services/deepSeekService';
+import {pause} from '../../../utils';
+import GoogleCloudStorageClient from '../../../services/googleCloudStorageClient';
+import TelegramBotClient from '../../../services/telegramBotClient';
+import ZohoMailerClient from '../../../services/zohoMailerClient';
+import WebflowService from '../../../services/webflowService';
+import DeepSeekService from '../../../services/deepSeekService';
 
 const deepSeekService = new DeepSeekService();
 const webflowService = new WebflowService();
@@ -44,17 +44,38 @@ const prepareCollectedOdds = (postingSuggestions) => {
 };
 
 const prepareFreeGroupedMessage = async (suggestions, odds, date) => {
-  return (await deepSeekService.createFreeSuggestionsPostCompletion(suggestions, odds, date)).data as string;
+  const filteredSuggestions = suggestions.map((suggestion) => {
+    return {
+      fixture: suggestion.fixture.name,
+      plan: suggestion.plan,
+      data: suggestion.completion.data,
+    };
+  });
+
+  return (await deepSeekService.createFreeSuggestionsPostCompletion(filteredSuggestions, odds, date)).data as string;
 };
 
 const preparePremiumGroupedMessage = async (suggestions, odds, date) => {
-  return (await deepSeekService.createPremiumSuggestionsPostCompletion(suggestions, odds, date)).data as string;
+  const filteredSuggestions = suggestions.map((suggestion) => {
+    return {
+      fixture: suggestion.fixture.name,
+      data: suggestion.completion.data,
+    };
+  });
+
+  return (await deepSeekService.createPremiumSuggestionsPostCompletion(filteredSuggestions, odds, date)).data as string;
 };
 
 const prepareFreeSingleMessages = async (suggestions) => {
   const messages = [];
   for (let i = 0; i < suggestions.length; i++) {
-    const message = (await deepSeekService.createFreeSuggestionPostCompletion(suggestions[i])).data as string;
+    const filteredSuggestion = {
+      fixture: suggestions[i].fixture.name,
+      plan: suggestions[i].plan,
+      data: suggestions[i].completion.data,
+    };
+
+    const message = (await deepSeekService.createFreeSuggestionPostCompletion(filteredSuggestion)).data as string;
     messages.push(message);
   }
   return messages;
@@ -92,6 +113,8 @@ const postPremiumEmail = async (date, groupedMessage, emailAddresses) => {
   await zohoMailerClient.sendEmails(emailAddresses, `Daily premium tips ${date}`, groupedMessage);
 };
 
+const SUGGESTIONS_DIRECTORY = 'suggestions/next';
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     if (
@@ -108,7 +131,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
       const date = req.body.date;
-      const allSuggestions: object[] = (await googleCloudStorageClient.readJsonFile(`suggestions/next/${date}.json`) as object[]);
+      const allSuggestions: object[] = (await googleCloudStorageClient.readJsonFile(`${SUGGESTIONS_DIRECTORY}/${date}.json`) as object[]);
       if (!allSuggestions) {
         return res.status(404).json({
           message: `${date} suggestions not found.`,

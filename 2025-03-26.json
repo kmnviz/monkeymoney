@@ -1,0 +1,617 @@
+[
+  {
+    "fixture_id": 19382067,
+    "fixture": "Dominican Republic vs Puerto Rico",
+    "suggestion": {
+      "bet": "Over 2.75 Goals",
+      "odd": "1.781",
+      "probability": "70%",
+      "market_description": "Goal Line (Over 2.75)",
+      "free": false,
+      "premium": true,
+      "comprehensive_detailed_reason": "1️⃣ **Recent Form & Tactical Context**: Both teams scored 2 goals each in their last H2H (2-2 draw), with 4 total goals. Puerto Rico's red-card suspension (defender Giovanni Calderon) weakens their defense, likely forcing a deeper defensive line and increasing Dominican Republic's attacking opportunities. Both teams average 2 goals scored/conceded in their last match, showing defensive vulnerabilities. 2️⃣ **H2H Trends**: 3/4 historical H2H matches had Over 2.5 goals, including a 4-goal thriller in March 2025. 3️⃣ **Strategic Impact**: Dominican Republic's height advantage (182.69cm avg vs 176.8cm) amplifies set-piece threat, while Puerto Rico’s fatigue from defending with 10 men could lead to late-game breakdowns. 4️⃣ **Value Calculation**: Odds of 1.781 imply a 56% probability, but historical data and tactical shifts suggest a 70%+ likelihood of 3+ goals. This discrepancy creates strong betting value."
+    },
+    "result": {
+      "scores": {
+        "total": {
+          "home": 2,
+          "away": 0
+        },
+        "first_half": {
+          "home": 1,
+          "away": 0
+        },
+        "second_half": {
+          "home": 1,
+          "away": 0
+        },
+        "extra_time": {
+          "home": 0,
+          "away": 0
+        },
+        "penalties": {
+          "home": 0,
+          "away": 0
+        }
+      },
+      "statistics": {
+        "goals": {
+          "total": 2,
+          "home": 2,
+          "away": 0
+        },
+        "ball_possession__": {
+          "total": 100,
+          "home": 50,
+          "away": 50
+        },
+        "corners": {
+          "total": 9,
+          "home": 4,
+          "away": 5
+        },
+        "yellowcards": {
+          "total": 5,
+          "home": 1,
+          "away": 4
+        }
+      },
+      "is_guessed": "NO"
+    }
+  },
+  {
+    "fixture_id": 19309330,
+    "fixture": "Brisbane Roar W vs Melbourne City W",
+    "suggestion": {
+      "bet": "Melbourne City W to Win",
+      "odd": "2.010",
+      "probability": "70%",
+      "market_description": "Fulltime Result",
+      "free": false,
+      "premium": true,
+      "comprehensive_detailed_reason": "Melbourne City W (1st in the league) has superior recent form (3W, 2D in last 5), dominant H2H record (4W in last 5 meetings), and a potent attack (42 goals, 2.21/game). Brisbane Roar W (6th) has defensive vulnerabilities (30 goals conceded, 1.58/game) and poor recent form (1W, 1D, 3L in last 5). Melbourne's tactical discipline (58.63% avg possession) and set-piece threat (77 corners) exploit Brisbane's weak aerial defense (avg defender height: 161cm). Despite being away, Melbourne's xG superiority and Brisbane's high BTTS rate (63.16%) suggest controlled risk. Calculated 70% win probability exceeds the implied 49.75% from odds 2.01, creating significant value."
+    },
+    "result": {
+      "scores": {
+        "total": {
+          "home": 0,
+          "away": 4
+        },
+        "first_half": {
+          "home": 0,
+          "away": 1
+        },
+        "second_half": {
+          "home": 0,
+          "away": 4
+        },
+        "extra_time": {
+          "home": 0,
+          "away": 0
+        },
+        "penalties": {
+          "home": 0,
+          "away": 0
+        }
+      },
+      "statistics": {
+        "successful_dribbles_percentage": {
+          "total": 94,
+          "home": 50,
+          "away": 44
+        },
+        "ball_possession__": {
+          "total": 100,
+          "home": 45,
+          "away": 55
+        },
+        "corners": {
+          "total": 7,
+          "home": 4,
+          "away": 3
+        },
+        "yellowcards": {
+          "total": 2,
+          "home": 1,
+          "away": 1
+        },
+        "goals": {
+          "total": 4,
+          "home": 0,
+          "away": 4
+        }
+      },
+      "is_guessed": "YES"
+    }
+  },
+  {
+    "fixture_id": 19376907,
+    "fixture": "Racing vs River Plate",
+    "suggestion": {
+      "bet": "Both Teams To Score - No",
+      "odd": "1.980",
+      "probability": "70%",
+      "market_description": "Both Teams To Score",
+      "free": false,
+      "premium": true,
+      "comprehensive_detailed_reason": "Racing has kept clean sheets in 28.57% of all matches (50% at home), while River Plate failed to score in 28.57% of their games. Racing's defensive stability (xGA: 0.86) and River Plate's attacking struggles (xG: 1.00) suggest a high likelihood of at least one team failing to score. River Plate has conceded 12 goals in 7 games, with 66.67% of goals conceded in the second half, highlighting defensive fragility. Racing’s recent home form (1 clean sheet in last 2 home games) and River Plate’s away scoring issues (failed to score in 50% of away games) further support this bet. The calculated probability (70%) exceeds the implied probability (50.5%) from the odds, offering strong value."
+    },
+    "result": {
+      "scores": {
+        "total": {
+          "home": 1,
+          "away": 0
+        },
+        "first_half": {
+          "home": 0,
+          "away": 0
+        },
+        "second_half": {
+          "home": 1,
+          "away": 0
+        },
+        "extra_time": {
+          "home": 0,
+          "away": 0
+        },
+        "penalties": {
+          "home": 0,
+          "away": 0
+        }
+      },
+      "statistics": {
+        "ball_possession__": {
+          "total": 100,
+          "home": 50,
+          "away": 50
+        },
+        "yellowcards": {
+          "total": 5,
+          "home": 1,
+          "away": 4
+        },
+        "corners": {
+          "total": 3,
+          "home": 0,
+          "away": 3
+        },
+        "goals": {
+          "total": 1,
+          "home": 1,
+          "away": 0
+        }
+      },
+      "is_guessed": "YES"
+    }
+  },
+  {
+    "fixture_id": 19384270,
+    "fixture": "Lyon W vs Bayern Munich W",
+    "suggestion": {
+      "bet": "Lyon W Over 2.5 Goals",
+      "odd": "1.833",
+      "probability": "75%",
+      "market_description": "Team Total Goals - Over 2.5",
+      "free": false,
+      "premium": true,
+      "comprehensive_detailed_reason": "Lyon W demonstrates overwhelming offensive dominance with 21 goals in 7 UCL games (3.0/game), scoring 3+ goals in 4 matches. Their 2nd-half efficiency (62% of goals) exploits Bayern's defensive decline (25% of goals conceded between 60-75'). Tactically, Lyon's aerial superiority (avg height 170.94cm vs Bayern's 169.08cm) and set-piece threat (3 goals from defenders) counter Bayern's vulnerable high line. Recent form shows Bayern conceded 3+ goals in 3/7 UCL matches, including a 5-2 loss to Arsenal. Home advantage and Bayern's travel fatigue further tilt this toward a high-probability outcome meeting value criteria (real probability 75% vs implied 54.5%)."
+    },
+    "result": {
+      "scores": {
+        "total": {
+          "home": 4,
+          "away": 1
+        },
+        "first_half": {
+          "home": 0,
+          "away": 1
+        },
+        "second_half": {
+          "home": 4,
+          "away": 0
+        },
+        "extra_time": {
+          "home": 0,
+          "away": 0
+        },
+        "penalties": {
+          "home": 0,
+          "away": 0
+        }
+      },
+      "statistics": {
+        "ball_possession__": {
+          "total": 100,
+          "home": 42,
+          "away": 58
+        },
+        "corners": {
+          "total": 12,
+          "home": 6,
+          "away": 6
+        },
+        "goals": {
+          "total": 5,
+          "home": 4,
+          "away": 1
+        },
+        "successful_dribbles_percentage": {
+          "total": 77,
+          "home": 44,
+          "away": 33
+        },
+        "yellowcards": {
+          "total": 2,
+          "home": 0,
+          "away": 2
+        }
+      },
+      "is_guessed": "YES"
+    }
+  },
+  {
+    "fixture_id": 19399345,
+    "fixture": "América Mineiro W vs Palmeiras W",
+    "suggestion": {
+      "bet": "Away Win",
+      "odd": "1.700",
+      "probability": "72%",
+      "market_description": "Fulltime Result - Away Win",
+      "free": false,
+      "premium": true,
+      "comprehensive_detailed_reason": "Palmeiras W's defensive solidity (clean sheet in their opener, 59% possession, and 7 corners) and superior squad depth (4 national team players) outweigh América Mineiro W's reliance on second-half goals and low attacking height (149cm avg). América conceded 100% of goals between 45-60 minutes, while Palmeiras' tactical discipline under new coaching adjustments (prioritized in analysis) suggests they can exploit this vulnerability. Home advantage is mitigated by América's 65% possession yielding only 1 goal, and Palmeiras' higher defensive line (avg 167.75cm vs 162cm) provides set-piece dominance. Real probability exceeds implied 58.8% due to América's xGA weakness and Palmeiras' progressive midfield control (Laís Estevam 90 mins, 100% lineups)."
+    },
+    "result": {
+      "scores": {
+        "total": {
+          "home": 1,
+          "away": 2
+        },
+        "first_half": {
+          "home": 0,
+          "away": 0
+        },
+        "second_half": {
+          "home": 1,
+          "away": 2
+        },
+        "extra_time": {
+          "home": 0,
+          "away": 0
+        },
+        "penalties": {
+          "home": 0,
+          "away": 0
+        }
+      },
+      "statistics": {
+        "corners": {
+          "total": 13,
+          "home": 1,
+          "away": 12
+        },
+        "yellowcards": {
+          "total": 2,
+          "home": 1,
+          "away": 1
+        },
+        "goals": {
+          "total": 3,
+          "home": 1,
+          "away": 2
+        }
+      },
+      "is_guessed": "YES"
+    }
+  },
+  {
+    "fixture_id": 19376905,
+    "fixture": "Liverpool vs Nacional",
+    "suggestion": {
+      "bet": "Goal before 26:00 (Early Goal)",
+      "odd": "1.833",
+      "probability": "72%",
+      "market_description": "Early Goal (Goal before 26:00)",
+      "free": true,
+      "premium": true,
+      "comprehensive_detailed_reason": "Liverpool's recent form (3W in last 5 games, 14 goals scored) and aggressive first-half scoring patterns (35.71% of goals in 30-45 mins, 10/19 total goals in 1st half) align with Nacional's defensive vulnerabilities (55.56% of goals conceded in first halves). Tactically, Liverpool's high press (57.29% avg possession) exploits Nacional's slow defensive transitions. Key player Hugo Quintana (4 goals, 1 assist in 7 games) drives early attacks. Nacional's fatigue from Copa Libertadores prep and 2.43 yellow cards/game further increase likelihood of early disruption. Odds of 1.833 imply 54.5% probability, but real data suggests 72% chance based on xG trends and Liverpool's 83% BTTS rate in home games."
+    },
+    "result": {
+      "scores": {
+        "total": {
+          "home": 2,
+          "away": 2
+        },
+        "first_half": {
+          "home": 1,
+          "away": 1
+        },
+        "second_half": {
+          "home": 2,
+          "away": 1
+        },
+        "extra_time": {
+          "home": 0,
+          "away": 0
+        },
+        "penalties": {
+          "home": 0,
+          "away": 0
+        }
+      },
+      "statistics": {
+        "goals": {
+          "total": 4,
+          "home": 2,
+          "away": 2
+        },
+        "ball_possession__": {
+          "total": 100,
+          "home": 50,
+          "away": 50
+        },
+        "corners": {
+          "total": 10,
+          "home": 6,
+          "away": 4
+        },
+        "yellowcards": {
+          "total": 2,
+          "home": 0,
+          "away": 2
+        }
+      },
+      "is_guessed": "YES"
+    }
+  },
+  {
+    "fixture_id": 19384264,
+    "fixture": "Arsenal W vs Real Madrid W",
+    "suggestion": {
+      "bet": "Over 2.5 Goals - Home Team (Arsenal W)",
+      "odd": "2.250",
+      "probability": "72%",
+      "market_description": "Total - Home (Over 2.5 Goals)",
+      "free": true,
+      "premium": true,
+      "comprehensive_detailed_reason": "Arsenal W demonstrates dominant home attacking form (19 goals in 6 UCL home games, 3.17 avg) with 75% of their UCL goals scored in the 2nd half. Real Madrid W has conceded 66.67% of away goals in the 2nd half, including 41.67% between 75-90 minutes. Arsenal's xG of 2.55/game and 35.71% of goals in the final 15 minutes align with Real Madrid's late-game defensive vulnerability. Key attackers Russo (5 UCL goals) and Foord (6 UCL goals) are in form, while Real Madrid's starting GK Rodríguez (3 yellows in 9 games) risks suspension. Arsenal's 63.64% Over 2.5 home goal rate in UCL and Real Madrid's 55.56% Over 2.5 conceded rate create strong value here."
+    },
+    "result": {
+      "scores": {
+        "total": {
+          "home": 3,
+          "away": 0
+        },
+        "first_half": {
+          "home": 0,
+          "away": 0
+        },
+        "second_half": {
+          "home": 3,
+          "away": 0
+        },
+        "extra_time": {
+          "home": 0,
+          "away": 0
+        },
+        "penalties": {
+          "home": 0,
+          "away": 0
+        }
+      },
+      "statistics": {
+        "ball_possession__": {
+          "total": 100,
+          "home": 66,
+          "away": 34
+        },
+        "successful_dribbles_percentage": {
+          "total": 82,
+          "home": 64,
+          "away": 18
+        },
+        "corners": {
+          "total": 13,
+          "home": 11,
+          "away": 2
+        },
+        "goals": {
+          "total": 3,
+          "home": 3,
+          "away": 0
+        }
+      },
+      "is_guessed": "YES"
+    }
+  },
+  {
+    "fixture_id": 19399347,
+    "fixture": "RB Bragantino W vs Internacional RS W",
+    "suggestion": {
+      "bet": "Away Win (Internacional RS W)",
+      "odd": "2.300",
+      "probability": "65%",
+      "market_description": "Match Winner",
+      "free": false,
+      "premium": true,
+      "comprehensive_detailed_reason": "Internacional RS W, despite a recent 2-3 loss, demonstrated superior attacking efficiency (2 goals, 50% conversion in scoring zones) and xG outperformance compared to RB Bragantino W's goalless draw. Internacional's defensive vulnerabilities (3 goals conceded) are mitigated by RB Bragantino's lack of attacking threat (0 goals, 41% possession). Internacional's national team-caliber attackers (Belén Aquino, Rafaela Pereira) and RB Bragantino's low defensive line height (165cm avg) create a mismatch. Recent H2H dominance (2 wins) and RB Bragantino's tactical passivity (6 corners conceded) further favor Internacional. Calculated 65% win probability exceeds the implied 43.5% from 2.30 odds, offering clear value."
+    },
+    "result": {
+      "scores": {
+        "total": {
+          "home": 3,
+          "away": 0
+        },
+        "first_half": {
+          "home": 2,
+          "away": 0
+        },
+        "second_half": {
+          "home": 1,
+          "away": 0
+        },
+        "extra_time": {
+          "home": 0,
+          "away": 0
+        },
+        "penalties": {
+          "home": 0,
+          "away": 0
+        }
+      },
+      "statistics": {
+        "goals": {
+          "total": 3,
+          "home": 3,
+          "away": 0
+        },
+        "ball_possession__": {
+          "total": 100,
+          "home": 49,
+          "away": 51
+        },
+        "corners": {
+          "total": 4,
+          "home": 1,
+          "away": 3
+        },
+        "yellowcards": {
+          "total": 3,
+          "home": 2,
+          "away": 1
+        }
+      },
+      "is_guessed": "NO"
+    }
+  },
+  {
+    "fixture_id": 19376906,
+    "fixture": "Plaza Colonia vs Boston River",
+    "suggestion": {
+      "bet": "Both Teams To Score - No",
+      "odd": "1.68",
+      "probability": "68%",
+      "market_description": "Both Teams To Score",
+      "free": true,
+      "premium": true,
+      "comprehensive_detailed_reason": "Plaza Colonia demonstrates strong defensive stability (4 clean sheets in 7 games, 57.14% clean sheet rate) and ranks 3rd in the league, while Boston River struggles offensively (failed to score in 28.57% of games, 11 goals conceded in 7 matches). Recent H2H trends show 5/10 matches ended with BTTS = NO. Plaza's xGA (0.57/game) and Boston's low away scoring (1.25 goals/game) further support this bet. Though slightly below the 70% threshold, this offers the strongest value given Boston's attacking inefficiency and Plaza's home defensive record (2 clean sheets in 3 home games)."
+    },
+    "result": {
+      "scores": {
+        "total": {
+          "home": 0,
+          "away": 1
+        },
+        "first_half": {
+          "home": 0,
+          "away": 0
+        },
+        "second_half": {
+          "home": 0,
+          "away": 1
+        },
+        "extra_time": {
+          "home": 0,
+          "away": 0
+        },
+        "penalties": {
+          "home": 0,
+          "away": 0
+        }
+      },
+      "statistics": {
+        "yellowcards": {
+          "total": 5,
+          "home": 2,
+          "away": 3
+        },
+        "corners": {
+          "total": 9,
+          "home": 4,
+          "away": 5
+        },
+        "ball_possession__": {
+          "total": 100,
+          "home": 40,
+          "away": 60
+        },
+        "goals": {
+          "total": 1,
+          "home": 0,
+          "away": 1
+        }
+      },
+      "is_guessed": "YES"
+    }
+  },
+  {
+    "fixture_id": 19399343,
+    "fixture": "Grêmio W vs Ferroviária W",
+    "suggestion": {
+      "bet": "Away Win (Fulltime Result)",
+      "odd": "1.780",
+      "probability": "75%",
+      "market_description": "Fulltime Result",
+      "free": false,
+      "premium": true,
+      "comprehensive_detailed_reason": "Ferroviária W holds a decisive edge: (1) Recent form: 7-0 win vs Sport Recife (xG-driven dominance, 69% possession, 9 corners) vs Grêmio's 4-3 loss with defensive chaos (5 yellows + red card). (2) Tactical mismatch: Ferroviária's high press (scored 4 second-half goals) exploits Grêmio's low block (conceded 4 goals in 75-90 mins). (3) Context: Ferroviária leads the league, uses U20 Brazil talents, while Grêmio sits 12th with no clean sheets. (4) H2H: Ferroviária won last 2 meetings. Real probability (75%) vastly exceeds bookmaker's implied 56% (1.78 odds), creating exceptional value."
+    },
+    "result": {
+      "scores": {
+        "total": {
+          "home": 1,
+          "away": 1
+        },
+        "first_half": {
+          "home": 1,
+          "away": 0
+        },
+        "second_half": {
+          "home": 1,
+          "away": 1
+        },
+        "extra_time": {
+          "home": 0,
+          "away": 0
+        },
+        "penalties": {
+          "home": 0,
+          "away": 0
+        }
+      },
+      "statistics": {
+        "ball_possession__": {
+          "total": 100,
+          "home": 49,
+          "away": 51
+        },
+        "goals": {
+          "total": 2,
+          "home": 1,
+          "away": 1
+        },
+        "corners": {
+          "total": 7,
+          "home": 4,
+          "away": 3
+        },
+        "yellowcards": {
+          "total": 7,
+          "home": 2,
+          "away": 5
+        },
+        "redcards": {
+          "total": 2,
+          "home": 1,
+          "away": 1
+        },
+        "yellowred_cards": {
+          "total": 2,
+          "home": 1,
+          "away": 1
+        }
+      },
+      "is_guessed": "NO"
+    }
+  }
+]

@@ -219,8 +219,8 @@ const formatFixture = (fx: TFixture) => {
         id: p.id,
         name: p.name,
         location: p.meta.location,
-        past_matches: p['past_matches'],
-        next_matches: p['next_matches'],
+        past_matches: p['past_matches'].reverse().splice(0, 12),
+        next_matches: p['next_matches'].splice(0, 5),
         players: p['players'] && p['players'].length ? p['players'].map((p) => {
           return {
             name: p.name,
@@ -282,7 +282,7 @@ const formatFixture = (fx: TFixture) => {
         starting_at: h.starting_at,
         result_info: h.result_info,
       };
-    }) : [],
+    }).splice(0, 10) : [],
   };
 
   formattedFx = removeEmptyObjects(formattedFx);

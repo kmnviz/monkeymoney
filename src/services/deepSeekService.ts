@@ -5,6 +5,8 @@ import betSuggestionPrompt from '../prompts/bet-suggestion';
 import freeSuggestionsPostPrompt from '../prompts/free-suggestions-post';
 import premiumSuggestionsPostPrompt from '../prompts/premium-suggestions-post';
 import freeSuggestionPostPrompt from '../prompts/free-suggestion-post';
+import suggestionCheckPrompt from '../prompts/suggestion-check';
+import recapSuggestionsPostPrompt from '../prompts/recap-suggestions-post';
 import {formatJsonStringToJson, pause} from '../utils';
 
 class DeepSeekService {
@@ -227,6 +229,76 @@ class DeepSeekService {
     } as any);
     const endTime = performance.now();
     console.log(`DeepSeek.createFreeSuggestionPostCompletion`);
+    console.log(`-- finished in: ${((endTime - startTime) / 1000).toFixed(2)}s`);
+    console.log(`-- used ${completion.usage?.total_tokens} tokens`);
+
+    return {
+      model: this.models.deepSeekChat,
+      data: completion.choices[0].message.content,
+    };
+  }
+
+  async createSuggestionCheckCompletion(content) {
+    const messages = [
+      {
+        role: 'system',
+        content: ``,
+      },
+      {
+        role: 'user',
+        content: suggestionCheckPrompt(),
+      },
+      {
+        role: 'assistant',
+        content: JSON.stringify(content),
+      },
+      {
+        role: 'user',
+        content: `You answer must be just YES or NO`,
+      }
+    ];
+
+    const startTime = performance.now();
+    const completion = await this.client.chat.completions.create({
+      model: this.models.deepSeekChat,
+      messages: messages,
+      temperature: 0,
+    } as any);
+    const endTime = performance.now();
+    console.log(`DeepSeek.createSuggestionCheckCompletion`);
+    console.log(`-- finished in: ${((endTime - startTime) / 1000).toFixed(2)}s`);
+    console.log(`-- used ${completion.usage?.total_tokens} tokens`);
+
+    return {
+      model: this.models.deepSeekChat,
+      data: completion.choices[0].message.content,
+    };
+  }
+
+  async createRecapSuggestionPostCompletion(content) {
+    const messages = [
+      {
+        role: 'system',
+        content: ``,
+      },
+      {
+        role: 'user',
+        content: recapSuggestionsPostPrompt(),
+      },
+      {
+        role: 'assistant',
+        content: JSON.stringify(content),
+      },
+    ];
+
+    const startTime = performance.now();
+    const completion = await this.client.chat.completions.create({
+      model: this.models.deepSeekChat,
+      messages: messages,
+      temperature: 0,
+    } as any);
+    const endTime = performance.now();
+    console.log(`DeepSeek.createRecapSuggestionPostCompletion`);
     console.log(`-- finished in: ${((endTime - startTime) / 1000).toFixed(2)}s`);
     console.log(`-- used ${completion.usage?.total_tokens} tokens`);
 

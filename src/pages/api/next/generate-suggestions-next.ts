@@ -1,12 +1,12 @@
 // @ts-nocheck
 import type {NextApiRequest, NextApiResponse} from 'next';
-import FixtureService from '../../services/fixtureService';
-import OddsService from '../../services/oddsService';
-import SportmonksApiClient from '../../services/sportmonksApiClient';
-import DeepSeekService from '../../services/deepSeekService';
-import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
-import {TFixture} from '../../types/sportmonks/Fixture';
-import {countContentTokens} from '../../utils';
+import FixtureService from '../../../services/fixtureService';
+import OddsService from '../../../services/oddsService';
+import SportmonksApiClient from '../../../services/sportmonksApiClient';
+import DeepSeekService from '../../../services/deepSeekService';
+import GoogleCloudStorageClient from '../../../services/googleCloudStorageClient';
+import {TFixture} from '../../../types/sportmonks/Fixture';
+import {countContentTokens} from '../../../utils';
 
 const sportmonksApiClient = new SportmonksApiClient();
 const deepSeekService = new DeepSeekService();
@@ -14,8 +14,8 @@ const fixtureService = new FixtureService();
 const oddsService = new OddsService();
 const googleCloudStorageClient = new GoogleCloudStorageClient();
 
-const FREE_SUGGESTIONS_LIMIT = 1;
-const PREMIUM_SUGGESTIONS_LIMIT = 1;
+const FREE_SUGGESTIONS_LIMIT = 3;
+const PREMIUM_SUGGESTIONS_LIMIT = 7;
 const MAX_SUGGESTIONS_LIMIT = FREE_SUGGESTIONS_LIMIT + PREMIUM_SUGGESTIONS_LIMIT;
 const OUTPUT_DIRECTORY = 'suggestions/next';
 
@@ -40,6 +40,7 @@ const selectFixtures = async (fixtures: TFixture[]): Promise<TFixture[]> => {
       .split(',').map((id) => parseInt(id, 10));
   }
 
+  // selectedFxsIds = [19154779];
   return fixtures.filter((fx) => selectedFxsIds.includes(fx.id));
 };
 
@@ -73,8 +74,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         console.log(`starting fixture data collection`);
         const fixture = await fixtureService.collectData(fxId);
+        console.log(`fixture data tokens: `, countContentTokens(fixture, 'gpt-4-turbo'));
         console.log(`starting odds data collection`);
         const odds = await oddsService.collectData(fxId);
+        console.log(`odds data tokens: `, countContentTokens(odds, 'gpt-4-turbo'));
 
         console.log(`starting suggestion completion`);
         const completionContent = {fixture: fixture.data, odds: odds.data.map(({prob, ...rest}) => rest)};

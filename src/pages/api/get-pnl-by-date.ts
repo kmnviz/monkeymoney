@@ -28,11 +28,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       }
       const recapFree = recapTotal.filter((r) => r.suggestion.free);
-      const recapPremium = recapTotal.filter((r) => r.suggestion.free || r.suggestion.premium);
+      const recapPremium = recapTotal.filter((r) => r.suggestion.premium);
 
       const guessedTotal = recapTotal.filter((r) => r.result.is_guessed === 'YES');
       const guessedFree = recapTotal.filter((r) => r.result.is_guessed === 'YES' && r.suggestion.free);
-      const guessedPremium = recapTotal.filter((r) => r.result.is_guessed === 'YES' && (r.suggestion.free || r.suggestion.premium));
+      const guessedPremium = recapTotal.filter((r) => r.result.is_guessed === 'YES' && r.suggestion.premium);
 
       let winTotal = new Decimal(0);
       for (let i = 0; i < guessedTotal.length; i++)
