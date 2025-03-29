@@ -580,13 +580,30 @@ class SportmonksApiClient {
     }
   }
 
-  private get(path, include = '', perPage = '', page = 0) {
+  private async get(path, include = '', perPage = '', page = 0, retries = 3, delay = 60 * 1000) {
     const incl = include ? `&include=${include}` : '';
     const perp = perPage ? `&per_page=${perPage}` : '';
     const pag = page ? `&page=${page}` : '';
+    const url = `${this.apiUrl}${path}?api_token=${this.apiKey}${incl}${perp}${pag}`;
 
-    return axios
-      .get(`${this.apiUrl}${path}?api_token=${this.apiKey}${incl}${perp}${pag}`, this.headers);
+    let attempt = 0;
+    while (attempt < retries) {
+      try {
+        return await axios.get(url, this.headers);
+      } catch (error) {
+        attempt++;
+        console.error(`SportmonksApiClient.get attempt ${attempt} failed. Error: ${error.message}`);
+
+        if (attempt >= retries) {
+          throw new Error(`SportmonksApiClient.get request failed after ${retries} attempts: ${error.message}`);
+        }
+
+        console.log(`SportmonksApiClient.get retrying in ${delay}ms...`);
+        await pause(delay);
+      }
+    }
+
+    return axios.get(url, this.headers);
   }
 }
 

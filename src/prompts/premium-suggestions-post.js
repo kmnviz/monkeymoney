@@ -10,13 +10,14 @@ module.exports = (date, totalOdds) => {
   DO NOT USE THE WORD BET, IF NEEDED USE THE WORD TIP INSTEAD OF BET.
   DO NOT WRAP THE TEXT IN ANY QUOTES.
   DO NOT ADD ADDITIONAL *'s TO THE TEXT AS TWITTER DOES NOT RECOGNIZES THEM.
-  **FOR EACH SUGGESTION THERE MUST BE ONLY FIXTURE NAME, BET, CANCE AND ODD. NOTHING ELSE**
+  **FOR EACH SUGGESTION THERE MUST BE ONLY FIXTURE NAME, BET, CHANCE AND ODD. NOTHING ELSE**
 
   USE FOLLOWING EXAMPLE FOR SUGGESTION:
-  1️⃣ Juventus vs Atalanta
+  1️⃣ Juventus vs Atalanta - 16:30
   🔹 Bet: Over 2.5 Goals
   🔹 Chance: 82%
   🔹 Odd: 1.93
+  🔹 Bookmaker: bet365
 
   ---
   In the beginning of the text add:

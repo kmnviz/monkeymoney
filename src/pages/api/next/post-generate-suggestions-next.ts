@@ -2,7 +2,7 @@
 import type {NextApiRequest, NextApiResponse} from 'next';
 import {TwitterApi} from 'twitter-api-v2';
 import Decimal from 'decimal.js';
-import {pause} from '../../../utils';
+import {pause, bookmakerNameById} from '../../../utils';
 import GoogleCloudStorageClient from '../../../services/googleCloudStorageClient';
 import TelegramBotClient from '../../../services/telegramBotClient';
 import ZohoMailerClient from '../../../services/zohoMailerClient';
@@ -49,6 +49,8 @@ const prepareFreeGroupedMessage = async (suggestions, odds, date) => {
       fixture: suggestion.fixture.name,
       plan: suggestion.plan,
       data: suggestion.completion.data,
+      bookmaker: bookmakerNameById(suggestion.selectedOdd.bookmaker_id),
+      starting_at: suggestion.fixture.starting_at,
     };
   });
 
@@ -60,6 +62,8 @@ const preparePremiumGroupedMessage = async (suggestions, odds, date) => {
     return {
       fixture: suggestion.fixture.name,
       data: suggestion.completion.data,
+      bookmaker: bookmakerNameById(suggestion.selectedOdd.bookmaker_id),
+      starting_at: suggestion.fixture.starting_at,
     };
   });
 
@@ -73,6 +77,8 @@ const prepareFreeSingleMessages = async (suggestions) => {
       fixture: suggestions[i].fixture.name,
       plan: suggestions[i].plan,
       data: suggestions[i].completion.data,
+      bookmaker: bookmakerNameById(suggestions[i].selectedOdd.bookmaker_id),
+      starting_at: suggestions[i].fixture.starting_at,
     };
 
     const message = (await deepSeekService.createFreeSuggestionPostCompletion(filteredSuggestion)).data as string;

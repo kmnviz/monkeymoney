@@ -14,9 +14,11 @@ module.exports = () => {
     USE FOLLOWING EXAMPLE FOR THE SUGGESTION:
     🔥 Tips of the Day: Cercle Brugge vs Club Brugge 🔥
 
+    🕒 Starting at: 16:30
     💰 Prediction: Both Teams to Score - No
     📊 Odds: 1.95
     ⚽ Chance: 85%
+    🕴️ Bookmaker: bet365
 
     Club Brugge’s defense is rock solid, with 8 clean sheets this season. Cercle has blanked in 4 home games and relies heavily on set pieces. Add in Brugge’s dominant aerial presence, and it’s tough to see Cercle breaking through.
 

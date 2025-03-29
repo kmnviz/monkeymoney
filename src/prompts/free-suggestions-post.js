@@ -13,16 +13,18 @@ module.exports = (date, totalOdds) => {
     **FOR EACH SUGGESTION THERE MUST BE ONLY FIXTURE NAME, BET, CHANCE AND ODD. NOTHING ELSE**
 
     USE FOLLOWING EXAMPLE FOR EACH **FREE** SUGGESTION:
-    1️⃣ Juventus vs Atalanta
+    1️⃣ Juventus vs Atalanta - 16:30
     🔹 Bet: Over 2.5 Goals
     🔹 Chance: 82%
     🔹 Odd: 1.93
+    🔹 Bookmaker: bet365
 
     USE FOLLOWING EXAMPLE FOR EACH **NOT FREE** SUGGESTION:
-    1️⃣ Juventus vs Atalanta
+    1️⃣ Juventus vs Atalanta - 16:30
     🔹 Tip: [https://www.betbro.ai/premium]
     🔹 Chance: 75%
     🔹 Odd: 1.666
+    🔹 Bookmaker: [https://www.betbro.ai/premium]
 
     ---
     In the beginning of the text add:

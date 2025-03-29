@@ -119,6 +119,7 @@ class OddsService {
       // },
       tokens: countContentTokens(formattedHighest, 'gpt-4-turbo'),
       data: formattedHighest,
+      raw: allOdds,
     };
   }
 }

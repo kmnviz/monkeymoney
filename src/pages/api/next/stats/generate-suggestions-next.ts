@@ -70,6 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
+      console.log(`-- Stats suggestions generation starting at: ${DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss')} --`)
       const date = req.body.date;
       const filename = `${OUTPUT_DIRECTORY}/${date}.json`;
       console.log(`suggestions generation for ${date} starting...`);

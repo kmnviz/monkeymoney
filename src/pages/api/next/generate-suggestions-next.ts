@@ -77,11 +77,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log(`fixture data tokens: `, countContentTokens(fixture, 'gpt-4-turbo'));
         console.log(`starting odds data collection`);
         const odds = await oddsService.collectData(fxId);
-        console.log(`odds data tokens: `, countContentTokens(odds, 'gpt-4-turbo'));
+        console.log(`odds data tokens: `, countContentTokens(odds.data, 'gpt-4-turbo'));
 
         console.log(`starting suggestion completion`);
         const completionContent = {fixture: fixture.data, odds: odds.data.map(({prob, ...rest}) => rest)};
         const completion = await deepSeekService.createBetSuggestionCompletion(completionContent);
+        const selectedOddRaw = odds.raw.find((o) => o.id === +completion.data?.odd_id) as object;
 
         const suggestion = {
           plan: (i < FREE_SUGGESTIONS_LIMIT) ? 'free' : 'premium',
@@ -93,6 +94,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           fixture: fixture.data,
           odds: odds.data,
           completion: completion,
+          selectedOdd: selectedOddRaw,
         };
 
         suggestions.push(suggestion);
