@@ -71,6 +71,8 @@ const formatFixtureOutcome = (fixtureOutcome) => {
             player_name: e.player_name,
           };
 
+          if (e.minute) result['minute'] = e.minute;
+          if (e.extra_minute) result['extra_minute'] = e.extra_minute;
           if (e.related_player_name) result['related_player_name'] = e.related_player_name;
           if (e.info) result['info'] = e.info;
           if (e.addition) result['addition'] = e.addition;
@@ -103,7 +105,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
       const date = req.body.date;
-      const suggestions = await googleCloudStorageClient.readJsonFile(`${SUGGESTIONS_DIRECTORY}/${date}.json`);
+      const suggestions = (await googleCloudStorageClient.readJsonFile(`${SUGGESTIONS_DIRECTORY}/${date}.json`) as object[]);
       if (!suggestions) {
         return res.status(404).json({
           message: 'File not found.',
@@ -111,7 +113,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       const outcomes = [];
-      for (let i = 0; i < 1; i++) {
+      for (let i = 0; i < suggestions.length; i++) {
         const suggestion = (suggestions as object)[i];
         if (suggestion?.scores && suggestion?.scores?.length > 0) {
           console.log(`${i}:${suggestion.fixture.id} ${suggestion.fixture.name} is not finished yet`);

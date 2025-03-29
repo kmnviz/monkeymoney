@@ -16,6 +16,8 @@ class WebflowService {
   _dailyPicksDateItemId;
   _dailyPicksOddsCollectionId;
   _dailyPicksOddsItemId;
+  _premiumPicksOddsCollectionId;
+  _premiumPicksOddsItemId;
 
   constructor() {
     this.client = new WebflowClient({
@@ -31,6 +33,17 @@ class WebflowService {
     this._dailyPicksDateItemId = process.env.WEBFLOW_BETBRO_DAILY_PICKS_DATE_ITEM_ID as string;
     this._dailyPicksOddsCollectionId = process.env.WEBFLOW_BETBRO_DAILY_PICKS_ODDS_COLLECTION_ID as string;
     this._dailyPicksOddsItemId = process.env.WEBFLOW_BETBRO_DAILY_PICKS_ODDS_ITEM_ID as string;
+    this._premiumPicksOddsCollectionId = process.env.WEBFLOW_BETBRO_PREMIUM_PICKS_ODDS_COLLECTION_ID as string;
+    this._premiumPicksOddsItemId = process.env.WEBFLOW_BETBRO_PREMIUM_PICKS_ODDS_ITEM_ID as string;
+  }
+
+  async collectionsList() {
+    try {
+      return (await this.client.collections.list(this._siteId)).collections;
+    } catch (error) {
+      console.error('Webflow collectionsItemsListItemsLive error: ', error);
+      throw error;
+    }
   }
 
   async collectionsItemsListItemsLive(collectionId: string) {
@@ -173,6 +186,23 @@ class WebflowService {
         }
       });
     }
+
+    const totalOdds = suggestions.reduce((sum, suggestion) =>
+      sum.plus(new Decimal(suggestion.completion.data.odd)), new Decimal(0)
+    );
+
+    await this.collectionsItemsUpdateItemLive(
+      this._premiumPicksOddsCollectionId,
+      this._premiumPicksOddsItemId,
+      {
+        "fieldData": {
+          "name": totalOdds.toFixed(2),
+          "slug": totalOdds.toFixed(2)
+            .replaceAll(',', '-')
+            .replaceAll('.', '-'),
+        },
+      }
+    );
   }
 
   async updateTipsArchiveCollection(date: string, suggestionRecap: object) {

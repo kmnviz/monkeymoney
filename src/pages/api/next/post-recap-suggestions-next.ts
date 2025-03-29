@@ -65,11 +65,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const guessed = allRecaps.filter((r) => r.is_guessed === 'YES');
       const groupedMessage = (await deepSeekService.createRecapSuggestionPostCompletion(guessed, date)).data;
 
-      console.log('groupedMessage: ', groupedMessage);
-      return res.status(200).json({
-        completion: groupedMessage,
-      });
-
       // Post archive posts to webflow
       for (let i = 0; i < allRecaps.length; i++) {
         await webflowService.updateTipsArchiveCollection(date, allRecaps[i]);
@@ -81,7 +76,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await postEmails(groupedMessage, [...new Set(emailAddresses.free.concat(emailAddresses.premium))], date);
 
       return res.status(200).json({
-        data: {},
+        data: {
+          groupedMessage: groupedMessage,
+        },
       });
     } catch (error) {
       console.log('error: ', error);
