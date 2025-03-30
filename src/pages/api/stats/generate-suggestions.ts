@@ -1,5 +1,6 @@
 // @ts-nocheck
 import type {NextApiRequest, NextApiResponse} from 'next';
+import { DateTime } from 'luxon';
 import FixtureService from '../../../services/fixtureService';
 import OddsService from '../../../services/oddsService';
 import SportmonksApiClient from '../../../services/sportmonksApiClient';
@@ -14,10 +15,10 @@ const fixtureService = new FixtureService();
 const oddsService = new OddsService();
 const googleCloudStorageClient = new GoogleCloudStorageClient();
 
-const FREE_SUGGESTIONS_LIMIT = 3;
-const PREMIUM_SUGGESTIONS_LIMIT = 7;
+const FREE_SUGGESTIONS_LIMIT = 1000;
+const PREMIUM_SUGGESTIONS_LIMIT = 0;
 const MAX_SUGGESTIONS_LIMIT = FREE_SUGGESTIONS_LIMIT + PREMIUM_SUGGESTIONS_LIMIT;
-const OUTPUT_DIRECTORY = 'suggestions/next';
+const OUTPUT_DIRECTORY = 'suggestions/stats';
 
 const fetchFixtures = async (date): Promise<TFixture[]> => {
   const fxs = await sportmonksApiClient.getFixturesByDate(date);
@@ -27,6 +28,16 @@ const fetchFixtures = async (date): Promise<TFixture[]> => {
   }
 
   return [];
+};
+
+const filterFixtures = (fxs: TFixture[]): TFixture[] => {
+  return fxs.filter((fx: TFixture) => {
+    const currentTime = DateTime.utc();
+    const matchTime = DateTime.fromFormat(fx.starting_at, "yyyy-MM-dd HH:mm:ss", { zone: 'utc' });
+    const cutoffTime = currentTime.plus({ minutes: 120 });
+
+    return matchTime >= cutoffTime;
+  });
 };
 
 const selectFixtures = async (fixtures: TFixture[]): Promise<TFixture[]> => {
@@ -59,10 +70,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
+      console.log(`-- Stats suggestions generation starting at: ${DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss')} --`)
       const date = req.body.date;
       const filename = `${OUTPUT_DIRECTORY}/${date}.json`;
       console.log(`suggestions generation for ${date} starting...`);
-      const fxs: TFixture[] = await fetchFixtures(date);
+      const fxs: TFixture[] = filterFixtures(await fetchFixtures(date));
       console.log(`total fixtures: ${fxs.length}`);
       const selectedFxs: TFixture[] = await selectFixtures(fxs);
       console.log(`selected fixtures: ${selectedFxs.length}`);
@@ -74,15 +86,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         console.log(`starting fixture data collection`);
         const fixture = await fixtureService.collectData(fxId);
+        if (!fixture) {
+          console.log(`${i}:${fxId} fixture not found, continue.`);
+          continue;
+        }
         console.log(`fixture data tokens: `, countContentTokens(fixture, 'gpt-4-turbo'));
         console.log(`starting odds data collection`);
         const odds = await oddsService.collectData(fxId);
-        console.log(`odds data tokens: `, countContentTokens(odds.data, 'gpt-4-turbo'));
+        console.log(`odds data tokens: `, countContentTokens(odds, 'gpt-4-turbo'));
 
         console.log(`starting suggestion completion`);
         const completionContent = {fixture: fixture.data, odds: odds.data.map(({prob, ...rest}) => rest)};
-        const completion = await deepSeekService.createBetSuggestionCompletion(completionContent);
-        const selectedOddRaw = odds.raw.find((o) => o.id === +completion.data?.odd_id) as object;
+        // const completion = await deepSeekService.createBetSuggestionCompletion(completionContent);
+        const completion = await deepSeekService.createBetSuggestionExp0001Completion(completionContent);
 
         const suggestion = {
           plan: (i < FREE_SUGGESTIONS_LIMIT) ? 'free' : 'premium',
@@ -94,7 +110,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           fixture: fixture.data,
           odds: odds.data,
           completion: completion,
-          selectedOdd: selectedOddRaw,
         };
 
         suggestions.push(suggestion);

@@ -2,6 +2,7 @@
 import { WebflowClient } from 'webflow-api';
 import { DateTime } from 'luxon';
 import Decimal from 'decimal.js';
+import {bookmakerNameById} from '../utils';
 
 class WebflowService {
 
@@ -126,6 +127,7 @@ class WebflowService {
           "slug": suggestions[i].completion.data.fixture.toLowerCase()
             .replaceAll(' ', '-')
             .replace(/[^_a-zA-Z0-9-]/g, ''),
+          "bookmaker": bookmakerNameById(suggestions[i].selectedOdd.bookmaker_id),
         }
       });
     }

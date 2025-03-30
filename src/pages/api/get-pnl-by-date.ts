@@ -21,46 +21,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const date = req.body.date;
     try {
-      const recapTotal = (await googleCloudStorageClient.readJsonFile(`recaps/${date}.json`) as object[]);
-      if (!recapTotal) {
+      const allRecaps = (await googleCloudStorageClient.readJsonFile(`recaps/next/${date}.json`) as object[]);
+      if (!allRecaps) {
         return res.status(404).json({
-          message: `${date} recap not found`,
+          message: `${date} recaps not found`,
         });
       }
-      const recapFree = recapTotal.filter((r) => r.suggestion.free);
-      const recapPremium = recapTotal.filter((r) => r.suggestion.premium);
+      const freeRecaps = allRecaps.filter((r) => r.plan === 'free');
+      const premiumRecaps = allRecaps.filter((r) => r.plan === 'premium');
 
-      const guessedTotal = recapTotal.filter((r) => r.result.is_guessed === 'YES');
-      const guessedFree = recapTotal.filter((r) => r.result.is_guessed === 'YES' && r.suggestion.free);
-      const guessedPremium = recapTotal.filter((r) => r.result.is_guessed === 'YES' && r.suggestion.premium);
+      const allGuessed = allRecaps.filter((r) => r.is_guessed === 'YES');
+      const freeGuessed = allRecaps.filter((r) => r.is_guessed === 'YES' && r.plan === 'free');
+      const premiumGuessed = allRecaps.filter((r) => r.is_guessed === 'YES' && r.plan === 'premium');
 
       let winTotal = new Decimal(0);
-      for (let i = 0; i < guessedTotal.length; i++)
-        winTotal = winTotal.plus(new Decimal(guessedTotal[i].suggestion.odd));
-      const pnlTotal = winTotal.minus(new Decimal(recapTotal.length)).toFixed(3);
+      for (let i = 0; i < allGuessed.length; i++)
+        winTotal = winTotal.plus(new Decimal(allGuessed[i].suggestion.odd));
+      const pnlTotal = winTotal.minus(new Decimal(allRecaps.length)).toFixed(3);
 
       let winFree = new Decimal(0);
-      for (let i = 0; i < guessedFree.length; i++)
-        winFree = winFree.plus(new Decimal(guessedFree[i].suggestion.odd));
-      const pnlFree = winFree.minus(new Decimal(recapFree.length)).toFixed(3);
+      for (let i = 0; i < freeGuessed.length; i++)
+        winFree = winFree.plus(new Decimal(freeGuessed[i].suggestion.odd));
+      const pnlFree = winFree.minus(new Decimal(freeRecaps.length)).toFixed(3);
 
       let winPremium = new Decimal(0);
-      for (let i = 0; i < guessedPremium.length; i++)
-        winPremium = winPremium.plus(new Decimal(guessedPremium[i].suggestion.odd));
-      const pnlPremium = winPremium.minus(new Decimal(recapPremium.length)).toFixed(3);
+      for (let i = 0; i < premiumGuessed.length; i++)
+        winPremium = winPremium.plus(new Decimal(premiumGuessed[i].suggestion.odd));
+      const pnlPremium = winPremium.minus(new Decimal(premiumRecaps.length)).toFixed(3);
 
       return res.status(200).json({
         data: {
           free: {
-            count: `${guessedFree.length}/${recapFree.length}`,
+            count: `${freeGuessed.length}/${freeRecaps.length}`,
             pnl: pnlFree,
           },
           premium: {
-            count: `${guessedPremium.length}/${recapPremium.length}`,
+            count: `${premiumGuessed.length}/${premiumRecaps.length}`,
             pnl: pnlPremium,
           },
           total: {
-            count: `${guessedTotal.length}/${recapTotal.length}`,
+            count: `${allGuessed.length}/${allRecaps.length}`,
             pnl: pnlTotal,
           },
         },

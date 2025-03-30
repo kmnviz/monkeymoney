@@ -1,14 +1,15 @@
 // @ts-nocheck
 import type {NextApiRequest, NextApiResponse} from 'next';
-import OpenAI from 'openai';
 import {TwitterApi} from 'twitter-api-v2';
 import Decimal from 'decimal.js';
-import {pause} from '../../utils';
+import {pause, bookmakerNameById} from '../../utils';
 import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
 import TelegramBotClient from '../../services/telegramBotClient';
 import ZohoMailerClient from '../../services/zohoMailerClient';
 import WebflowService from '../../services/webflowService';
+import DeepSeekService from '../../services/deepSeekService';
 
+const deepSeekService = new DeepSeekService();
 const webflowService = new WebflowService();
 const zohoMailerClient = new ZohoMailerClient();
 const googleCloudStorageClient = new GoogleCloudStorageClient();
@@ -19,293 +20,106 @@ const twitterClient = new TwitterApi({
   accessToken: process.env.TWITTER_API_ACCESS_TOKEN,
   accessSecret: process.env.TWITTER_API_ACCESS_SECERT,
 });
-const deepSeek = new OpenAI({
-  baseURL: process.env.DEEPSEEK_API_URL,
-  apiKey: process.env.DEEPSEEK_API_KEY as string,
-});
-const models = {
-  gpt4Turbo: 'gpt-4-turbo',
-  gpt4o: 'gpt-4o',
-  gpt4oLatest: 'chatgpt-4o-latest',
-  deepSeekReasoner: 'deepseek-reasoner',
-  deepSeekChat: 'deepseek-chat',
-};
-
-const createFreeSuggestionsPostCompletion = async (content, date, totalOdds) => {
-  const messages = [
-    {
-      role: 'system',
-      content: ``,
-    },
-    {
-      role: 'user',
-      content: `
-      ### Task:
-      You receive an object that contains a football matches names and a betting predictions for them
-      with related bet, odd, probability, market description and a comprehensive reasoning.
-
-      Create a Twitter post that tells about the each suggestion.
-      `,
-    },
-    {
-      role: 'assistant',
-      content: JSON.stringify(content),
-    },
-    {
-      role: 'user',
-      content:
-        `
-          Voice of the text should be like a professional football analyst.
-          DO NOT USE THE WORD BET, IF NEEDED USE THE WORD TIP INSTEAD OF BET.
-          DO NOT WRAP THE TEXT IN ANY QUOTES.
-          DO NOT ADD ADDITIONAL *'s TO THE TEXT AS TWITTER DOES NOT RECOGNIZES THEM.
-          **FOR EACH SUGGESTION THERE MUST BE ONLY FIXTURE NAME, BET, CHANCE AND ODD. NOTHING ELSE**
-
-          USE FOLLOWING EXAMPLE FOR EACH **FREE** SUGGESTION:
-          1️⃣ Juventus vs Atalanta
-          🔹 Bet: Over 2.5 Goals
-          🔹 Chance: 82%
-          🔹 Odd: 1.93
-
-          USE FOLLOWING EXAMPLE FOR EACH **NOT FREE** SUGGESTION:
-          1️⃣ Juventus vs Atalanta
-          🔹 Tip: [https://www.betbro.ai/premium]
-          🔹 Chance: 75%
-          🔹 Odd: 1.666
-
-          ---
-          In the beginning of the text add:
-          🎯 DAILY TIPS
-          📅 [${date}]
-
-          In the end of the text add following:
-          📊 Total Odds: ${totalOdds}
-
-          🎲 Prepared by AI, validated by top experts.
-
-          For instant tips and updates:
-          👉 Telegram: http://t.me/betbro_ai
-          👉 Website: http://betbro.ai
-          👉 X (Twitter): https://x.com/betbro_ai
-
-          Add Following hashtags:
-          #DailyPicks #Football #Soccer #EuropeanFootball #SportsPicks
-          Additionally add a hashtag for each team that is mentioned in the provided context.
-        `,
-    }
-  ];
-
-  const completion = await deepSeek.chat.completions.create({
-    model: models.deepSeekChat,
-    messages: messages,
-    temperature: 0,
-  } as any);
-
-  console.log('createBetSuggestionCompletion usage: ', completion.usage);
-  console.log('createBetSuggestionCompletion message: ', completion.choices[0].message);
-
-  return {
-    model: models.deepSeekChat,
-    data: completion.choices[0].message.content,
-  };
-};
-
-const createPremiumSuggestionsPostCompletion = async (content, date, totalOdds) => {
-  const messages = [
-    {
-      role: 'system',
-      content: ``,
-    },
-    {
-      role: 'user',
-      content: `
-      ### Task:
-      You receive an object that contains a football matches names and a betting predictions for them
-      with related bet, odd, probability, market description and a comprehensive reasoning.
-
-      Create a Twitter post that tells about the each suggestion.
-      `,
-    },
-    {
-      role: 'assistant',
-      content: JSON.stringify(content),
-    },
-    {
-      role: 'user',
-      content:
-        `
-          Voice of the text should be like a professional football analyst.
-          DO NOT USE THE WORD BET, IF NEEDED USE THE WORD TIP INSTEAD OF BET.
-          DO NOT WRAP THE TEXT IN ANY QUOTES.
-          DO NOT ADD ADDITIONAL *'s TO THE TEXT AS TWITTER DOES NOT RECOGNIZES THEM.
-          **FOR EACH SUGGESTION THERE MUST BE ONLY FIXTURE NAME, BET, CANCE AND ODD. NOTHING ELSE**
-
-          USE FOLLOWING EXAMPLE FOR SUGGESTION:
-          1️⃣ Juventus vs Atalanta
-          🔹 Bet: Over 2.5 Goals
-          🔹 Chance: 82%
-          🔹 Odd: 1.93
-
-          ---
-          In the beginning of the text add:
-          🎯 DAILY TIPS
-          📅 [${date}]
-
-          In the end of the text add following:
-          📊 Total Odds: ${totalOdds}
-
-          🎲 Prepared by AI, validated by top experts.
-
-          For instant tips and updates:
-          👉 Telegram: http://t.me/betbro_ai
-          👉 Website: http://betbro.ai
-          👉 X (Twitter): https://x.com/betbro_ai
-
-          Add Following hashtags:
-          #DailyPicks #Football #Soccer #EuropeanFootball #SportsPicks
-          Additionally add a hashtag for each team that is mentioned in the provided context.
-        `,
-    }
-  ];
-
-  const completion = await deepSeek.chat.completions.create({
-    model: models.deepSeekChat,
-    messages: messages,
-    temperature: 0,
-  } as any);
-
-  console.log('createBetSuggestionCompletion usage: ', completion.usage);
-  console.log('createBetSuggestionCompletion message: ', completion.choices[0].message);
-
-  return {
-    model: models.deepSeekChat,
-    data: completion.choices[0].message.content,
-  };
-};
-
-const createSingleSuggestionsPostCompletion = async (content) => {
-  const messages = [
-    {
-      role: 'system',
-      content: ``,
-    },
-    {
-      role: 'user',
-      content: `
-      ### Task:
-      You receive an object that contains a football matches names and a betting predictions for them
-      with related bet, odd, probability, market description and a comprehensive reasoning.
-
-      Create a Twitter post that tells about the each suggestion.
-      `,
-    },
-    {
-      role: 'assistant',
-      content: JSON.stringify(content),
-    },
-    {
-      role: 'user',
-      content:
-        `
-          Voice of the text should be like a professional football analyst.
-          DO NOT USE THE WORD BET, IF NEEDED USE THE WORD TIP INSTEAD OF BET.
-          DO NOT WRAP THE TEXT IN ANY QUOTES.
-          DO NOT ADD ADDITIONAL *'s TO THE TEXT AS TWITTER DOES NOT RECOGNIZES THEM.
-          **FOR EACH SUGGESTION THERE MUST BE ONLY FIXTURE NAME, BET, CANCE AND ODD. NOTHING ELSE**
-          **ADD SEPARATOR AFTER EACH SUGGESTION. THE SEPARATOR MUST BE: !!! bet separator !!!**
-
-          USE FOLLOWING EXAMPLE FOR EACH **FREE** SUGGESTION:
-          🔥 Tips of the Day: Cercle Brugge vs Club Brugge 🔥
-
-          💰 Prediction: Both Teams to Score - No
-          📊 Odds: 1.95
-          ⚽ Chance: 85%
-
-          USE FOLLOWING EXAMPLE FOR EACH **NOT FREE** SUGGESTION:
-          🔥 Tips of the Day: Cercle Brugge vs Club Brugge 🔥
-
-          💰 Prediction: [https://www.betbro.ai/premium]
-          📊 Odds: 1.95
-          ⚽ Chance: 85%
-
-          Club Brugge’s defense is rock solid, with 8 clean sheets this season. Cercle has blanked in 4 home games and relies heavily on set pieces. Add in Brugge’s dominant aerial presence, and it’s tough to see Cercle breaking through.
-
-          #JupilerProLeague #CercleBrugge #ClubBrugge #BTTS
-          !!! bet separator !!!
-        `,
-    }
-  ];
-
-  const completion = await deepSeek.chat.completions.create({
-    model: models.deepSeekChat,
-    messages: messages,
-    temperature: 0,
-  } as any);
-
-  console.log('createBetSuggestionCompletion usage: ', completion.usage);
-  console.log('createBetSuggestionCompletion message: ', completion.choices[0].message);
-
-  return {
-    model: models.deepSeekChat,
-    data: completion.choices[0].message.content,
-  };
-};
 
 const preparePostingSuggestions = (allSuggestions) => {
   return {
-    total: allSuggestions.filter((suggestion) => suggestion.free || suggestion.premium),
-    free: allSuggestions.filter((suggestion) => suggestion.free),
-    premium: allSuggestions.filter((suggestion) => !suggestion.free && suggestion.premium),
+    free: allSuggestions.filter((suggestion) => suggestion.plan === 'free'),
+    premium: allSuggestions.filter((suggestion) => suggestion.plan === 'premium'),
+    total: allSuggestions,
   }
 };
 
-const prepareGroupedMessages = async (suggestions: object[], date, totalOdds) => {
-  const filtered = suggestions.map((suggestion) => {
+const prepareCollectedOdds = (postingSuggestions) => {
+  return {
+    free: postingSuggestions.free.reduce((sum, suggestion) =>
+      sum.plus(new Decimal(suggestion.completion.data.odd)), new Decimal(0)
+    ).toFixed(3),
+    premium: postingSuggestions.premium.reduce((sum, suggestion) =>
+      sum.plus(new Decimal(suggestion.completion.data.odd)), new Decimal(0)
+    ).toFixed(3),
+    total: postingSuggestions.total.reduce((sum, suggestion) =>
+      sum.plus(new Decimal(suggestion.completion.data.odd)), new Decimal(0)
+    ).toFixed(3),
+  };
+};
+
+const prepareFreeGroupedMessage = async (suggestions, odds, date) => {
+  const filteredSuggestions = suggestions.map((suggestion) => {
     return {
-      fixture: suggestion.fixture,
-      free: suggestion.free,
-      premium: suggestion.premium,
+      fixture: suggestion.fixture.name,
+      plan: suggestion.plan,
       data: suggestion.completion.data,
+      bookmaker: bookmakerNameById(suggestion.selectedOdd.bookmaker_id),
+      starting_at: suggestion.fixture.starting_at,
     };
   });
 
-  const hasFree = suggestions.filter((s) => s.free).length > 0;
-  const hasPremium = suggestions.filter((s) => !s.free && s.premium).length > 0;
-
-  const completions = {free: '', premium: ''};
-  if (hasFree) completions.free = (await createFreeSuggestionsPostCompletion(filtered, date, totalOdds.toFixed(2))).data as string;
-  if (hasPremium) completions.premium = (await createPremiumSuggestionsPostCompletion(filtered, date, totalOdds.toFixed(2))).data as string;
-
-  return completions;
+  return (await deepSeekService.createFreeSuggestionsPostCompletion(filteredSuggestions, odds, date)).data as string;
 };
 
-const prepareSingleMessages = async (groupedMessage: string) => {
-  const singlesCompletions = (await createSingleSuggestionsPostCompletion(groupedMessage) as object).data;
-  return singlesCompletions
-    .split('!!! bet separator !!!')
-    .map((s) => s.trim())
-    .filter((s) => s);
-}
+const preparePremiumGroupedMessage = async (suggestions, odds, date) => {
+  const filteredSuggestions = suggestions.map((suggestion) => {
+    return {
+      fixture: suggestion.fixture.name,
+      data: suggestion.completion.data,
+      bookmaker: bookmakerNameById(suggestion.selectedOdd.bookmaker_id),
+      starting_at: suggestion.fixture.starting_at,
+    };
+  });
 
-const postGroupedMessages = async (postingSuggestions, groupedMessages, date, emailAddresses) => {
-  await webflowService.updateFreePicksCollection(date, postingSuggestions.free);
-  await webflowService.updatePremiumPicksCollection(date, postingSuggestions.premium);
-  if (groupedMessages.free)
-    await twitterClient.v2.tweet(groupedMessages.free);
-  if (groupedMessages.free)
-    await telegramBotClient.sendMessage(groupedMessages.free);
-  if (groupedMessages.free)
-    await zohoMailerClient.sendEmails(emailAddresses.free, `Daily tips ${date}`, groupedMessages.free);
-  if (groupedMessages.premium)
-    await zohoMailerClient.sendEmails(emailAddresses.premium, `Daily premium tips ${date}`, groupedMessages.premium);
+  return (await deepSeekService.createPremiumSuggestionsPostCompletion(filteredSuggestions, odds, date)).data as string;
 };
 
-const postSingleMessages = async (singleMessages) => {
+const prepareFreeSingleMessages = async (suggestions) => {
+  const messages = [];
+  for (let i = 0; i < suggestions.length; i++) {
+    const filteredSuggestion = {
+      fixture: suggestions[i].fixture.name,
+      plan: suggestions[i].plan,
+      data: suggestions[i].completion.data,
+      bookmaker: bookmakerNameById(suggestions[i].selectedOdd.bookmaker_id),
+      starting_at: suggestions[i].fixture.starting_at,
+    };
+
+    const message = (await deepSeekService.createFreeSuggestionPostCompletion(filteredSuggestion)).data as string;
+    messages.push(message);
+  }
+  return messages;
+};
+
+const postFreeWebflow = async (suggestions, date) => {
+  await webflowService.updateFreePicksCollection(date, suggestions);
+};
+
+const postFreeTwitter = async (groupedMessage, singleMessages) => {
+  await twitterClient.v2.tweet(groupedMessage);
   for (let i = 0; i < singleMessages.length; i++) {
     await pause(2 * 60 * 1000);
     await twitterClient.v2.tweet(singleMessages[i]);
   }
-}
+};
+
+const postFreeTelegram = async (groupedMessage) => {
+  await telegramBotClient.sendMessage(groupedMessage);
+};
+
+const postFreeEmail = async (date, groupedMessage, emailAddresses) => {
+  await zohoMailerClient.sendEmails(emailAddresses, `Daily tips ${date}`, groupedMessage);
+};
+
+const postPremiumWebflow = async (suggestions, date) => {
+  await webflowService.updatePremiumPicksCollection(date, suggestions);
+};
+
+const postPremiumTelegram = async (groupedMessage) => {
+  await telegramBotClient.sendMessageToPremiumChannel(groupedMessage);
+};
+
+const postPremiumEmail = async (date, groupedMessage, emailAddresses) => {
+  await zohoMailerClient.sendEmails(emailAddresses, `Daily premium tips ${date}`, groupedMessage);
+};
+
+const SUGGESTIONS_DIRECTORY = 'suggestions';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
@@ -323,42 +137,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
       const date = req.body.date;
-      const allSuggestions: object[] = (await googleCloudStorageClient.readJsonFile(`suggestions/${date}.json`) as object[]);
-      const emailAddresses = {
-        free: (await googleCloudStorageClient.readJsonFile(`emails.json`) as string[]) || [],
-        premium: ['kamenovivanzdravkov@gmail.com', 'omaretz@gmail.com', 'iambozhidar@gmail.com'],
-      };
+      const allSuggestions: object[] = (await googleCloudStorageClient.readJsonFile(`${SUGGESTIONS_DIRECTORY}/${date}.json`) as object[]);
       if (!allSuggestions) {
         return res.status(404).json({
           message: `${date} suggestions not found.`,
         });
       }
 
+      const emailAddresses = {
+        free: (await googleCloudStorageClient.readJsonFile(`emails.json`) as string[]) || [],
+        premium: ['kamenovivanzdravkov@gmail.com', 'omaretz@gmail.com', 'iambozhidar@gmail.com'],
+      };
+
       const postingSuggestions = preparePostingSuggestions(allSuggestions);
-      const totalOdds = postingSuggestions.total.reduce((sum, suggestion) =>
-        sum.plus(new Decimal(suggestion.completion.data.odd)), new Decimal(0)
-      );
-      const groupedMessages = await prepareGroupedMessages(allSuggestions, date, totalOdds);
-      const singleMessages = await prepareSingleMessages(groupedMessages.free);
+      const collectedOdds = prepareCollectedOdds(postingSuggestions);
+      const freeGroupedMessage = await prepareFreeGroupedMessage(postingSuggestions.total, collectedOdds.total, date);
+      const premiumGroupedMessage = await preparePremiumGroupedMessage(postingSuggestions.total, collectedOdds.total, date);
+      const freeSingleMessages = await prepareFreeSingleMessages(postingSuggestions.free);
 
-      // console.log('groupedMessages: ', groupedMessages);
-      // console.log('singleMessages: ', singleMessages);
-      // return res.status(200).json({
-      //   data: {
-      //     groupedMessages: groupedMessages,
-      //     singleMessages: singleMessages,
-      //   },
-      // });
-
-      // Post grouped messages
-      await postGroupedMessages(postingSuggestions, groupedMessages, date, emailAddresses);
-      // Post single messages
-      await postSingleMessages(singleMessages);
+      // Post FREE content
+      await postFreeWebflow(postingSuggestions.free, date);
+      await postFreeTwitter(freeGroupedMessage, freeSingleMessages);
+      await postFreeTelegram(freeGroupedMessage);
+      await postFreeEmail(date, freeGroupedMessage, emailAddresses.free);
+      // Post PREMIUM content
+      await postPremiumWebflow(postingSuggestions.premium, date);
+      await postPremiumTelegram(premiumGroupedMessage);
+      await postPremiumEmail(date, premiumGroupedMessage, emailAddresses.premium);
 
       return res.status(200).json({
         data: {
-          groupedMessages: groupedMessages,
           postingSuggestions: postingSuggestions,
+          freeGroupedMessage: freeGroupedMessage,
+          premiumGroupedMessage: premiumGroupedMessage,
+          freeSingleMessages: freeSingleMessages,
         },
       });
     } catch (error) {

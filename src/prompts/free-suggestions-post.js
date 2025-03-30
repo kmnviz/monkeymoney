@@ -24,7 +24,6 @@ module.exports = (date, totalOdds) => {
     🔹 Tip: [https://www.betbro.ai/premium]
     🔹 Chance: 75%
     🔹 Odd: 1.666
-    🔹 Bookmaker: [https://www.betbro.ai/premium]
 
     ---
     In the beginning of the text add:

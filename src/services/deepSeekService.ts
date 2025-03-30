@@ -2,6 +2,7 @@
 import OpenAI from 'openai';
 import selectFixturesPrompt from '../prompts/select-fixtures';
 import betSuggestionPrompt from '../prompts/bet-suggestion';
+import betSuggestionExp0001Prompt from '../prompts/exp/bet-suggestion-0001';
 import freeSuggestionsPostPrompt from '../prompts/free-suggestions-post';
 import premiumSuggestionsPostPrompt from '../prompts/premium-suggestions-post';
 import freeSuggestionPostPrompt from '../prompts/free-suggestion-post';
@@ -83,6 +84,80 @@ class DeepSeekService {
         content: `
         **Final Instruction**
           - ${probInstruction}
+          - ** Think outside the box and leverage your deepest football knowledge. **
+          - If the selected bet does not meet these criteria, **recalculate** the selection.
+          - ** IN ANY CASE THERE SHOULD BE A RECOMMENDED BET **
+
+        **Output Format (Strictly Follow This JSON Structure):**
+          {
+            "fixture": "<Team A vs Team B>",
+            "bet": "<Bet Selection>",
+            "probability": "<Calculated Probability (%)>",
+            "odd_id": "<Selected Odd ID>",
+            "odd": "<Selected Odd>",
+            "market_id": "<Selected Market ID>",
+            "market_description": "<Market Description>",
+            "comprehensive_detailed_reason": "<Comprehensive Detailed Reason>"
+          }
+      `,
+      },
+    ];
+
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        console.log(`createBetSuggestionWithDeepSeekReasoner attempt ${attempt}`);
+        const startTime = performance.now();
+        const completion = await this.client.chat.completions.create({
+          model: this.models.deepSeekReasoner,
+          messages: messages,
+          temperature: 0,
+        } as any);
+        const endTime = performance.now();
+        console.log(`DeepSeek.createBetSuggestionCompletion`);
+        console.log(`-- finished in: ${((endTime - startTime) / 1000).toFixed(2)}s`);
+        console.log(`-- used ${completion.usage?.total_tokens} tokens`);
+
+        return {
+          model: this.models.deepSeekReasoner,
+          data: formatJsonStringToJson(completion.choices[0].message.content),
+          // reasoning: completion.choices[0].message['reasoning_content'],
+          tokens: completion.usage?.total_tokens,
+        };
+      } catch (error) {
+        console.error(`createBetSuggestionWithDeepSeekReasoner attempt ${attempt} failed:`, error.message);
+
+        if (attempt < retries) {
+          const delay = attempt * 60 * 1000;
+          console.log(`Retrying in ${delay / 1000} seconds...`);
+          await pause(delay);
+        } else {
+          console.log('Max retries reached. Returning error.');
+          return {
+            data: `fixture ${content.fixture.name} failed with ${error.message}`,
+          };
+        }
+      }
+    }
+  }
+
+  async createBetSuggestionExp0001Completion(content, retries = 1000) {
+    const messages = [
+      {
+        role: 'system',
+        content: `You are a world-class football data analyst. Analyze the JSON data and provide insights. Return a JSON response.`,
+      },
+      {
+        role: 'user',
+        content: betSuggestionExp0001Prompt(),
+      },
+      {
+        role: 'assistant',
+        content: JSON.stringify(content),
+      },
+      {
+        role: 'user',
+        content: `
+        **Final Instruction**
           - ** Think outside the box and leverage your deepest football knowledge. **
           - If the selected bet does not meet these criteria, **recalculate** the selection.
           - ** IN ANY CASE THERE SHOULD BE A RECOMMENDED BET **

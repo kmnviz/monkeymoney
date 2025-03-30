@@ -215,55 +215,65 @@ const formatFixture = (fx: TFixture) => {
     starting_at: fx.starting_at,
     has_odds: fx.has_odds,
     participants: fx.participants.map((p: TTeam, index: number) => {
+      const players = p['players'] && p['players'].length ? p['players'].map((p) => {
+        return {
+          name: p.name,
+          date_of_birth: p.date_of_birth,
+          height: p.height,
+          position: positionNameById(p.position_id),
+          statistics: p.statistics && p.statistics.length ? p.statistics
+            .filter((s) => s.season_id === fx.season_id)
+            .map((s) => {
+              return s.details && s.details.length ? s.details.map((d) => {
+                return {
+                  type: typeNameById(d.type_id),
+                  value: d.value,
+                };
+              }): [];
+            }).map((s) => {
+              return s.map((ss) => ({[ss.type]: ss?.value?.total}))
+            }).flat() : [],
+        };
+      }) : [];
+      const lineup = fx.lineups && fx.lineups.length ? fx.lineups.filter((l) => l.team_id === p.id).map((l) => {
+        return {
+          player_name: l.player_name,
+          position: positionNameById(l.position_id),
+          formation_field: l.formation_field,
+          formation_position: l.formation_position,
+        };
+      }) : [];
+      const activeSeasons = p['active_seasons'] && p['active_seasons'].length
+        ? p['active_seasons'].map((a) => {
+          return {
+            leagues: leagueNameById(a.league_id),
+            name: seasonNameById(a.id),
+            starting_at: a.starting_at,
+            ending_at: a.ending_at,
+            standings: a.standings && a.standings.length ? a.standings.map((s) => {
+              return {
+                participant: teamNameById(s.participant_id),
+                points: s.points,
+                position: s.position,
+              };
+            }) : [],
+          }
+        }) : [];
+
       return {
         id: p.id,
         name: p.name,
         location: p.meta.location,
         past_matches: p['past_matches'].reverse().splice(0, 12),
         next_matches: p['next_matches'].splice(0, 5),
-        players: p['players'] && p['players'].length ? p['players'].map((p) => {
-          return {
-            name: p.name,
-            date_of_birth: p.date_of_birth,
-            height: p.height,
-            position: positionNameById(p.position_id),
-            statistics: p.statistics && p.statistics.length ? p.statistics
-              .filter((s) => s.season_id === fx.season_id)
-              .map((s) => {
-                return s.details && s.details.length ? s.details.map((d) => {
-                  return {
-                    type: typeNameById(d.type_id),
-                    value: d.value,
-                  };
-                }): [];
-              }).map((s) => {
-                return s.map((ss) => ({[ss.type]: ss?.value?.total}))
-              }).flat() : [],
-          };
-        }) : [],
-        active_seasons: p['active_seasons'] && p['active_seasons'].length
-          ? p['active_seasons'].map((a) => {
-            return {
-              leagues: leagueNameById(a.league_id),
-              name: seasonNameById(a.id),
-              starting_at: a.starting_at,
-              ending_at: a.ending_at,
-              standings: a.standings && a.standings.length ? a.standings.map((s) => {
-                return {
-                  participant: teamNameById(s.participant_id),
-                  points: s.points,
-                  position: s.position,
-                };
-              }) : [],
-            }
-          }) : [],
+        players: players,
+        lineup: lineup,
+        active_seasons: activeSeasons,
       };
     }).reduce((acc, { name, ...rest }) => {
       acc[name] = rest;
       return acc;
     }, {}),
-    // TODO: RESEARCH WHY LINEUPS ARE NOT RETURNED
-    // lineups: fx.lineups,
     round: fx.round ? {
       name: fx.round.name,
       fixtures: fx.round.fixtures && fx.round.fixtures.length ? fx.round.fixtures.map((f) => {
@@ -296,7 +306,8 @@ const formatFixture = (fx: TFixture) => {
 class FixtureService {
 
   async collectData(fixtureId: number) {
-    const fx = await sportmonksApiClient.getFixtureById(fixtureId, 'participants');
+    const fx = await sportmonksApiClient.getFixtureById(fixtureId, 'participants;lineups');
+    if (!fx) return null;
 
     fx['participants'][0]['past_matches'] = preparePastFixtures(await fetchPastFixtures(fx, fx['participants'][0].id));
     fx['participants'][1]['past_matches'] = preparePastFixtures(await fetchPastFixtures(fx, fx['participants'][1].id));

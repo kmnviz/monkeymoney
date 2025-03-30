@@ -21,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const date = req.body.date;
     try {
-      const allRecaps = (await googleCloudStorageClient.readJsonFile(`recaps/next/${date}.json`) as object[]);
+      const allRecaps = (await googleCloudStorageClient.readJsonFile(`recaps/next/stats/${date}.json`) as object[]);
       if (!allRecaps) {
         return res.status(404).json({
           message: `${date} recaps not found`,

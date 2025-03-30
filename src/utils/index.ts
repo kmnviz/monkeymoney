@@ -1,6 +1,8 @@
 import { writeFileSync, readFileSync } from 'fs';
 import tiktoken from 'tiktoken';
 import path from 'path';
+import {DateTime} from 'luxon';
+import Decimal from 'decimal.js';
 import sportmonksTypes from '../database/sportmonks/types.json';
 import sportmonksMarkets from '../database/sportmonks/markets.json';
 import sportmonksBookmakers from '../database/sportmonks/bookmakers.json';
@@ -9,7 +11,6 @@ import sportmonksSeasons from '../database/sportmonks/seasons.json';
 import sportmonksRounds from '../database/sportmonks/rounds.json';
 import sportmonksVenues from '../database/sportmonks/venues.json';
 import sportmonksTeams from '../database/sportmonks/teams.json';
-import Decimal from "decimal.js";
 
 export const pause = async (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -250,4 +251,24 @@ export const removeEmptyObjects = (obj) => {
   });
 
   return obj;
+}
+
+export const daysBetweenIncludingBoth = (start, end) => {
+  const startDate = DateTime.fromISO(start);
+  const endDate = DateTime.fromISO(end);
+
+  return endDate.diff(startDate, 'days').days + 1;
+}
+
+export const getDatesInRange = (start, end) => {
+  let dates = [];
+  let currentDate = DateTime.fromISO(start);
+  const endDate = DateTime.fromISO(end);
+
+  while (currentDate <= endDate) {
+    dates.push(currentDate.toFormat('yyyy-MM-dd'));
+    currentDate = currentDate.plus({ days: 1 });
+  }
+
+  return dates;
 }
