@@ -221,7 +221,7 @@ class WebflowService {
           .replace(/[^_a-zA-Z0-9-]/g, '')
         ,
         "result": `${suggestionRecap.result.scores.total.home}:${suggestionRecap.result.scores.total.away}`,
-        "result-color-status": suggestionRecap.result.is_guessed === 'YES'
+        "result-color-status": suggestionRecap.is_guessed === 'YES'
           ? "rgba(77, 255, 92, 0.15)"
           : "rgba(203, 21, 21, 0.35)",
       },
