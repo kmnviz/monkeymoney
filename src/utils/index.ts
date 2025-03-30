@@ -261,8 +261,8 @@ export const daysBetweenIncludingBoth = (start, end) => {
 }
 
 export const getDatesInRange = (start, end) => {
-  let dates = [];
-  let currentDate = DateTime.fromISO(start);
+  let dates: any[] = [];
+  let currentDate: any = DateTime.fromISO(start);
   const endDate = DateTime.fromISO(end);
 
   while (currentDate <= endDate) {
