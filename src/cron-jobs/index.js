@@ -123,20 +123,20 @@ const generateSuggestionsJobs = CronJob.from({
   start: true,
 });
 const postGenerateSuggestionsJobs = CronJob.from({
-  cronTime: '0 0 20 * * *',
+  cronTime: '0 0 19 * * *',
   onTick: postGenerateSuggestions,
   timeZone: 'UTC',
   start: true,
 });
 
 const recapSuggestionsJobs = CronJob.from({
-  cronTime: '0 0 5 * * *',
+  cronTime: '0 0 4 * * *',
   onTick: recapSuggestions,
   timeZone: 'UTC',
   start: true,
 });
 const postRecapSuggestionsJobs = CronJob.from({
-  cronTime: '0 30 5 * * *',
+  cronTime: '0 30 4 * * *',
   onTick: postRecapSuggestions,
   timeZone: 'UTC',
   start: true,
