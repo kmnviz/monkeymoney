@@ -86,8 +86,8 @@ const formatFixtureOutcome = (fixtureOutcome) => {
   };
 };
 
-const SUGGESTIONS_DIRECTORY = 'suggestions/next/stats';
-const RECAPS_DIRECTORY = 'recaps/next/stats';
+const SUGGESTIONS_DIRECTORY = 'suggestions/stats';
+const RECAPS_DIRECTORY = 'recaps/stats';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
