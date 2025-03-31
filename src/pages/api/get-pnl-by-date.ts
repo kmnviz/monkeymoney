@@ -2,7 +2,9 @@
 import type {NextApiRequest, NextApiResponse} from 'next';
 import Decimal from 'decimal.js';
 import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
+import TelegramBotClient from '../../services/telegramBotClient';
 
+const telegramBotClient = new TelegramBotClient();
 const googleCloudStorageClient = new GoogleCloudStorageClient();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -21,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const date = req.body.date;
     try {
-      const allRecaps = (await googleCloudStorageClient.readJsonFile(`recaps/next/${date}.json`) as object[]);
+      const allRecaps = (await googleCloudStorageClient.readJsonFile(`recaps/${date}.json`) as object[]);
       if (!allRecaps) {
         return res.status(404).json({
           message: `${date} recaps not found`,
@@ -49,22 +51,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         winPremium = winPremium.plus(new Decimal(premiumGuessed[i].suggestion.odd));
       const pnlPremium = winPremium.minus(new Decimal(premiumRecaps.length)).toFixed(3);
 
-      return res.status(200).json({
-        data: {
-          free: {
-            count: `${freeGuessed.length}/${freeRecaps.length}`,
-            pnl: pnlFree,
-          },
-          premium: {
-            count: `${premiumGuessed.length}/${premiumRecaps.length}`,
-            pnl: pnlPremium,
-          },
-          total: {
-            count: `${allGuessed.length}/${allRecaps.length}`,
-            pnl: pnlTotal,
-          },
+      const result = {
+        date: date,
+        free: {
+          count: `${freeGuessed.length}/${freeRecaps.length}`,
+          pnl: pnlFree,
         },
-      });
+        premium: {
+          count: `${premiumGuessed.length}/${premiumRecaps.length}`,
+          pnl: pnlPremium,
+        },
+        total: {
+          count: `${allGuessed.length}/${allRecaps.length}`,
+          pnl: pnlTotal,
+        },
+      };
+
+      await telegramBotClient.sendMessageToProjectMars(JSON.stringify(result, null, 2));
+
+      return res.status(200).json(result);
     } catch (error) {
       console.log('error: ', error);
       return res.status(500).json({
