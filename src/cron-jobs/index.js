@@ -35,6 +35,34 @@ const generateSuggestions = async () => {
   }
 };
 
+const postGenerateSuggestions = async () => {
+  const nowDate = DateTime.utc().toFormat('yyyy-MM-dd HH:mm:ss');
+  const tomorrowDate = DateTime.utc()
+    .plus({ days: 1 }).toFormat('yyyy-MM-dd');
+  console.log(`postGenerateSuggestions job triggered on ${nowDate} for ${tomorrowDate}`);
+
+  const payload = {
+    date: tomorrowDate,
+    suggestionsCount: 12,
+  };
+
+  try {
+    const start = DateTime.now();
+    const path = '/api/post-generate-suggestions';
+    const response = await axios.post(`${API_URL}${path}`, payload, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const end = DateTime.now();
+    const executionTime = end.diff(start, 'milliseconds').toObject();
+    console.log(`Request post-generate-suggestions execution time: ${executionTime.milliseconds} ms`);
+
+    console.log(`postGenerateSuggestionsJobs on ${nowDate} for ${tomorrowDate} successfully triggered. response: `, response.data);
+  } catch (error) {
+    console.log(`postGenerateSuggestionsJobs.error: `, error);
+    console.error(`postGenerateSuggestionsJobs on ${nowDate} for ${tomorrowDate} failed`, error.message);
+  }
+};
+
 const recapSuggestions = async () => {
   const nowDate = DateTime.utc().toFormat('yyyy-MM-dd HH:mm:ss');
   const yesterdayDate = DateTime.utc()
@@ -89,33 +117,6 @@ const postRecapSuggestions = async () => {
   }
 };
 
-const postGenerateSuggestions = async () => {
-  const nowDate = DateTime.utc().toFormat('yyyy-MM-dd HH:mm:ss');
-  const todayDate = DateTime.utc().toFormat('yyyy-MM-dd');
-  console.log(`postGenerateSuggestions job triggered on ${nowDate} for ${todayDate}`);
-
-  const payload = {
-    date: todayDate,
-    suggestionsCount: 12,
-  };
-
-  try {
-    const start = DateTime.now();
-    const path = '/api/post-generate-suggestions';
-    const response = await axios.post(`${API_URL}${path}`, payload, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-    const end = DateTime.now();
-    const executionTime = end.diff(start, 'milliseconds').toObject();
-    console.log(`Request post-generate-suggestions execution time: ${executionTime.milliseconds} ms`);
-
-    console.log(`postGenerateSuggestionsJobs on ${nowDate} for ${todayDate} successfully triggered. response: `, response.data);
-  } catch (error) {
-    console.log(`postGenerateSuggestionsJobs.error: `, error);
-    console.error(`postGenerateSuggestionsJobs on ${nowDate} for ${todayDate} failed`, error.message);
-  }
-};
-
 const generateSuggestionsJobs = CronJob.from({
   cronTime: '0 0 18 * * *',
   onTick: generateSuggestions,
@@ -128,15 +129,14 @@ const postGenerateSuggestionsJobs = CronJob.from({
   timeZone: 'UTC',
   start: true,
 });
-
 const recapSuggestionsJobs = CronJob.from({
-  cronTime: '0 0 4 * * *',
+  cronTime: '0 0 3 * * *',
   onTick: recapSuggestions,
   timeZone: 'UTC',
   start: true,
 });
 const postRecapSuggestionsJobs = CronJob.from({
-  cronTime: '0 30 4 * * *',
+  cronTime: '0 0 4 * * *',
   onTick: postRecapSuggestions,
   timeZone: 'UTC',
   start: true,

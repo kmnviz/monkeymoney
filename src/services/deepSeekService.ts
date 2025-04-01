@@ -48,10 +48,21 @@ class DeepSeekService {
         role: 'assistant',
         content: JSON.stringify(content),
       },
+      {
+        role: 'user',
+        content: `
+        ### INSTRUCTIONS:
+        - Return ONLY a comma-separated list of exactly ${count} fixture_ids.
+        - NO explanations, NO formatting, NO JSON, NO extra text.
+        - STRICTLY follow this format: X,Y,Z (e.g., 12345,67890,54321).
+        - DO NOT include quotes, brackets, new lines, or any additional words.
+        - If you provide anything other than just fixture IDs, the response is INVALID.
+        `
+      }
     ];
 
     const completion = await this.client.chat.completions.create({
-      model: this.models.deepSeekChat,
+      model: this.models.deepSeekReasoner,
       messages: messages,
       temperature: 0,
     } as any);
