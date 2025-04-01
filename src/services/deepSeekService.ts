@@ -336,7 +336,7 @@ class DeepSeekService {
 
     const startTime = performance.now();
     const completion = await this.client.chat.completions.create({
-      model: this.models.deepSeekChat,
+      model: this.models.deepSeekReasoner,
       messages: messages,
       temperature: 0,
     } as any);
@@ -346,7 +346,7 @@ class DeepSeekService {
     console.log(`-- used ${completion.usage?.total_tokens} tokens`);
 
     return {
-      model: this.models.deepSeekChat,
+      model: this.models.deepSeekReasoner,
       data: completion.choices[0].message.content,
     };
   }
@@ -408,7 +408,7 @@ class DeepSeekService {
           **Output Format (Strictly Follow This JSON Structure):**
             {
               "fixture": "<Team A vs Team B>",
-              "outcome": "<Bet Selection>",
+              "outcome": "<Most possible outcome>",
             }
         `,
       },
