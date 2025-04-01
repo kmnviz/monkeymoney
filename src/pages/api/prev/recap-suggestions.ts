@@ -71,7 +71,7 @@ const modifyStatistics = (statistics) => {
       const type = types.find((t) => t.id === stat.type_id)
 
       return {
-        type: type.name,
+        type: type?.name,
         data: stat.data,
         location: stat.location,
       };

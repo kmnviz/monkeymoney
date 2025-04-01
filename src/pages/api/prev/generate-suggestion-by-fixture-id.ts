@@ -107,7 +107,7 @@ const createBetSuggestionWithDeepSeekReasoner = async (content, retries = 1000) 
       } else {
         console.log('Max retries reached. Returning error.');
         return {
-          data: `fixture ${lContent.fixture.name} failed with ${error.message}`,
+          data: `fixture ${lContent.fixture?.name} failed with ${error.message}`,
         };
       }
     }
@@ -155,7 +155,7 @@ const appendPlayersData = async (team) => {
     const playerData = await sportmonksApiClient
       .getPlayerById(team['players'][i]['player_id']);
 
-    team['players'][i] = {...team['players'][i], ...{name: playerData.name}};
+    team['players'][i] = {...team['players'][i], ...{name: playerData?.name}};
   }
 
   return team;
@@ -207,11 +207,11 @@ const collectTeamData = async (teamId) => {
 }
 
 const findAlternativeBookmakerOdds = async (fixture, bookmakerId, enoughOdds = 200) => {
-  console.log(`fixture ${fixture.name} has no odds within main bookmaker:${bookmakerId} odds.`);
+  console.log(`fixture ${fixture?.name} has no odds within main bookmaker:${bookmakerId} odds.`);
 
   let alternativeOdds, alternativeBookmakerId;
   for (let i = 0 ; i < sportmonksBookmakers.length; i++) {
-    console.log(`fixture ${fixture.name} check for odds within bookmaker:${sportmonksBookmakers[i].id}.`);
+    console.log(`fixture ${fixture?.name} check for odds within bookmaker:${sportmonksBookmakers[i].id}.`);
     if (sportmonksBookmakers[i].id === bookmakerId) continue;
 
     const lAlternativeOdds = await sportmonksApiClient
@@ -221,16 +221,16 @@ const findAlternativeBookmakerOdds = async (fixture, bookmakerId, enoughOdds = 2
       alternativeOdds = lAlternativeOdds;
       alternativeBookmakerId = sportmonksBookmakers[i].id;
       if (alternativeOdds && alternativeOdds.length) {
-        console.log(`fixture ${fixture.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
+        console.log(`fixture ${fixture?.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
       }
     } else {
       if (lAlternativeOdds && lAlternativeOdds.length > 0) {
         if (!alternativeOdds) {
           alternativeOdds = lAlternativeOdds;
-          console.log(`fixture ${fixture.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
+          console.log(`fixture ${fixture?.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
         } else if (lAlternativeOdds.length > alternativeOdds.length) {
           alternativeOdds = lAlternativeOdds;
-          console.log(`fixture ${fixture.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
+          console.log(`fixture ${fixture?.name} found ${alternativeOdds.length} odds within alternative bookmaker:${sportmonksBookmakers[i].id}.`);
         }
       }
     }
@@ -279,7 +279,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       fixture = modifyLineups(fixture);
       fixture = modifyLeague(fixture);
       fixture['league'] = leagueNameById(fixture['league_id']);
-      console.log(`fixture ${fixture.name} found.`);
+      console.log(`fixture ${fixture?.name} found.`);
 
       const teamAId = fixture['participants'][0]['id'];
       const teamBId = fixture['participants'][1]['id'];
@@ -299,7 +299,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!fixtureOdds || fixtureOdds?.length < 10) {
         const allFixtureOdds = await sportmonksApiClient.getOddsByFixtureId(fixtureId);
         if (!allFixtureOdds) {
-          console.log(`fixture ${fixture.name} has no odds.`);
+          console.log(`fixture ${fixture?.name} has no odds.`);
           return res.status(400).json({
             message: 'Fixture has no odd within any bookmaker',
             fixture: fixture,
@@ -333,7 +333,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log(`finished fixture bet suggestion completion.`);
 
       const suggestion = {
-        fixture: fixture.name,
+        fixture: fixture?.name,
         completion: completion,
         bookmakerId: bookmakerId,
         data: {

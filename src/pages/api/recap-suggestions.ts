@@ -50,11 +50,11 @@ const formatScores = (scores) => {
 const formatFixtureOutcome = (fixtureOutcome) => {
   return {
     id: fixtureOutcome.id,
-    name: fixtureOutcome.name,
+    name: fixtureOutcome?.name,
     starting_at: fixtureOutcome.starting_at,
     participants: fixtureOutcome.participants.map((p) => {
       return {
-        name: p.name,
+        name: p?.name,
         location: p.meta.location,
         statistics: fixtureOutcome.statistics.filter((s) => {
           return p.id === s.participant_id;
@@ -116,7 +116,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       for (let i = 0; i < suggestions.length; i++) {
         const suggestion = (suggestions as object)[i];
         if (suggestion?.scores && suggestion?.scores?.length > 0) {
-          console.log(`${i}:${suggestion.fixture.id} ${suggestion.fixture.name} is not finished yet`);
+          console.log(`${i}:${suggestion.fixture.id} ${suggestion.fixture?.name} is not finished yet`);
           continue;
         }
 
@@ -130,7 +130,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const outcome = {
           fixture_id: suggestion.fixture.id,
-          fixture: suggestion.fixture.name,
+          fixture: suggestion.fixture?.name,
           plan: suggestion.plan,
           suggestion: suggestionCompletion,
           result: fixtureOutcome,

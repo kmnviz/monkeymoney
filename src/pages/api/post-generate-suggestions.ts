@@ -46,7 +46,7 @@ const prepareCollectedOdds = (postingSuggestions) => {
 const prepareFreeGroupedMessage = async (suggestions, odds, date) => {
   const filteredSuggestions = suggestions.map((suggestion) => {
     return {
-      fixture: suggestion.fixture.name,
+      fixture: suggestion.fixture?.name,
       plan: suggestion.plan,
       data: suggestion.completion.data,
       bookmaker: bookmakerNameById(suggestion.selectedOdd.bookmaker_id),
@@ -60,7 +60,7 @@ const prepareFreeGroupedMessage = async (suggestions, odds, date) => {
 const preparePremiumGroupedMessage = async (suggestions, odds, date) => {
   const filteredSuggestions = suggestions.map((suggestion) => {
     return {
-      fixture: suggestion.fixture.name,
+      fixture: suggestion.fixture?.name,
       data: suggestion.completion.data,
       bookmaker: bookmakerNameById(suggestion.selectedOdd.bookmaker_id),
       starting_at: suggestion.fixture.starting_at,
@@ -74,7 +74,7 @@ const prepareFreeSingleMessages = async (suggestions) => {
   const messages = [];
   for (let i = 0; i < suggestions.length; i++) {
     const filteredSuggestion = {
-      fixture: suggestions[i].fixture.name,
+      fixture: suggestions[i].fixture?.name,
       plan: suggestions[i].plan,
       data: suggestions[i].completion.data,
       bookmaker: bookmakerNameById(suggestions[i].selectedOdd.bookmaker_id),

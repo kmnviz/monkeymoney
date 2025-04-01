@@ -53,7 +53,7 @@ const createSelectFixturesCompletion = async (count: number, fixtures: any[]) =>
   const content = fixtures.map((fixture) => {
     return {
       fixture_id: fixture.id,
-      fixture: `${fixture.participants[0].name} vs ${fixture.participants[1].name}`,
+      fixture: `${fixture.participants[0]?.name} vs ${fixture.participants[1]?.name}`,
     };
   });
 
@@ -192,7 +192,7 @@ const createBetSuggestionCompletion = async (content, mainModel = null) => {
         return {
           data:
             `
-              fixture ${lContent.fixture.name} has context with ${tokensCount} tokens,
+              fixture ${lContent.fixture?.name} has context with ${tokensCount} tokens,
               which is higher than the limit of ${TPM_LIMIT}. the error is probably
               due to rate limit hit.
             `
@@ -200,7 +200,7 @@ const createBetSuggestionCompletion = async (content, mainModel = null) => {
       }
 
       return {
-        data: `fixture ${lContent.fixture.name} failed with ${error.message}`,
+        data: `fixture ${lContent.fixture?.name} failed with ${error.message}`,
       };
     }
   }
@@ -274,7 +274,7 @@ const createBetSuggestionCompletion = async (content, mainModel = null) => {
         return {
           data:
             `
-              fixture ${lContent.fixture.name} has context with ${tokensCount} tokens,
+              fixture ${lContent.fixture?.name} has context with ${tokensCount} tokens,
               which is higher than the limit of ${TPM_LIMIT}. the error is probably
               due to rate limit hit.
             `
@@ -282,7 +282,7 @@ const createBetSuggestionCompletion = async (content, mainModel = null) => {
       }
 
       return {
-        data: `fixture ${lContent.fixture.name} failed with ${error.message}`,
+        data: `fixture ${lContent.fixture?.name} failed with ${error.message}`,
       };
     }
   }
@@ -356,7 +356,7 @@ const createBetSuggestionWithDeepSeekReasoner = async (content, retries = 1000) 
       } else {
         console.log('Max retries reached. Returning error.');
         return {
-          data: `fixture ${lContent.fixture.name} failed with ${error.message}`,
+          data: `fixture ${lContent.fixture?.name} failed with ${error.message}`,
         };
       }
     }
@@ -404,7 +404,7 @@ const appendPlayersData = async (team) => {
     const playerData = await sportmonksApiClient
       .getPlayerById(team['players'][i]['player_id']);
 
-    team['players'][i] = {...team['players'][i], ...{name: playerData.name}};
+    team['players'][i] = {...team['players'][i], ...{name: playerData?.name}};
   }
 
   return team;
@@ -543,7 +543,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         fixture = modifyLineups(fixture);
         fixture = modifyLeague(fixture);
         fixture['league'] = leagueNameById(fixture['league_id']);
-        console.log(`fixture ${i}:${fixture.name} found.`);
+        console.log(`fixture ${i}:${fixture?.name} found.`);
 
         const teamAId = fixture['participants'][0]['id'];
         const teamBId = fixture['participants'][1]['id'];
@@ -566,7 +566,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const contentTokens = countContentTokens({fixture, teamA, teamB, h2h}, models.gpt4Turbo);
         const oddsTokens = countContentTokens({modifiedOdds}, models.gpt4Turbo);
-        console.log(`fixture:${i} ${fixture.name} contentTokens ${contentTokens}`);
+        console.log(`fixture:${i} ${fixture?.name} contentTokens ${contentTokens}`);
         console.log(`starting fixture bet suggestion completion...`);
         // const completion = await createBetSuggestionCompletion({
         //   fixture: fixture,
