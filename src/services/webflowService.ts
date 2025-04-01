@@ -208,6 +208,18 @@ class WebflowService {
   }
 
   async updateTipsArchiveCollection(date: string, suggestionRecap: object) {
+    // const collectionLiveItems = await this
+    //   .collectionsItemsListItemsLive(this._tipsArchiveCollectionId);
+    // for (let i = 0; i < 10; i++) {
+    //   await this.collectionsItemsDeleteItemLive(this._tipsArchiveCollectionId, collectionLiveItems[i].id);
+    // }
+    //
+    // const collectionLiveStaged = await this
+    //   .collectionsItemsListItemsStaged(this._tipsArchiveCollectionId);
+    // for (let i = 0; i < 10; i++) {
+    //   await this.collectionsItemsDeleteItemStaged(this._tipsArchiveCollectionId, collectionLiveStaged[i].id);
+    // }
+
     await this.collectionsItemsCreateItemLive(this._tipsArchiveCollectionId, {
       "fieldData": {
         "start-date-time": DateTime.fromISO(date, { zone: 'utc' })
