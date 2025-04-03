@@ -48,8 +48,8 @@ const hasPastMatches = (fixture) => {
   const participantsNames = Object.keys(fixture?.data?.participants);
   const minPastMatches = 4;
 
-  return fixture?.data?.participants[participantsNames[0]]?.past_matches?.length > minPastMatches
-    || fixture?.data?.participants[participantsNames[1]]?.past_matches?.length > minPastMatches;
+  return fixture?.data?.participants[participantsNames[0]]?.past_matches?.length >= minPastMatches
+    && fixture?.data?.participants[participantsNames[1]]?.past_matches?.length >= minPastMatches;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
