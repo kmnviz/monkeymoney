@@ -57,7 +57,7 @@ const selectFixtures = async (fixtures: TFixture[]): Promise<TFixture[]> => {
 
 const hasPastMatches = (fixture) => {
   const participantsNames = Object.keys(fixture?.data?.participants);
-  const minPastMatches = 4;
+  const minPastMatches = 5;
 
   return fixture?.data?.participants[participantsNames[0]]?.past_matches?.length >= minPastMatches
     && fixture?.data?.participants[participantsNames[1]]?.past_matches?.length >= minPastMatches;
