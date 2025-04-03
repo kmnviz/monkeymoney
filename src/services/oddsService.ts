@@ -105,8 +105,13 @@ const withBookmakerName = (odds: TOdd[]) => {
 
 class OddsService {
 
-  async collectData(fixtureId: number) {
-    const allOdds = await sportmonksApiClient.getOddsByFixtureId(fixtureId);
+  async collectData(fixtureId: number, marketsIds: number[] = []) {
+    let allOdds = await sportmonksApiClient.getOddsByFixtureId(fixtureId);
+
+    if (marketsIds.length > 0) {
+      allOdds = allOdds.filter((o) => marketsIds.includes(o.market_id));
+    }
+
     const highestOdds = Object.values(findHighestOdds(allOdds)) as TOdd[];
     // const lowestOdds = Object.values(findLowestOdds(allOdds)) as TOdd[];
 

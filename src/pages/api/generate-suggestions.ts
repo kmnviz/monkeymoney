@@ -40,7 +40,7 @@ const selectFixtures = async (fixtures: TFixture[]): Promise<TFixture[]> => {
       .split(',').map((id) => parseInt(id, 10));
   }
 
-  // selectedFxsIds = [19154779];
+  // selectedFxsIds = [19155370];
   return fixtures.filter((fx) => selectedFxsIds.includes(fx.id));
 };
 
@@ -94,7 +94,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         console.log(`fixture data tokens: `, countContentTokens(fixture, 'gpt-4-turbo'));
         console.log(`starting odds data collection`);
-        const odds = await oddsService.collectData(fxId);
+        const odds = await oddsService.collectData(fxId, [80]);
         console.log(`odds data tokens: `, countContentTokens(odds.data, 'gpt-4-turbo'));
 
         console.log(`starting suggestion completion`);
