@@ -7,6 +7,7 @@ import SportmonksApiClient from '../../services/sportmonksApiClient';
 import sportmonksTypes from '../../database/sportmonks/types.json';
 import GoogleCloudStorageClient from '../../services/googleCloudStorageClient';
 import WebflowService from '../../services/webflowService';
+import {readFromFile} from '../../utils';
 
 const googleCloudStorageClient = new GoogleCloudStorageClient();
 const sportmonksApiClient = new SportmonksApiClient();
@@ -29,6 +30,10 @@ const SUGGESTIONS_DIRECTORY = 'suggestions/next';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     try {
+      const markets = await readFromFile('/markets.json');
+      return res.status(200).json({
+        markets: JSON.parse(markets).map((m) => m.name),
+      });
       // const date = req.body.date;
       // const allSuggestions: object[] = (await googleCloudStorageClient.readJsonFile(`${SUGGESTIONS_DIRECTORY}/${date}.json`) as object[]);
       // await webflowService.updatePremiumPicksCollection('2025-03-28', allSuggestions);

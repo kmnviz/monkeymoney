@@ -3,6 +3,7 @@ import SportmonksApiClient from '../services/sportmonksApiClient';
 import {TOdd} from '../types/sportmonks/Odd';
 import sportmonksMarkets from '../database/sportmonks/markets.json';
 import {countContentTokens} from '../helpers';
+import {bookmakerNameById} from "../utils";
 
 const sportmonksApiClient = new SportmonksApiClient();
 
@@ -93,6 +94,15 @@ const formatOdds = (odds: TOdd[], minProbability = '0%', maxProbability = '100%'
     });
 }
 
+const withBookmakerName = (odds: TOdd[]) => {
+  return odds.map((o) => {
+    return {
+      ...o,
+      bookmaker: bookmakerNameById(o.bookmaker_id),
+    };
+  });
+};
+
 class OddsService {
 
   async collectData(fixtureId: number) {
@@ -120,6 +130,32 @@ class OddsService {
       tokens: countContentTokens(formattedHighest, 'gpt-4-turbo'),
       data: formattedHighest,
       raw: allOdds,
+    };
+  }
+
+  async fixtureOdds(fixtureId: number, marketsIds: number[] = []) {
+    let allOdds = await sportmonksApiClient.getOddsByFixtureId(fixtureId);
+
+    if (marketsIds.length > 0) {
+      allOdds = allOdds.filter((o) => marketsIds.includes(o.market_id));
+    }
+
+    const highestOdds = Object.values(findHighestOdds(allOdds)) as TOdd[];
+    const lowestOdds = Object.values(findLowestOdds(allOdds)) as TOdd[];
+
+    return {
+      all: {
+        data: withBookmakerName(allOdds),
+        tokens: countContentTokens(allOdds, 'gpt-4-turbo'),
+      },
+      highest: {
+        data: withBookmakerName(highestOdds),
+        tokens: countContentTokens(highestOdds, 'gpt-4-turbo'),
+      },
+      lowest: {
+        data: withBookmakerName(lowestOdds),
+        tokens: countContentTokens(lowestOdds, 'gpt-4-turbo'),
+      },
     };
   }
 }

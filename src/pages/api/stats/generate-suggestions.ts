@@ -106,11 +106,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         console.log(`fixture data tokens: `, countContentTokens(fixture, 'gpt-4-turbo'));
         console.log(`starting odds data collection`);
-        const odds = await oddsService.collectData(fxId);
+        // const odds = await oddsService.collectData(fxId);
+        const odds = (await oddsService.fixtureOdds(fxId, [80])).highest;
         console.log(`odds data tokens: `, countContentTokens(odds, 'gpt-4-turbo'));
 
         console.log(`starting suggestion completion`);
-        const completionContent = {fixture: fixture.data, odds: odds.data.map(({prob, ...rest}) => rest)};
+        // const completionContent = {fixture: fixture.data, odds: odds.data.map(({prob, ...rest}) => rest)};
+        const completionContent = {fixture: fixture.data, odds: odds.data.map(({probability, ...rest}) => rest)};
         // const completion = await deepSeekService.createBetSuggestionCompletion(completionContent);
         const completion = await deepSeekService.createBetSuggestionExp0001Completion(completionContent);
 

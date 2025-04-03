@@ -1,5 +1,6 @@
 // @ts-nocheck
 import type { NextApiRequest, NextApiResponse } from 'next';
+import {DateTime} from 'luxon';
 import SportmonksApiClient from '../../../services/sportmonksApiClient';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -13,13 +14,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         fields: {
           date: 'YYYY-MM-DD',
         },
+        optional: {
+          hours: 0,
+        },
       });
     }
 
     try {
       const date = req.body.date;
+      const hours = req.body?.hours;
       const sportmonksApiClient = new SportmonksApiClient();
-      const fixtures = await sportmonksApiClient.getFixturesByDate(date);
+      let fixtures = await sportmonksApiClient.getFixturesByDate(date);
+
+      if (hours !== undefined) {
+        fixtures = fixtures.filter((fx) => {
+          return DateTime
+            .fromFormat(fx.starting_at, "yyyy-MM-dd HH:mm:ss").toUTC()
+              > DateTime.utc().plus({hours: hours});
+        });
+      }
+
       return res.status(200).json({
         data: {
           count: fixtures.length,
