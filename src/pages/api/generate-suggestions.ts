@@ -94,7 +94,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         console.log(`fixture data tokens: `, countContentTokens(fixture, 'gpt-4-turbo'));
         console.log(`starting odds data collection`);
-        const odds = await oddsService.collectData(fxId, [80]);
+        const odds = await oddsService.collectData(fxId, [1, 80]);
         console.log(`odds data tokens: `, countContentTokens(odds.data, 'gpt-4-turbo'));
 
         console.log(`starting suggestion completion`);
