@@ -76,7 +76,8 @@ class DeepSeekService {
   }
 
   async createBetSuggestionCompletion(content, retries = 1000) {
-    const probInstruction = `Think strategically and prioritize bets where **real probability > 70% and odds > 1.70.**`;
+    // const probInstruction = `Think strategically and prioritize bets where **real probability > 70% and odds > 1.70.**`;
+    const probInstruction = `**Identify and prioritize the most probable betting outcome that offers odds greater than 1.50, ensuring the highest achievable value within the given data.`;
 
     const messages = [
       {
@@ -85,7 +86,8 @@ class DeepSeekService {
       },
       {
         role: 'user',
-        content: betSuggestionPrompt(probInstruction),
+        // content: betSuggestionPrompt(probInstruction),
+        content: betSuggestionExp0001Prompt(),
       },
       {
         role: 'assistant',

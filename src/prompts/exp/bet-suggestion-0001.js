@@ -59,7 +59,7 @@ module.exports = () => {
 
   🔹 Step 6: Final Instruction (Strict Data Usage)
     ✔ STRICTLY follow the provided data and assigned weights.
-    ✔ Suggested odd must be STRICTLY over 50% probability.
+    ✔ Suggested odd must be STRICTLY OVER 1.50.
     ✔ DO NOT fabricate or assume statistics.
     ✔ DO NOT make predictions beyond the given information.
     ✔ Adjust predictions dynamically based on weight influence.
