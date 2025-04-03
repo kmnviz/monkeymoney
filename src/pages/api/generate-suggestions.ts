@@ -44,6 +44,14 @@ const selectFixtures = async (fixtures: TFixture[]): Promise<TFixture[]> => {
   return fixtures.filter((fx) => selectedFxsIds.includes(fx.id));
 };
 
+const hasPastMatches = (fixture) => {
+  const participantsNames = Object.keys(fixture?.data?.participants);
+  const minPastMatches = 4;
+
+  return fixture?.data?.participants[participantsNames[0]]?.past_matches?.length > minPastMatches
+    || fixture?.data?.participants[participantsNames[1]]?.past_matches?.length > minPastMatches;
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     if (
@@ -78,6 +86,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           console.log(`${i}:${fxId} fixture not found, continue.`);
           continue;
         }
+
+        if (!hasPastMatches(fixture)) {
+          console.log(`${i}:${fxId} has not enough past matches, continue.`);
+          continue;
+        }
+
         console.log(`fixture data tokens: `, countContentTokens(fixture, 'gpt-4-turbo'));
         console.log(`starting odds data collection`);
         const odds = await oddsService.collectData(fxId);
