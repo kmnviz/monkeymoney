@@ -74,12 +74,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         fields: {
           date: 'XXXX.XX.XX',
         },
+        optional: {
+          marketsIds: [0],
+          bookmakersIds: [0],
+          totals: ['2.5'],
+        },
       });
     }
 
     try {
       console.log(`-- Stats suggestions generation starting at: ${DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss')} --`)
       const date = req.body.date;
+      const marketsIds = req.body?.marketsIds || [];
+      const bookmakersIds = req.body?.bookmakersIds || [];
+      const totals = req.body?.totals || [];
       const filename = `${OUTPUT_DIRECTORY}/${date}.json`;
       console.log(`suggestions generation for ${date} starting...`);
       const fxs: TFixture[] = filterFixtures(await fetchFixtures(date));
@@ -107,14 +115,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log(`fixture data tokens: `, countContentTokens(fixture, 'gpt-4-turbo'));
         console.log(`starting odds data collection`);
         // const odds = await oddsService.collectData(fxId);
-        const odds = (await oddsService.fixtureOdds(fxId, [1, 80])).highest;
+        const odds = (await oddsService.fixtureOdds(fxId, marketsIds, bookmakersIds, totals)).highest;
         console.log(`odds data tokens: `, countContentTokens(odds, 'gpt-4-turbo'));
 
         console.log(`starting suggestion completion`);
         // const completionContent = {fixture: fixture.data, odds: odds.data.map(({prob, ...rest}) => rest)};
-        const completionContent = {fixture: fixture.data, odds: odds.data.map(({probability, ...rest}) => rest)};
+        const completionContent = {fixture: fixture.data};
         // const completion = await deepSeekService.createBetSuggestionCompletion(completionContent);
-        const completion = await deepSeekService.createBetSuggestionExp0001Completion(completionContent);
+        const completion = await deepSeekService.createBetSuggestionExp0002Completion(completionContent);
+        const odd = odds.data.find((o) => o.label === completion.data.bet);
 
         const suggestion = {
           plan: (i < FREE_SUGGESTIONS_LIMIT) ? 'free' : 'premium',
@@ -125,7 +134,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           },
           fixture: fixture.data,
           odds: odds.data,
-          completion: completion,
+          completion: {
+            ...completion,
+            odd_id: odd?.id,
+            odd: odd?.odd,
+            market_id: odd?.market_id,
+            market_description: odd?.market,
+          },
         };
 
         suggestions.push(suggestion);

@@ -52,6 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const pnlPremium = winPremium.minus(new Decimal(premiumRecaps.length)).toFixed(3);
 
       const result = {
+        type: 'Commercial',
         date: date,
         free: {
           count: `${freeGuessed.length}/${freeRecaps.length}`,

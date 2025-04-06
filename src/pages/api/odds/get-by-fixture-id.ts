@@ -18,14 +18,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
         optional: {
           marketsIds: [0],
+          bookmakersIds: [0],
+          totals: ['2.5']
         },
       });
     }
 
     const fixtureId = +req.body.fixtureId;
     const marketsIds = req.body?.marketsIds || [];
+    const bookmakersIds = req.body?.bookmakersIds || [];
+    const totals = req.body?.totals || [];
+
     try {
-      const odds = await oddsService.fixtureOdds(fixtureId, marketsIds);
+      const odds = await oddsService.fixtureGroupedOdds(fixtureId, marketsIds, bookmakersIds, totals);
       return res.status(200).json({
         odds: odds,
       });

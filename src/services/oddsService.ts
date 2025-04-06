@@ -9,7 +9,8 @@ const sportmonksApiClient = new SportmonksApiClient();
 
 const groupOdds = (allOdds) => {
   return allOdds.reduce((acc, obj) => {
-    const key = `market_id:${obj.market_id || ':'}-label:${obj.label || ':'}-total:${obj.total || ':'}-handicap:${obj.handicap || ':'}-name:${obj.name || ':'}`;
+    // const key = `market_id:${obj.market_id || ':'}-label:${obj.label || ':'}-total:${obj.total || ':'}-handicap:${obj.handicap || ':'}-name:${obj.name || ':'}`;
+    const key = `market_id:${obj.market_id || ':'}-label:${obj.label || ':'}-total:${obj.total || ':'}-handicap:${obj.handicap || ':'}`;
 
     if (!acc[key]) {
       acc[key] = [];
@@ -58,6 +59,24 @@ const findLowestOdds = (allOdds) => {
   return result;
 };
 
+const formatOdd = (odd: TOdd) => {
+  const newOdd = {
+    id: odd.id,
+    label: odd.label,
+    market: odd.market_description,
+    prob: odd.probability,
+    odd: odd.dp3,
+    market_id: odd.market_id,
+  };
+
+  if (odd.handicap) newOdd['handicap'] = odd.handicap;
+  if (odd.total) newOdd['total'] = odd.total;
+  if (odd.name) newOdd['name'] = odd.name;
+  if (odd.bookmaker) newOdd['bookmaker'] = odd.bookmaker;
+
+  return newOdd;
+}
+
 const formatOdds = (odds: TOdd[], minProbability = '0%', maxProbability = '100%') => {
   const markets = sportmonksMarkets;
   const marketsIds = markets.map((m) => m.id);
@@ -65,20 +84,7 @@ const formatOdds = (odds: TOdd[], minProbability = '0%', maxProbability = '100%'
   return odds
     .filter((odd) => marketsIds.includes(odd.market_id))
     .map((odd) => {
-      const newOdd = {
-        id: odd.id,
-        label: odd.label,
-        market: odd.market_description,
-        prob: odd.probability,
-        odd: odd.dp3,
-        market_id: odd.market_id,
-      };
-
-      if (odd.handicap) newOdd['handicap'] = odd.handicap;
-      if (odd.total) newOdd['total'] = odd.total;
-      if (odd.name) newOdd['name'] = odd.name;
-
-      return newOdd;
+      return formatOdd(odd);
     })
     .filter((odd) => {
       const prob = odd.prob
@@ -102,6 +108,22 @@ const withBookmakerName = (odds: TOdd[]) => {
     };
   });
 };
+
+const keepLowestAndHighest = (key, groupedOdds) => {
+  return groupedOdds.reduce((acc, obj: TOdd) => {
+    const dp3 = new Decimal(obj.dp3);
+
+    if (!acc.low || dp3.lessThan(new Decimal(acc.low['dp3']))) {
+      acc.low = obj;
+    }
+
+    if (!acc.high || dp3.greaterThan(new Decimal(acc.high['dp3']))) {
+      acc.high = obj;
+    }
+
+    return acc;
+  }, { key: key, low: null as any, high: null as any });
+}
 
 class OddsService {
 
@@ -138,11 +160,19 @@ class OddsService {
     };
   }
 
-  async fixtureOdds(fixtureId: number, marketsIds: number[] = []) {
+  async fixtureOdds(fixtureId: number, marketsIds: number[] = [], bookmakersIds: number[] = [], totals: string[] = []) {
     let allOdds = await sportmonksApiClient.getOddsByFixtureId(fixtureId);
 
     if (marketsIds.length > 0) {
       allOdds = allOdds.filter((o) => marketsIds.includes(o.market_id));
+    }
+
+    if (bookmakersIds.length > 0) {
+      allOdds = allOdds.filter((o) => bookmakersIds.includes(o.bookmaker_id));
+    }
+
+    if (totals.length > 0) {
+      allOdds = allOdds.filter((o) => totals.includes(o.total));
     }
 
     const highestOdds = Object.values(findHighestOdds(allOdds)) as TOdd[];
@@ -150,17 +180,63 @@ class OddsService {
 
     return {
       all: {
-        data: withBookmakerName(allOdds),
+        data: formatOdds(withBookmakerName(allOdds)),
         tokens: countContentTokens(allOdds, 'gpt-4-turbo'),
       },
       highest: {
-        data: withBookmakerName(highestOdds),
+        data: formatOdds(withBookmakerName(highestOdds)),
         tokens: countContentTokens(highestOdds, 'gpt-4-turbo'),
       },
       lowest: {
-        data: withBookmakerName(lowestOdds),
+        data: formatOdds(withBookmakerName(lowestOdds)),
         tokens: countContentTokens(lowestOdds, 'gpt-4-turbo'),
       },
+    };
+  }
+
+  async fixtureGroupedOdds(fixtureId: number, marketsIds: number[] = [], bookmakersIds: number[] = [], totals: string[] = []) {
+    let allOdds = await sportmonksApiClient.getOddsByFixtureId(fixtureId);
+
+    if (marketsIds.length > 0) {
+      allOdds = allOdds.filter((o) => marketsIds.includes(o.market_id));
+    }
+
+    if (bookmakersIds.length > 0) {
+      allOdds = allOdds.filter((o) => bookmakersIds.includes(o.bookmaker_id));
+    }
+
+    if (totals.length > 0) {
+      allOdds = allOdds.filter((o) => totals.includes(o.total));
+    }
+
+    const groupedOdds = groupOdds(withBookmakerName(allOdds));
+    const groupedHLOdds = Object.keys(groupedOdds).map((key) => {
+      return keepLowestAndHighest(key, groupedOdds[key]);
+    }).map((g) => {
+      return {
+        key: g.key,
+        diff: (new Decimal(g.high.dp3).minus(new Decimal(g.low.dp3))).toFixed(2),
+        low: formatOdd(g.low),
+        high: formatOdd(g.high),
+      };
+    });
+
+    // Algo criteria
+    // Highest odd bookmaker: Pinnacle
+    // Highest odd < 2.50
+    // Diff >= 12.5% from the highest odd
+    const valueHLOdds = [];
+    groupedHLOdds.forEach((g) => {
+      const isPinnacle = g.high['bookmaker'] === 'Pinnacle';
+      const lessThan = new Decimal(g.high['odd']).lte(new Decimal('2.5'));
+      const diffEnough = new Decimal(g.diff).gte(new Decimal(g.high.odd).div(20));
+
+      if (isPinnacle && lessThan && diffEnough) valueHLOdds.push(g);
+    });
+
+    return {
+      valued: valueHLOdds,
+      grouped: groupedHLOdds,
     };
   }
 }

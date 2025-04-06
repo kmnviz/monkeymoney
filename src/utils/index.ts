@@ -88,6 +88,11 @@ export const teamNameById = (teamId: number): string => {
   return team ? team.name : '';
 }
 
+export const marketNameById = (marketId: number): string => {
+  const market = sportmonksMarkets.find((m) => m.id === marketId);
+  return market ? market.name : '';
+}
+
 export const groupOdds = (allOdds) => {
   return allOdds.reduce((acc, obj) => {
     const key = `market_id:${obj.market_id || ':'}-label:${obj.label || ':'}-total:${obj.total || ':'}-handicap:${obj.handicap || ':'}-name:${obj.name || ':'}`;
@@ -272,3 +277,20 @@ export const getDatesInRange = (start, end) => {
 
   return dates;
 }
+
+export const getNestedValue = (obj, path) => {
+  return path.split('.').reduce((acc, key) => (acc ? acc[key] : undefined), obj);
+};
+
+export const groupByNestedKey = (array, keyPath) => {
+  return array.reduce((acc, obj) => {
+    const groupValue = getNestedValue(obj, keyPath);
+    if (!groupValue) return acc;
+
+    if (!acc[groupValue]) {
+      acc[groupValue] = [];
+    }
+    acc[groupValue].push(obj);
+    return acc;
+  }, {});
+};

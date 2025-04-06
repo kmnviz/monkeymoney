@@ -2,8 +2,13 @@
 import type {NextApiRequest, NextApiResponse} from 'next';
 import Decimal from 'decimal.js';
 import GoogleCloudStorageClient from '../../../services/googleCloudStorageClient';
+import TelegramBotClient from '../../../services/telegramBotClient';
+import SportmonksClient from '../../../services/sportmonksApiClient';
+import {groupByNestedKey, marketNameById} from '../../../utils';
 
 const googleCloudStorageClient = new GoogleCloudStorageClient();
+const telegramBotClient = new TelegramBotClient();
+const sportmonksApiClient = new SportmonksClient();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
@@ -16,10 +21,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         fields: {
           date: 'XXXX.XX.XX',
         },
+        optional: {
+          post: false,
+        },
       });
     }
 
     const date = req.body.date;
+    const post = req.body.post;
     try {
       const allRecaps = (await googleCloudStorageClient.readJsonFile(`recaps/stats/${date}.json`) as object[]);
       if (!allRecaps) {
@@ -27,44 +36,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           message: `${date} recaps not found`,
         });
       }
-      const freeRecaps = allRecaps.filter((r) => r.plan === 'free');
-      const premiumRecaps = allRecaps.filter((r) => r.plan === 'premium');
 
       const allGuessed = allRecaps.filter((r) => r.is_guessed === 'YES');
-      const freeGuessed = allRecaps.filter((r) => r.is_guessed === 'YES' && r.plan === 'free');
-      const premiumGuessed = allRecaps.filter((r) => r.is_guessed === 'YES' && r.plan === 'premium');
+      const allRecapsGroupedByMarket = groupByNestedKey(allRecaps, 'suggestion.market_id');
+      const allGuessedGroupedByMarket = groupByNestedKey(allGuessed, 'suggestion.market_id');
 
       let winTotal = new Decimal(0);
       for (let i = 0; i < allGuessed.length; i++)
         winTotal = winTotal.plus(new Decimal(allGuessed[i].suggestion.odd));
       const pnlTotal = winTotal.minus(new Decimal(allRecaps.length)).toFixed(3);
 
-      let winFree = new Decimal(0);
-      for (let i = 0; i < freeGuessed.length; i++)
-        winFree = winFree.plus(new Decimal(freeGuessed[i].suggestion.odd));
-      const pnlFree = winFree.minus(new Decimal(freeRecaps.length)).toFixed(3);
+      const pnlByMarket = {};
+      Object.keys(allGuessedGroupedByMarket).map((key) => {
+        let pnl = new Decimal(0);
+        allGuessedGroupedByMarket[key].forEach((r) => {
+          pnl = pnl.plus(new Decimal(r.suggestion.odd));
+        });
 
-      let winPremium = new Decimal(0);
-      for (let i = 0; i < premiumGuessed.length; i++)
-        winPremium = winPremium.plus(new Decimal(premiumGuessed[i].suggestion.odd));
-      const pnlPremium = winPremium.minus(new Decimal(premiumRecaps.length)).toFixed(3);
-
-      return res.status(200).json({
-        data: {
-          free: {
-            count: `${freeGuessed.length}/${freeRecaps.length}`,
-            pnl: pnlFree,
-          },
-          premium: {
-            count: `${premiumGuessed.length}/${premiumRecaps.length}`,
-            pnl: pnlPremium,
-          },
-          total: {
-            count: `${allGuessed.length}/${allRecaps.length}`,
-            pnl: pnlTotal,
-          },
-        },
+        const market = +key ? marketNameById(+key) : key.toString();
+        pnlByMarket[market] = pnl.minus(new Decimal(allRecapsGroupedByMarket[key].length)).toFixed(2);
       });
+
+      const result = {
+        type: 'Statistics',
+        date: date,
+        data: {
+          count: `${allGuessed.length}/${allRecaps.length}`,
+          pnl: pnlTotal,
+          by_market: Object.keys(allRecapsGroupedByMarket).map((key) => {
+            const market = +key ? marketNameById(+key) : key.toString();
+            const total = `${allGuessedGroupedByMarket[key] ? allGuessedGroupedByMarket[key]?.length : 0}/${allRecapsGroupedByMarket[key]?.length}`;
+            const pnl = pnlByMarket[market] || `-${new Decimal(allRecapsGroupedByMarket[key]?.length).toFixed(2)}`;
+
+            return `${market} - ${total} | PnL: ${new Decimal(pnl).gt(0) ? `+${pnl}` : pnl})`;
+          }),
+        },
+      };
+
+      if (post) await telegramBotClient.sendMessageToProjectMars(JSON.stringify(result, null, 2));
+
+      return res.status(200).json(result);
     } catch (error) {
       console.log('error: ', error);
       return res.status(500).json({

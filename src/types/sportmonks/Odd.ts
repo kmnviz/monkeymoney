@@ -14,11 +14,12 @@ export type TOdd = {
   "american": string, // "-209",
   "winning": boolean, // false,
   "stopped": boolean, // false,
-  "total"?: number, // null,
+  "total": string, // null,
   "handicap"?: number, // null,
   "participants"?: number, // null,
   "created_at": string, // "2023-01-11T14:40:25.000000Z",
   "updated_at": string, // "2023-01-11T14:47:50.000000Z",
   "original_label"?: number, // null,
   "latest_bookmaker_update": string, // "2023-01-11 14:40:25"
+  "bookmaker": string, // "bet365"
 };
