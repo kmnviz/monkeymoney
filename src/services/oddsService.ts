@@ -225,7 +225,7 @@ class OddsService {
     // Highest odd bookmaker: Pinnacle
     // Highest odd < 2.50
     // Diff >= 12.5% from the highest odd
-    const valueHLOdds = [];
+    const valueHLOdds: any[] = [];
     groupedHLOdds.forEach((g) => {
       const isPinnacle = g.high['bookmaker'] === 'Pinnacle';
       const lessThan = new Decimal(g.high['odd']).lte(new Decimal('2.5'));

@@ -126,7 +126,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const odd = odds.data.find((o) => o.label === completion.data.bet);
 
         const suggestion = {
-          plan: (i < FREE_SUGGESTIONS_LIMIT) ? 'free' : 'premium',
+          specific: {marketsIds, bookmakersIds, totals},
           tokens: {
             total: countContentTokens(completionContent, 'gpt-4-turbo'),
             fixture: fixture.tokens,
