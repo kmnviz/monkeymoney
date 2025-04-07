@@ -6,11 +6,15 @@ import OddsService from '../../../services/oddsService';
 import FixtureService from '../../../services/fixtureService';
 import DeepSeekService from '../../../services/deepSeekService';
 import SportmonksApiClient from '../../../services/sportmonksApiClient';
+import GoogleCloudStorageClient from '../../../services/googleCloudStorageClient';
 
 const oddsService = new OddsService();
 const fixtureService = new FixtureService();
 const deepSeekService = new DeepSeekService();
 const sportmonksApiClient = new SportmonksApiClient();
+const googleCloudStorageClient = new GoogleCloudStorageClient();
+
+const OUTPUT_DIRECTORY = 'odds';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
@@ -83,6 +87,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           bet:  completion.data.bet,
           reason:  completion.data.comprehensive_detailed_reason,
         };
+
+        await googleCloudStorageClient.upsertJsonFile(valuedOdds[i], `${OUTPUT_DIRECTORY}/${date}.json`);
       }
 
       return res.status(200).json({
