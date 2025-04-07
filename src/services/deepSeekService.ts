@@ -396,7 +396,8 @@ class DeepSeekService {
     };
   }
 
-  async createSuggestionCheckCompletion(content) {
+  async createSuggestionCheckCompletion(content, retries = 1000) {
+    console.log('content: ', content);
     const messages = [
       {
         role: 'system',
@@ -416,21 +417,38 @@ class DeepSeekService {
       }
     ];
 
-    const startTime = performance.now();
-    const completion = await this.client.chat.completions.create({
-      model: this.models.deepSeekReasoner,
-      messages: messages,
-      temperature: 0,
-    } as any);
-    const endTime = performance.now();
-    console.log(`DeepSeek.createSuggestionCheckCompletion`);
-    console.log(`-- finished in: ${((endTime - startTime) / 1000).toFixed(2)}s`);
-    console.log(`-- used ${completion.usage?.total_tokens} tokens`);
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const startTime = performance.now();
+        const completion = await this.client.chat.completions.create({
+          model: this.models.deepSeekReasoner,
+          messages: messages,
+          temperature: 0,
+        } as any);
+        const endTime = performance.now();
+        console.log(`DeepSeek.createSuggestionCheckCompletion`);
+        console.log(`-- finished in: ${((endTime - startTime) / 1000).toFixed(2)}s`);
+        console.log(`-- used ${completion.usage?.total_tokens} tokens`);
 
-    return {
-      model: this.models.deepSeekReasoner,
-      data: completion.choices[0].message.content,
-    };
+        return {
+          model: this.models.deepSeekReasoner,
+          data: completion.choices[0].message.content,
+        };
+      } catch (error) {
+        console.error(`createSuggestionCheckCompletion attempt ${attempt} failed:`, error.message);
+
+        if (attempt < retries) {
+          const delay = 60 * 1000;
+          console.log(`Retrying in ${delay / 1000} seconds...`);
+          await pause(delay);
+        } else {
+          console.log('Max retries reached. Returning error.');
+          return {
+            data: `fixture ${content.fixture.name} failed with ${error.message}`,
+          };
+        }
+      }
+    }
   }
 
   async createRecapSuggestionPostCompletion(content, date) {
