@@ -31,13 +31,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           marketsIds: [0],
           bookmakersIds: [0],
           totals: ['2.5'],
-          hours: [0],
+          fromHours: 0,
+          toHours: 0,
         },
       });
     }
 
     const date = req.body.date;
-    const hours = req.body?.hours;
+    const fromHours = req.body?.fromHours;
+    const toHours = req.body?.toHours;
     const marketsIds = req.body?.marketsIds || [];
     const bookmakersIds = req.body?.bookmakersIds || [];
     const totals = req.body?.totals || [];
@@ -46,11 +48,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const allOdds = [];
       let fixtures = await sportmonksApiClient.getFixturesByDate(date);
       fixtures = fixtures.filter((fx) => fx.has_odds);
-      if (hours !== undefined) {
+      if (fromHours !== undefined && toHours !== undefined) {
         fixtures = fixtures.filter((fx) => {
-          return DateTime
-              .fromFormat(fx.starting_at, "yyyy-MM-dd HH:mm:ss").toUTC()
-            > DateTime.utc().plus({hours: hours});
+          const now = DateTime.utc();
+          const lowerBound = now.plus({ hours: fromHours });
+          const upperBound = now.plus({ hours: toHours });
+
+          const startTime = DateTime
+            .fromFormat(fx.starting_at, "yyyy-MM-dd HH:mm:ss")
+            .toUTC();
+          return startTime > lowerBound && startTime < upperBound;
         });
       }
 
@@ -87,6 +94,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           bet:  completion.data.bet,
           reason:  completion.data.comprehensive_detailed_reason,
         };
+        valuedOdds[i]['created_at'] = DateTime.now()
+          .toFormat("yyyy-MM-dd HH:mm:ss");
 
         await googleCloudStorageClient.upsertJsonFile(valuedOdds[i], `${OUTPUT_DIRECTORY}/${date}.json`);
       }
