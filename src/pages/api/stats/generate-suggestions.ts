@@ -135,11 +135,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           fixture: fixture.data,
           odds: odds.data,
           completion: {
-            ...completion,
-            odd_id: odd?.id,
-            odd: odd?.odd,
-            market_id: odd?.market_id,
-            market_description: odd?.market,
+            data: {
+              ...completion.data,
+              odd_id: odd?.id,
+              odd: odd?.odd,
+              market_id: odd?.market_id,
+              market_description: odd?.market,
+            },
           },
         };
 

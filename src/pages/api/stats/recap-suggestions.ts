@@ -120,6 +120,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           continue;
         }
 
+        if (
+          suggestion.completion?.odd_id
+          && suggestion.completion?.odd
+          && suggestion.completion?.market_id
+          && suggestion.completion?.market_description
+        ) {
+          suggestion.completion.data = {
+            ...suggestion.completion.data,
+            odd_id: suggestion.completion?.odd_id,
+            odd: suggestion.completion?.odd,
+            market_id: suggestion.completion?.market_id,
+            market_description: suggestion.completion?.market_description,
+          }
+        }
+
         const suggestionCompletion = suggestion.completion.data;
         const fixtureOutcome = formatFixtureOutcome(await fetchFixtureOutcome(suggestion.fixture.id));
 
