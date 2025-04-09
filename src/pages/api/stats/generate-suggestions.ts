@@ -83,7 +83,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      console.log(`-- Stats suggestions generation starting at: ${DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss')} --`)
+      console.log(`-- Stats suggestions generation starting at: ${DateTime.now().toFormat('yyyy-MM-dd HH:mm:ss')} --`);
+      console.log(`parameters: ${JSON.stringify(req.body)}`);
       const date = req.body.date;
       const marketsIds = req.body?.marketsIds || [];
       const bookmakersIds = req.body?.bookmakersIds || [];
