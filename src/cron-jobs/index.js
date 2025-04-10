@@ -122,7 +122,7 @@ const generateAndPostOddsByDate = async () => {
 
   const payload = {
     date: nowDate,
-    marketsIds: [1, 80],
+    marketsIds: [80],
     totals: ['2.5'],
     fromHours: 0,
     toHours: 1,
