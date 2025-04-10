@@ -117,6 +117,34 @@ const postRecapSuggestions = async () => {
   }
 };
 
+const generateAndPostOddsByDate = async () => {
+  const nowDate = DateTime.utc().toFormat('yyyy-MM-dd HH:mm:ss');
+
+  const payload = {
+    date: nowDate,
+    marketsIds: [1, 80],
+    totals: ['2.5'],
+    fromHours: 0,
+    toHours: 1,
+  };
+
+  try {
+    const start = DateTime.now();
+    const path = '/api/odds/get-by-date';
+    const response = await axios.post(`${API_URL}${path}`, payload, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const end = DateTime.now();
+    const executionTime = end.diff(start, 'milliseconds').toObject();
+    console.log(`Request odds/get-by-date execution time: ${executionTime.milliseconds} ms`);
+
+    console.log(`postGetOddsByDate on ${nowDate} successfully triggered. response: `, response.data);
+  } catch (error) {
+    console.log(`postGetOddsByDate.error: `, error);
+    console.error(`postGetOddsByDate on ${nowDate} for failed`, error.message);
+  }
+};
+
 const generateSuggestionsJobs = CronJob.from({
   cronTime: '0 0 18 * * *',
   onTick: generateSuggestions,
@@ -138,6 +166,12 @@ const recapSuggestionsJobs = CronJob.from({
 const postRecapSuggestionsJobs = CronJob.from({
   cronTime: '0 0 4 * * *',
   onTick: postRecapSuggestions,
+  timeZone: 'UTC',
+  start: true,
+});
+const generateAndPostOddsByDateJobs = CronJob.from({
+  cronTime: '0 0 * * * *',
+  onTick: generateAndPostOddsByDate,
   timeZone: 'UTC',
   start: true,
 });

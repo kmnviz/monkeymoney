@@ -5,12 +5,14 @@ import {DateTime} from 'luxon';
 import OddsService from '../../../services/oddsService';
 import FixtureService from '../../../services/fixtureService';
 import DeepSeekService from '../../../services/deepSeekService';
+import TelegramBotClient from '../../../services/telegramBotClient';
 import SportmonksApiClient from '../../../services/sportmonksApiClient';
 import GoogleCloudStorageClient from '../../../services/googleCloudStorageClient';
 
 const oddsService = new OddsService();
 const fixtureService = new FixtureService();
 const deepSeekService = new DeepSeekService();
+const telegramBotClient = new TelegramBotClient();
 const sportmonksApiClient = new SportmonksApiClient();
 const googleCloudStorageClient = new GoogleCloudStorageClient();
 
@@ -106,6 +108,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           .toFormat("yyyy-MM-dd HH:mm:ss");
 
         await googleCloudStorageClient.upsertJsonFile(valuedOdds[i], `${OUTPUT_DIRECTORY}/${date}.json`);
+        await telegramBotClient.sendMessageToProjectMars(`
+          fixture: ${valuedOdds[i]['fixture']}
+          label: ${valuedOdds[i]['label']}
+          lowest odd: ${valuedOdds[i]['low']}
+          highest odd: ${valuedOdds[i]['high']}
+          AI bet: ${valuedOdds[i]['completion']['bet']}
+        `);
       }
 
       return res.status(200).json({
