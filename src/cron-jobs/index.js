@@ -135,7 +135,7 @@ const generateAndPostOddsByDate = async () => {
 
   try {
     const start = DateTime.now();
-    const path = '/api/odds/get-by-date';
+    const path = '/api/odds/generate-and-post-odds-by-date';
     const response = await axios.post(`${API_URL}${path}`, payload, {
       headers: { 'Content-Type': 'application/json' },
     });
