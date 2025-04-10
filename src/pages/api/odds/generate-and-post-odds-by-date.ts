@@ -19,7 +19,7 @@ const googleCloudStorageClient = new GoogleCloudStorageClient();
 const OUTPUT_DIRECTORY = 'odds';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'GET') {
+  if (req.method === 'POST') {
     if (
       !req.body
       || !('date' in req.body)
