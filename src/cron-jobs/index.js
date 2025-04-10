@@ -9,6 +9,7 @@ const API_URL = `${process.env.API_URL}`;
 const generateSuggestions = async () => {
   const nowDate = DateTime.utc()
     .toFormat('yyyy-MM-dd HH:mm:ss');
+  console.log(`generateSuggestions executed on ${nowDate}`);
   const tomorrowDate = DateTime.utc()
     .plus({ days: 1 }).toFormat('yyyy-MM-dd');
   console.log(`generateSuggestions job trigged on ${nowDate} for ${tomorrowDate}`);
@@ -37,6 +38,7 @@ const generateSuggestions = async () => {
 
 const postGenerateSuggestions = async () => {
   const nowDate = DateTime.utc().toFormat('yyyy-MM-dd HH:mm:ss');
+  console.log(`postGenerateSuggestions executed on ${nowDate}`);
   const tomorrowDate = DateTime.utc()
     .plus({ days: 1 }).toFormat('yyyy-MM-dd');
   console.log(`postGenerateSuggestions job triggered on ${nowDate} for ${tomorrowDate}`);
@@ -65,6 +67,7 @@ const postGenerateSuggestions = async () => {
 
 const recapSuggestions = async () => {
   const nowDate = DateTime.utc().toFormat('yyyy-MM-dd HH:mm:ss');
+  console.log(`recapSuggestions executed on ${nowDate}`);
   const yesterdayDate = DateTime.utc()
     .minus({ days: 1 }).toFormat('yyyy-MM-dd');
   console.log(`recapSuggestions job trigged on ${nowDate}`);
@@ -92,6 +95,7 @@ const recapSuggestions = async () => {
 
 const postRecapSuggestions = async () => {
   const nowDate = DateTime.utc().toFormat('yyyy-MM-dd HH:mm:ss');
+  console.log(`postRecapSuggestions executed on ${nowDate}`);
   const yesterdayDate = DateTime.utc()
     .minus({ days: 1 }).toFormat('yyyy-MM-dd');
   console.log(`postRecapSuggestions job trigged on ${nowDate} for ${yesterdayDate}`);
@@ -119,6 +123,7 @@ const postRecapSuggestions = async () => {
 
 const generateAndPostOddsByDate = async () => {
   const nowDate = DateTime.utc().toFormat('yyyy-MM-dd HH:mm:ss');
+  console.log(`generateAndPostOddsByDate executed on ${nowDate}`);
 
   const payload = {
     date: nowDate,
