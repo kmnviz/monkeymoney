@@ -30,7 +30,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const date = req.body.date;
     const post = req.body.post;
     try {
-      const allRecaps = (await googleCloudStorageClient.readJsonFile(`recaps/stats/${date}.json`) as object[]);
+      let allRecaps = (await googleCloudStorageClient.readJsonFile(`recaps/stats/${date}.json`) as object[]);
+      allRecaps = allRecaps.filter((r) => r.suggestion.odd !== undefined);
       if (!allRecaps) {
         return res.status(404).json({
           message: `${date} recaps not found`,
@@ -42,8 +43,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const allGuessedGroupedByMarket = groupByNestedKey(allGuessed, 'suggestion.market_id');
 
       let winTotal = new Decimal(0);
-      for (let i = 0; i < allGuessed.length; i++)
+      for (let i = 0; i < allGuessed.length; i++) {
         winTotal = winTotal.plus(new Decimal(allGuessed[i].suggestion.odd));
+      }
+
       const pnlTotal = winTotal.minus(new Decimal(allRecaps.length)).toFixed(3);
 
       const pnlByMarket = {};

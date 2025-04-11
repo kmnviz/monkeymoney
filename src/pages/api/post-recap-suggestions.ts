@@ -29,7 +29,7 @@ const postTelegram = async (message) => {
   await telegramBotClient.sendMessageToPremiumChannel(message);
 };
 
-const postEmails = async (message, emailAddresses, date) => {
+const postEmails = async (message, emailAddresses,  date) => {
   await zohoMailerClient.sendEmails(emailAddresses, `Daily recap ${date}`, message);
 };
 

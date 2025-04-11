@@ -117,8 +117,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log(`starting odds data collection`);
         // const odds = await oddsService.collectData(fxId);
         const odds = (await oddsService.fixtureOdds(fxId, marketsIds, bookmakersIds, totals)).highest;
+        if (!odds.data.length) {
+          console.log(`${i}:${fxId} has not enough odds, continue.`);
+          continue;
+        }
         console.log(`odds data tokens: `, countContentTokens(odds, 'gpt-4-turbo'));
-
         console.log(`starting suggestion completion`);
         // const completionContent = {fixture: fixture.data, odds: odds.data.map(({prob, ...rest}) => rest)};
         const completionContent = {fixture: fixture.data};
