@@ -108,7 +108,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           .toFormat("yyyy-MM-dd HH:mm:ss");
 
         await googleCloudStorageClient.upsertJsonFile(valuedOdds[i], `${OUTPUT_DIRECTORY}/${date}.json`);
-        await telegramBotClient.sendMessageToProjectMars(`
+        await telegramBotClient.sendMessageToPremiumChannel(`
 fixture: ${valuedOdds[i]['fixture']}
 starting_at: ${valuedOdds[i]['starting_at']}
 market: ${valuedOdds[i]['label']} ${totals.join('/')}
