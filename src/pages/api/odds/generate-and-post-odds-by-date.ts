@@ -111,7 +111,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         await telegramBotClient.sendMessageToProjectMars(`
 fixture: ${valuedOdds[i]['fixture']}
 starting_at: ${valuedOdds[i]['starting_at']}
-label: ${valuedOdds[i]['label']}
+market: ${valuedOdds[i]['label']} ${totals.join('/')}
 lowest odd: ${valuedOdds[i]['low']}
 highest odd: ${valuedOdds[i]['high']}
 AI prediction: ${valuedOdds[i]['completion']['bet']}
