@@ -109,11 +109,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         await googleCloudStorageClient.upsertJsonFile(valuedOdds[i], `${OUTPUT_DIRECTORY}/${date}.json`);
         await telegramBotClient.sendMessageToProjectMars(`
-          fixture: ${valuedOdds[i]['fixture']}
-          label: ${valuedOdds[i]['label']}
-          lowest odd: ${valuedOdds[i]['low']}
-          highest odd: ${valuedOdds[i]['high']}
-          AI bet: ${valuedOdds[i]['completion']['bet']}
+fixture: ${valuedOdds[i]['fixture']}
+starting_at: ${valuedOdds[i]['starting_at']}
+label: ${valuedOdds[i]['label']}
+lowest odd: ${valuedOdds[i]['low']}
+highest odd: ${valuedOdds[i]['high']}
+AI prediction: ${valuedOdds[i]['completion']['bet']}
         `);
       }
 
