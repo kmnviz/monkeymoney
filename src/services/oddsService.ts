@@ -224,18 +224,26 @@ class OddsService {
     // Algo criteria
     // Highest odd bookmaker: Pinnacle
     // Highest odd < 2.50
-    // Diff >= 12.5% from the highest odd
-    // If lowest odd if < 2 and the highest odd is > 2
+    // Diff >= 5% from the highest odd
+    // High odd >= 2.10
+    // Low odd >= 1.90
     const valueHLOdds: any[] = [];
     groupedHLOdds.forEach((g) => {
       const isPinnacle = g.high['bookmaker'] === 'Pinnacle';
       const lessThan = new Decimal(g.high['odd']).lte(new Decimal('2.5'));
       const diffEnough = new Decimal(g.diff).gte(new Decimal(g.high.odd).div(20));
-      // const lowLessThan = new Decimal(g.low.odd).lt(2);
-      // const highMoreThan = new Decimal(g.high.odd).gt(2);
+      const highOddMoreThan = new Decimal(g.high.odd).gte(new Decimal('2.10'));
+      const lowOddMoreThan = new Decimal(g.high.odd).gte(new Decimal('1.90'));
 
-      if (isPinnacle && lessThan && diffEnough) valueHLOdds.push(g);
-      // if (isPinnacle && lessThan && diffEnough && lowLessThan && highMoreThan) valueHLOdds.push(g);
+      if (
+        isPinnacle
+        && lessThan
+        && diffEnough
+        && highOddMoreThan
+        && lowOddMoreThan
+      ) {
+        valueHLOdds.push(g);
+      }
     });
 
     return {
