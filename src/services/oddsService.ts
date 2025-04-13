@@ -233,7 +233,7 @@ class OddsService {
       const lessThan = new Decimal(g.high['odd']).lte(new Decimal('2.5'));
       const diffEnough = new Decimal(g.diff).gte(new Decimal(g.high.odd).div(20));
       const highOddMoreThan = new Decimal(g.high.odd).gte(new Decimal('2.10'));
-      const lowOddMoreThan = new Decimal(g.high.odd).gte(new Decimal('1.90'));
+      const lowOddMoreThan = new Decimal(g.low.odd).gte(new Decimal('1.90'));
 
       if (
         isPinnacle
